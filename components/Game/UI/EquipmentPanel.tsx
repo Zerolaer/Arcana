@@ -108,6 +108,8 @@ export default function EquipmentPanel({ character, onUpdateCharacter, isLoading
 
   // Снятие предмета
   const handleUnequip = async (slotType: string) => {
+    console.log('🔍 handleUnequip called with slotType:', slotType)
+    
     try {
       const { data, error } = await (supabase as any)
         .rpc('unequip_item', {
@@ -115,9 +117,11 @@ export default function EquipmentPanel({ character, onUpdateCharacter, isLoading
           p_slot_type: slotType
         })
 
+      console.log('Unequip response:', { data, error })
+
       if (error) {
         console.error('Error unequipping item:', error)
-        toast.error('Ошибка снятия предмета')
+        toast.error(`Ошибка снятия: ${error.message}`)
         return
       }
 
@@ -125,6 +129,7 @@ export default function EquipmentPanel({ character, onUpdateCharacter, isLoading
         toast.success(`${data.item_name} снят и возвращен в инвентарь`)
         await loadEquipment()
       } else {
+        console.error('Unequip failed:', data)
         toast.error(data?.error || 'Ошибка снятия предмета')
       }
     } catch (error) {
