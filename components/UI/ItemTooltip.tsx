@@ -246,6 +246,10 @@ export default function ItemTooltip({
               return !isEquipped && (item.equipment_slot || item.type === 'weapon' || item.type === 'armor' || item.type === 'accessory') && item.type !== 'consumable' && item.type !== 'material' && onEquip
             })() && (
               <button
+                onMouseDown={(e) => {
+                  console.log('🚨🚨🚨 EQUIP BUTTON MOUSE DOWN!', item.name)
+                  e.stopPropagation()
+                }}
                 onClick={(e) => {
                   console.log('🚨🚨🚨 EQUIP BUTTON CLICKED!', item.name, 'type:', item.type, 'equipment_slot:', item.equipment_slot)
                   console.log('🚨🚨🚨 onEquip function:', onEquip)
@@ -259,6 +263,7 @@ export default function ItemTooltip({
                   }
                 }}
                 className="w-full px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-md transition-colors flex items-center justify-center space-x-2"
+                style={{ pointerEvents: 'auto', zIndex: 10000 }}
               >
                 <span>⚔️</span>
                 <span>Надеть</span>
