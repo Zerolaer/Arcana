@@ -270,31 +270,26 @@ export default function ItemTooltip({
               </button>
             )}
             
-            {/* Кнопка "Снять" - только для экипированных предметов */}
-            {(() => {
-              const actualIsEquipped = isEquipped
-              const actualOnUnequip = onUnequip
-              const shouldShowUnequipButton = actualIsEquipped && !!actualOnUnequip
-              
-              console.log('🔍 UNEQUIP BUTTON DETAILED CONDITION:', {
-                item: item.name,
-                isEquipped: actualIsEquipped,
-                onUnequip: actualOnUnequip,
-                shouldShowUnequipButton: shouldShowUnequipButton,
-                'isEquipped === true': actualIsEquipped === true,
-                '!!onUnequip === true': !!actualOnUnequip === true
-              })
-              return shouldShowUnequipButton
-            })() && (
+            {/* Кнопка "Снять" - ЖЕЛЕЗОБЕТОННЫЙ ВАРИАНТ */}
+            {isEquipped && (
               <button
-                onClick={(e) => {
-                  console.log('🔍 Unequip button clicked for item:', item.name)
+                onMouseDown={(e) => {
+                  console.log('🚨🚨🚨 UNEQUIP BUTTON MOUSE DOWN!', item.name)
                   e.stopPropagation()
+                }}
+                onClick={(e) => {
+                  console.log('🚨🚨🚨 UNEQUIP BUTTON CLICKED!', item.name)
+                  e.stopPropagation()
+                  e.preventDefault()
                   if (onUnequip) {
+                    console.log('🚨🚨🚨 Calling onUnequip function')
                     onUnequip()
+                  } else {
+                    console.log('🚨🚨🚨 onUnequip is null/undefined')
                   }
                 }}
                 className="w-full px-3 py-2 bg-red-600 hover:bg-red-700 text-white text-sm rounded-md transition-colors flex items-center justify-center space-x-2"
+                style={{ pointerEvents: 'auto', zIndex: 10000 }}
               >
                 <span>👕</span>
                 <span>Снять</span>
