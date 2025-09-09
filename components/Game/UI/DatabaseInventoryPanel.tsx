@@ -83,7 +83,9 @@ export default function DatabaseInventoryPanel({ character, onUpdateCharacter, i
               type: gameItem.type,
               equipment_slot: gameItem.equipment_slot,
               isEquipped: gameItem.isEquipped,
-              canEquip: !!gameItem.equipment_slot
+              canEquip: !!gameItem.equipment_slot,
+              'RAW DATA is_equipped': inventoryItem.is_equipped,
+              'RAW DATA equipped_slot_type': inventoryItem.equipped_slot_type
             })
             inventorySlots[inventoryItem.slot_position] = gameItem
           }
