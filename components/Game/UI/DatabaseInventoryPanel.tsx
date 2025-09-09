@@ -240,25 +240,26 @@ export default function DatabaseInventoryPanel({ character, onUpdateCharacter, i
         }
 
         const { data, error } = await (supabase as any)
-          .rpc('use_consumable', {
+          .rpc('equip_item', {
             p_character_id: character.id,
+            p_item_key: itemData.item_key,
             p_slot_position: item.slot_position
           })
 
         if (error) {
-          console.error('Error using consumable:', error)
-          toast.error(`Ошибка использования: ${error.message}`)
+          console.error('Error equipping item:', error)
+          toast.error(`Ошибка экипировки: ${error.message}`)
           return
         }
 
-        console.log('Use consumable response:', data)
+        console.log('Equip item response:', data)
 
         if (data?.success) {
-          toast.success(`${data.item_name} использован!`)
+          toast.success(`${data.item_name} экипирован в слот ${data.slot_type}!`)
           await loadInventory()
         } else {
-          console.error('Use consumable failed:', data)
-          toast.error(data?.error || 'Ошибка использования предмета')
+          console.error('Equip item failed:', data)
+          toast.error(data?.error || 'Ошибка экипировки предмета')
         }
       } catch (error) {
         console.error('Error using consumable:', error)
