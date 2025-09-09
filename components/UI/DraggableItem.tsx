@@ -33,6 +33,11 @@ export default function DraggableItem({
   const dragStartPos = useRef({ x: 0, y: 0 })
 
   const handleMouseDown = (e: React.MouseEvent) => {
+    // Don't start drag if it's a right click or if we're clicking on a button
+    if (e.button !== 0 || (e.target as HTMLElement).closest('button')) {
+      return
+    }
+    
     e.preventDefault()
     setIsDragging(true)
     dragStartPos.current = { x: e.clientX, y: e.clientY }

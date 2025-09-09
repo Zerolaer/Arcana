@@ -261,7 +261,11 @@ export default function ItemTooltip({
   )
 
   return (
-    <Tooltip content={tooltipContent} className={className}>
+    <Tooltip 
+      content={tooltipContent} 
+      className={className}
+      trigger="click"
+    >
       {children}
     </Tooltip>
   )
