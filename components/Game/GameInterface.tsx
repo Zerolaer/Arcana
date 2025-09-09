@@ -63,7 +63,7 @@ export default function GameInterface({ character: initialCharacter, user, onLog
         .update({ 
           last_activity: new Date().toISOString(),
           is_online: true 
-        })
+        } as any)
         .eq('id', character.id)
     } catch (error) {
       console.error('Error updating activity:', error)
@@ -76,7 +76,7 @@ export default function GameInterface({ character: initialCharacter, user, onLog
       
       const { data, error } = await supabase
         .from('characters')
-        .update(updates)
+        .update(updates as any)
         .eq('id', character.id)
         .select()
         .single()
