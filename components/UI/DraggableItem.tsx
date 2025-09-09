@@ -63,8 +63,8 @@ export default function DraggableItem({
     
     console.log('🖱️ DraggableItem clicked - opening tooltip')
     
-    // Открываем тултип - это происходит автоматически через ItemTooltip
-    // Но нужно убедиться, что тултип открывается
+    // НЕ вызываем e.preventDefault() - пусть событие пройдет дальше к Tooltip
+    // Tooltip сам обработает клик и откроется
   }
 
   const handleMouseMove = (e: MouseEvent) => {

@@ -87,8 +87,14 @@ export default function Tooltip({
   }
 
   const handleClick = (e: React.MouseEvent) => {
-    if (trigger !== 'click') return
+    console.log('🚨 Tooltip handleClick CALLED!', { trigger, isVisible })
     
+    if (trigger !== 'click') {
+      console.log('🚨 Tooltip - not click trigger, ignoring')
+      return
+    }
+    
+    console.log('🚨 Tooltip - toggling visibility from', isVisible, 'to', !isVisible)
     e.stopPropagation()
     updatePosition()
     setIsVisible(!isVisible)
