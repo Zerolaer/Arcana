@@ -39,22 +39,39 @@ export default function DatabaseInventoryPanel({ character, onUpdateCharacter, i
     try {
       setLoading(true)
       
-      const { data, error } = await (supabase as any)
-        .rpc('get_character_inventory', { p_character_id: character.id })
+      // Загружаем инвентарь и экипировку параллельно
+      const [inventoryResponse, equipmentResponse] = await Promise.all([
+        (supabase as any).rpc('get_character_inventory', { p_character_id: character.id }),
+        (supabase as any).rpc('get_character_equipment', { p_character_id: character.id })
+      ])
 
-      if (error) {
-        console.error('Error loading inventory:', error)
+      if (inventoryResponse.error) {
+        console.error('Error loading inventory:', inventoryResponse.error)
         toast.error('Ошибка загрузки инвентаря')
         return
       }
+
+      // Получаем список экипированных предметов
+      const equippedItems = new Set()
+      if (equipmentResponse.data && Array.isArray(equipmentResponse.data)) {
+        equipmentResponse.data.forEach((equippedItem: any) => {
+          if (equippedItem.item && equippedItem.item.id) {
+            equippedItems.add(equippedItem.item.id)
+          }
+        })
+      }
+
+      console.log('Equipped items IDs:', Array.from(equippedItems))
 
       // Создаем массив из 48 слотов
       const inventorySlots = new Array(48).fill(null)
       
       // Заполняем слоты данными из базы
-      if (data && Array.isArray(data)) {
-        data.forEach((inventoryItem: any) => {
+      if (inventoryResponse.data && Array.isArray(inventoryResponse.data)) {
+        inventoryResponse.data.forEach((inventoryItem: any) => {
           if (inventoryItem.slot_position >= 0 && inventoryItem.slot_position < 48) {
+            const isEquipped = equippedItems.has(inventoryItem.item.id)
+            
             const gameItem: GameItem = {
               id: inventoryItem.item.id, // UUID из таблицы items
               name: inventoryItem.item.name,
@@ -74,7 +91,7 @@ export default function DatabaseInventoryPanel({ character, onUpdateCharacter, i
               equipment_slot: inventoryItem.item.equipment_slot || null,
               slot_position: inventoryItem.slot_position,
               item_key: inventoryItem.item.item_key, // Добавляем item_key
-              isEquipped: inventoryItem.is_equipped || false // Добавляем информацию об экипировке
+              isEquipped: isEquipped // Проверяем экипировку по ID
             }
             
             // Debug logging
@@ -84,8 +101,7 @@ export default function DatabaseInventoryPanel({ character, onUpdateCharacter, i
               equipment_slot: gameItem.equipment_slot,
               isEquipped: gameItem.isEquipped,
               canEquip: !!gameItem.equipment_slot,
-              'RAW DATA is_equipped': inventoryItem.is_equipped,
-              'RAW DATA equipped_slot_type': inventoryItem.equipped_slot_type
+              itemId: gameItem.id
             })
             inventorySlots[inventoryItem.slot_position] = gameItem
           }

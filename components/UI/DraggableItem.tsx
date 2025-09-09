@@ -30,6 +30,15 @@ export default function DraggableItem({
   showActions = false,
   isEquipped = false
 }: DraggableItemProps) {
+  
+  // Debug logging
+  console.log('🔍 DraggableItem rendered:', {
+    itemName: item.name,
+    isEquipped,
+    itemIsEquipped: item.isEquipped,
+    'isEquipped === true': isEquipped === true,
+    'item.isEquipped === true': item.isEquipped === true
+  })
   const [isDragging, setIsDragging] = useState(false)
   const dragRef = useRef<HTMLDivElement>(null)
   const dragStartPos = useRef({ x: 0, y: 0 })
