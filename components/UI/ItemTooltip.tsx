@@ -272,13 +272,19 @@ export default function ItemTooltip({
             
             {/* Кнопка "Снять" - только для экипированных предметов */}
             {(() => {
-              console.log('🔍 UNEQUIP BUTTON CONDITION:', {
+              const actualIsEquipped = isEquipped
+              const actualOnUnequip = onUnequip
+              const shouldShowUnequipButton = actualIsEquipped && !!actualOnUnequip
+              
+              console.log('🔍 UNEQUIP BUTTON DETAILED CONDITION:', {
                 item: item.name,
-                isEquipped,
-                onUnequip: !!onUnequip,
-                showButton: isEquipped && onUnequip
+                isEquipped: actualIsEquipped,
+                onUnequip: actualOnUnequip,
+                shouldShowUnequipButton: shouldShowUnequipButton,
+                'isEquipped === true': actualIsEquipped === true,
+                '!!onUnequip === true': !!actualOnUnequip === true
               })
-              return isEquipped && onUnequip
+              return shouldShowUnequipButton
             })() && (
               <button
                 onClick={(e) => {
