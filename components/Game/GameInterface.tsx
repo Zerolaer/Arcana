@@ -10,7 +10,7 @@ import { toast } from 'react-hot-toast'
 import GameHeader from './UI/GameHeader'
 import GameSidebar from './UI/GameSidebar'
 import CharacterPanel from './UI/CharacterPanel'
-import NewInventoryPanel from './UI/NewInventoryPanel'
+import DatabaseInventoryPanel from './UI/DatabaseInventoryPanel'
 import LocationPanel from './UI/LocationPanel'
 import SkillsPanel from './UI/SkillsPanel'
 import CombatPanel from './UI/CombatPanel'
@@ -114,7 +114,7 @@ export default function GameInterface({ character: initialCharacter, user, onLog
         )
       case 'inventory':
         return (
-          <NewInventoryPanel
+          <DatabaseInventoryPanel
             character={character}
             onUpdateCharacter={updateCharacterData}
             isLoading={isLoading}
