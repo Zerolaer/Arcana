@@ -45,29 +45,58 @@ export default function DraggableItem({
     if (onDragStart) {
       onDragStart(item, slotIndex)
     }
+  }
 
-    const handleMouseMove = (e: MouseEvent) => {
-      if (dragRef.current) {
-        const deltaX = e.clientX - dragStartPos.current.x
-        const deltaY = e.clientY - dragStartPos.current.y
-        
-        dragRef.current.style.transform = `translate(${deltaX}px, ${deltaY}px) scale(1.1) rotate(5deg)`
-      }
+  const handleClick = (e: React.MouseEvent) => {
+    // Don't handle click if we're clicking on a button (let the button handle it)
+    if ((e.target as HTMLElement).closest('button')) {
+      return
     }
+    
+    console.log('🖱️ DraggableItem clicked:', { item: item.name, type: item.type })
+    
+    // Call appropriate handler based on item type
+    if (item.type === 'consumable' && onUse) {
+      console.log('🧪 Calling onUse for consumable')
+      onUse()
+    } else if ((item.type === 'weapon' || item.type === 'armor' || item.type === 'accessory') && onEquip) {
+      console.log('⚔️ Calling onEquip for equipment')
+      onEquip()
+    }
+  }
 
-    const handleMouseUp = () => {
-      setIsDragging(false)
-      if (dragRef.current) {
-        dragRef.current.style.transform = ''
-      }
-      if (onDragEnd) {
-        onDragEnd()
-      }
+  const handleMouseMove = (e: MouseEvent) => {
+    if (dragRef.current) {
+      const deltaX = e.clientX - dragStartPos.current.x
+      const deltaY = e.clientY - dragStartPos.current.y
       
-      document.removeEventListener('mousemove', handleMouseMove)
-      document.removeEventListener('mouseup', handleMouseUp)
+      // Only start dragging if mouse moved more than 5 pixels
+      if (Math.abs(deltaX) > 5 || Math.abs(deltaY) > 5) {
+        dragRef.current.style.transform = `translate(${deltaX}px, ${deltaY}px)`
+        dragRef.current.style.opacity = '0.8'
+      }
     }
+  }
 
+  const handleMouseUp = () => {
+    setIsDragging(false)
+    
+    if (dragRef.current) {
+      dragRef.current.style.transform = ''
+      dragRef.current.style.opacity = ''
+    }
+    
+    if (onDragEnd) {
+      onDragEnd()
+    }
+    
+    // Remove event listeners
+    document.removeEventListener('mousemove', handleMouseMove)
+    document.removeEventListener('mouseup', handleMouseUp)
+  }
+
+  // Add event listeners when dragging starts
+  if (isDragging) {
     document.addEventListener('mousemove', handleMouseMove)
     document.addEventListener('mouseup', handleMouseUp)
   }
@@ -75,7 +104,7 @@ export default function DraggableItem({
   const getRarityBorderColor = () => {
     const rarityColors = {
       common: 'border-gray-500/50',
-      uncommon: 'border-green-500/50', 
+      uncommon: 'border-green-500/50',
       rare: 'border-blue-500/50',
       epic: 'border-purple-500/50',
       legendary: 'border-yellow-500/50',
@@ -117,6 +146,7 @@ export default function DraggableItem({
           ${className}
         `}
         onMouseDown={handleMouseDown}
+        onClick={handleClick}
         style={{
           borderWidth: '2px',
           borderStyle: 'solid',
@@ -136,13 +166,13 @@ export default function DraggableItem({
         {/* Durability Indicator */}
         {item.durability && (
           <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-700 rounded-b">
-            <div 
+            <div
               className={`h-full rounded-b transition-all duration-300 ${
                 (item.durability.current / item.durability.max) > 0.5 ? 'bg-green-400' :
                 (item.durability.current / item.durability.max) > 0.25 ? 'bg-yellow-400' : 'bg-red-400'
               }`}
-              style={{ 
-                width: `${(item.durability.current / item.durability.max) * 100}%` 
+              style={{
+                width: `${(item.durability.current / item.durability.max) * 100}%`
               }}
             />
           </div>
@@ -150,7 +180,7 @@ export default function DraggableItem({
 
         {/* Rarity Glow Effect */}
         {item.rarity !== 'common' && !isDragging && (
-          <div 
+          <div
             className={`absolute inset-0 rounded-lg pointer-events-none ${getRarityGlow()}`}
             style={{
               boxShadow: `inset 0 0 20px ${

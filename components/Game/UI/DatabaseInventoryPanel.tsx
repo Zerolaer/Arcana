@@ -482,6 +482,7 @@ export default function DatabaseInventoryPanel({ character, onUpdateCharacter, i
                   onDragEnd={handleDragEnd}
                   onUse={() => handleSlotClick(index)}
                   onEquip={() => handleSlotClick(index)}
+                  onUnequip={() => handleSlotClick(index)}
                   showActions={true}
                 />
               ) : (
