@@ -196,8 +196,13 @@ export default function DatabaseInventoryPanel({ character, onUpdateCharacter, i
   }, [])
 
   const handleSlotClick = useCallback(async (slotIndex: number) => {
+    console.log('🔍 handleSlotClick called with slotIndex:', slotIndex)
     const item = inventory[slotIndex]
-    if (!item) return
+    console.log('🔍 Item at slot:', item)
+    if (!item) {
+      console.log('❌ No item at slot', slotIndex)
+      return
+    }
 
     if (item.type === 'consumable') {
       // Использование расходника
