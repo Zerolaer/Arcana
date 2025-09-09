@@ -56,7 +56,7 @@ export default function DatabaseInventoryPanel({ character, onUpdateCharacter, i
         data.forEach((inventoryItem: any) => {
           if (inventoryItem.slot_position >= 0 && inventoryItem.slot_position < 48) {
             const gameItem: GameItem = {
-              id: inventoryItem.item.id,
+              id: inventoryItem.item.id, // UUID из таблицы items
               name: inventoryItem.item.name,
               description: inventoryItem.item.description,
               rarity: inventoryItem.item.rarity,
@@ -72,7 +72,8 @@ export default function DatabaseInventoryPanel({ character, onUpdateCharacter, i
               setBonus: inventoryItem.item.setBonus,
               requirements: inventoryItem.item.requirements,
               equipment_slot: inventoryItem.item.equipment_slot || null,
-              slot_position: inventoryItem.slot_position
+              slot_position: inventoryItem.slot_position,
+              item_key: inventoryItem.item.item_key // Добавляем item_key
             }
             
             // Debug logging
@@ -272,32 +273,24 @@ export default function DatabaseInventoryPanel({ character, onUpdateCharacter, i
       })
       
       try {
-        // Нужно найти item_key по id предмета
-        console.log('Looking for item_key for item:', item.id)
+        // Используем item_key напрямую из предмета
+        console.log('Using item_key directly:', item.item_key)
         
-        const { data: itemData, error: itemError } = await (supabase as any)
-          .from('items')
-          .select('item_key, name, equipment_slot')
-          .eq('id', item.id)
-          .single()
-
-        console.log('Item data from DB:', itemData, 'Error:', itemError)
-
-        if (itemError || !itemData) {
-          console.error('Error finding item key:', itemError)
-          toast.error('Ошибка поиска предмета')
+        if (!item.item_key) {
+          console.error('Item has no item_key:', item)
+          toast.error('Ошибка: предмет не найден')
           return
         }
 
-        if (!itemData.equipment_slot) {
-          console.error('Item has no equipment_slot:', itemData)
+        if (!item.equipment_slot) {
+          console.error('Item has no equipment_slot:', item)
           toast.error('Предмет нельзя экипировать')
           return
         }
 
         console.log('Calling equip_item with:', {
           character_id: character.id,
-          item_key: itemData.item_key,
+          item_key: item.item_key,
           slot_position: item.slot_position,
           item_id: item.id,
           item_name: item.name
@@ -306,7 +299,7 @@ export default function DatabaseInventoryPanel({ character, onUpdateCharacter, i
         const { data, error } = await (supabase as any)
           .rpc('equip_item', {
             p_character_id: character.id,
-            p_item_key: itemData.item_key,
+            p_item_key: item.item_key,
             p_slot_position: item.slot_position
           })
 
