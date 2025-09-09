@@ -198,9 +198,9 @@ export default function DatabaseInventoryPanel({ character, onUpdateCharacter, i
     setDraggedFromIndex(undefined)
   }, [])
 
-  const handleSlotClick = useCallback(async (slotIndex: number) => {
-    console.log('🚨 handleSlotClick CALLED with slotIndex:', slotIndex)
-    console.log('🚨 Current inventory length:', inventory.length)
+  // Функция для экипировки предмета
+  const handleEquipItem = useCallback(async (slotIndex: number) => {
+    console.log('🚨 handleEquipItem CALLED with slotIndex:', slotIndex)
     const item = inventory[slotIndex]
     console.log('🔍 Item at slot:', item)
     if (!item) {
@@ -216,11 +216,12 @@ export default function DatabaseInventoryPanel({ character, onUpdateCharacter, i
       slot_position: item.slot_position
     })
 
-    if (item.type === 'consumable') {
-      // Использование расходника
-      console.log('Attempting to use consumable:', {
+    // Экипировка предмета (только для оружия, брони, аксессуаров)
+    if ((item.type === 'weapon' || item.type === 'armor' || item.type === 'accessory') && item.equipment_slot) {
+      console.log('Attempting to equip item:', {
         itemId: item.id,
         itemName: item.name,
+        equipmentSlot: item.equipment_slot,
         slotIndex
       })
       
@@ -323,6 +324,53 @@ export default function DatabaseInventoryPanel({ character, onUpdateCharacter, i
       } catch (error) {
         console.error('Error equipping item:', error)
         toast.error('Ошибка экипировки предмета')
+      }
+    }
+  }, [inventory, character.id, loadInventory])
+
+  // Функция для использования расходников
+  const handleSlotClick = useCallback(async (slotIndex: number) => {
+    console.log('🚨 handleSlotClick CALLED with slotIndex:', slotIndex)
+    const item = inventory[slotIndex]
+    console.log('🔍 Item at slot:', item)
+    if (!item) {
+      console.log('❌ No item at slot', slotIndex)
+      return
+    }
+
+    if (item.type === 'consumable') {
+      // Использование расходника
+      console.log('Attempting to use consumable:', {
+        itemId: item.id,
+        itemName: item.name,
+        slotIndex
+      })
+      
+      try {
+        const { data, error } = await (supabase as any)
+          .rpc('use_consumable', {
+            p_character_id: character.id,
+            p_slot_position: item.slot_position
+          })
+
+        if (error) {
+          console.error('Error using consumable:', error)
+          toast.error(`Ошибка использования: ${error.message}`)
+          return
+        }
+
+        console.log('Use consumable response:', data)
+
+        if (data?.success) {
+          toast.success(`${data.item_name} использован!`)
+          await loadInventory()
+        } else {
+          console.error('Use consumable failed:', data)
+          toast.error(data?.error || 'Ошибка использования предмета')
+        }
+      } catch (error) {
+        console.error('Error using consumable:', error)
+        toast.error('Ошибка использования предмета')
       }
     }
   }, [inventory, character.id, loadInventory])
@@ -487,7 +535,7 @@ export default function DatabaseInventoryPanel({ character, onUpdateCharacter, i
                   onDragStart={handleDragStart}
                   onDragEnd={handleDragEnd}
                   onUse={() => handleSlotClick(index)}
-                  onEquip={() => handleSlotClick(index)}
+                  onEquip={() => handleEquipItem(index)}
                   onUnequip={() => handleSlotClick(index)}
                   showActions={true}
                   isEquipped={item.isEquipped || false}
