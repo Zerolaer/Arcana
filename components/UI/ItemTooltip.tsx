@@ -243,7 +243,7 @@ export default function ItemTooltip({
                 type: item.type,
                 onEquip: !!onEquip
               })
-              return !isEquipped && (item.equipment_slot || item.type === 'weapon' || item.type === 'armor' || item.type === 'accessory') && item.type !== 'consumable' && item.type !== 'material' && onEquip
+              return !(isEquipped || item.isEquipped) && (item.equipment_slot || item.type === 'weapon' || item.type === 'armor' || item.type === 'accessory') && item.type !== 'consumable' && item.type !== 'material' && onEquip
             })() && (
               <button
                 onMouseDown={(e) => {
@@ -271,7 +271,7 @@ export default function ItemTooltip({
             )}
             
             {/* Кнопка "Снять" - ЖЕЛЕЗОБЕТОННЫЙ ВАРИАНТ */}
-            {isEquipped && (
+            {(isEquipped || item.isEquipped) && (
               <button
                 onMouseDown={(e) => {
                   console.log('🚨🚨🚨 UNEQUIP BUTTON MOUSE DOWN!', item.name)
