@@ -14,6 +14,8 @@ import InventoryPanel from './UI/InventoryPanel'
 import LocationPanel from './UI/LocationPanel'
 import SkillsPanel from './UI/SkillsPanel'
 import CombatPanel from './UI/CombatPanel'
+import CharacterFooter from './UI/CharacterFooter'
+import CombatSidebar from './UI/CombatSidebar'
 
 interface GameInterfaceProps {
   character: Character
@@ -175,20 +177,33 @@ export default function GameInterface({ character: initialCharacter, user, onLog
         onLogout={onLogout}
       />
 
-      {/* Main Game Area */}
-      <div className="flex-1 flex overflow-hidden">
-        {/* Sidebar */}
-        <GameSidebar 
-          character={character}
-          activePanel={activePanel}
-          onPanelChange={setActivePanel}
-        />
+      {/* Main Game Area - 3 Columns Layout */}
+      <div className="flex-1 flex overflow-hidden min-h-0">
+        {/* Left Sidebar - Navigation Menu */}
+        <div className="flex-shrink-0 w-64">
+          <GameSidebar 
+            character={character}
+            activePanel={activePanel}
+            onPanelChange={setActivePanel}
+          />
+        </div>
 
-        {/* Main Content */}
-        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+        {/* Main Content Area - 60% */}
+        <div className="flex-1 flex flex-col min-w-0 overflow-hidden" style={{ flex: '3' }}>
           {renderActivePanel()}
         </div>
+
+        {/* Right Sidebar - Combat/Actions/Logs - 20% */}
+        <div className="flex-shrink-0 w-80 border-l border-white/10 bg-black/20">
+          <CombatSidebar 
+            character={character}
+            onUpdateCharacter={updateCharacterData}
+          />
+        </div>
       </div>
+
+      {/* Character Footer - HP/MP/EXP */}
+      <CharacterFooter character={character} />
 
       {/* Loading Overlay */}
       {isLoading && (
