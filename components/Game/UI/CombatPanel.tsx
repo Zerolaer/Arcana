@@ -254,7 +254,7 @@ export default function CombatPanel({ character, onUpdateCharacter, isLoading }:
   }
 
   return (
-    <div className="flex-1 p-6 space-y-6">
+    <div className="flex-1 game-content p-6 space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -303,7 +303,7 @@ export default function CombatPanel({ character, onUpdateCharacter, isLoading }:
           </h2>
 
           {availableMobs.length > 0 ? (
-            <div className="space-y-3">
+            <div className="space-y-2 max-h-96 overflow-y-auto pr-2">
               {availableMobs.map((mob) => {
                 const canFight = canFightMob(mob)
                 const difficultyColor = getMobDifficultyColor(mob)
@@ -312,31 +312,29 @@ export default function CombatPanel({ character, onUpdateCharacter, isLoading }:
                   <div
                     key={mob.id}
                     onClick={() => canFight && !inCombat && setSelectedMob(mob)}
-                    className={`p-4 rounded border transition-all duration-200 ${difficultyColor} ${
+                    className={`p-3 rounded border transition-all duration-200 ${difficultyColor} ${
                       canFight && !inCombat ? 'cursor-pointer hover:bg-dark-200/30' : 'opacity-50 cursor-not-allowed'
-                    } ${selectedMob?.id === mob.id ? 'bg-dark-200/50' : ''}`}
+                    } ${selectedMob?.id === mob.id ? 'bg-dark-200/50 ring-2 ring-primary-500/50' : ''}`}
                   >
-                    <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-3">
-                        <div className="text-2xl">{mob.image}</div>
-                        <div>
-                          <div className="font-semibold text-white">{mob.name}</div>
-                          <div className="text-sm text-dark-400">Уровень {mob.level}</div>
+                        <div className="text-xl">{mob.image}</div>
+                        <div className="min-w-0">
+                          <div className="font-semibold text-white text-sm truncate">{mob.name}</div>
+                          <div className="text-xs text-dark-400">Ур. {mob.level}</div>
                         </div>
                       </div>
 
-                      <div className="text-right text-sm">
-                        <div className="text-white font-semibold">{mob.health} HP</div>
-                        <div className="text-dark-400">{mob.attack_damage} урона</div>
+                      <div className="text-right flex-shrink-0 ml-3">
+                        <div className="text-white font-semibold text-sm">{mob.health} HP</div>
+                        <div className="text-dark-400 text-xs">{mob.attack_damage} урон</div>
                       </div>
                     </div>
 
-                    <p className="text-sm text-dark-300 mb-3">{mob.description}</p>
-
-                    <div className="flex items-center justify-between text-xs">
-                      <div className="flex items-center space-x-3">
-                        <span className="text-purple-400">+{mob.experience_reward} опыта</span>
-                        <span className="text-gold-400">+{mob.gold_reward} золота</span>
+                    <div className="flex items-center justify-between text-xs mt-2 pt-2 border-t border-dark-300/20">
+                      <div className="flex items-center space-x-2">
+                        <span className="text-purple-400">+{mob.experience_reward} XP</span>
+                        <span className="text-gold-400">+{mob.gold_reward} 🪙</span>
                       </div>
                       <div className="flex items-center space-x-1">
                         <Clock className="w-3 h-3 text-dark-400" />
@@ -422,86 +420,82 @@ export default function CombatPanel({ character, onUpdateCharacter, isLoading }:
             </div>
           )}
 
-          {/* Combat Log */}
-          <div className="game-panel p-6">
-            <h2 className="text-lg font-bold text-white mb-4 flex items-center space-x-2">
-              <Award className="w-5 h-5 text-gold-400" />
+          {/* Combat Log - Compact */}
+          <div className="game-panel p-4">
+            <h2 className="text-md font-bold text-white mb-3 flex items-center space-x-2">
+              <Award className="w-4 h-4 text-gold-400" />
               <span>История боев</span>
+              <span className="text-xs text-dark-400 font-normal">({combatLogs.length}/10)</span>
             </h2>
 
             {combatLogs.length > 0 ? (
-              <div className="space-y-2 max-h-64 overflow-y-auto">
-                {combatLogs.map((log, index) => (
+              <div className="space-y-1 max-h-48 overflow-y-auto">
+                {combatLogs.slice(0, 5).map((log, index) => (
                   <div
                     key={index}
-                    className={`p-3 rounded border ${
-                      log.victory ? 'border-green-500/30 bg-green-500/5' : 'border-red-500/30 bg-red-500/5'
+                    className={`p-2 rounded text-xs border ${
+                      log.victory ? 'border-green-500/20 bg-green-500/5' : 'border-red-500/20 bg-red-500/5'
                     }`}
                   >
-                    <div className="flex items-center justify-between mb-1">
-                      <span className={`font-semibold ${log.victory ? 'text-green-400' : 'text-red-400'}`}>
-                        {log.victory ? '✅ Победа' : '❌ Поражение'}
-                      </span>
-                      <span className="text-xs text-dark-500">
-                        {new Date(log.timestamp).toLocaleTimeString()}
-                      </span>
-                    </div>
-                    
-                    <div className="text-sm text-white mb-1">
-                      Бой против: {log.mob_name}
-                    </div>
-                    
-                    <div className="flex items-center space-x-4 text-xs text-dark-400">
-                      <span>Урон: {log.damage_dealt}</span>
-                      <span>Получено: {log.damage_taken}</span>
-                      {log.victory && (
-                        <>
-                          <span className="text-purple-400">+{log.experience_gained} опыта</span>
-                          <span className="text-gold-400">+{log.gold_gained} золота</span>
-                        </>
-                      )}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <span className={log.victory ? 'text-green-400' : 'text-red-400'}>
+                          {log.victory ? '✓' : '✗'}
+                        </span>
+                        <span className="text-white font-medium truncate">{log.mob_name}</span>
+                      </div>
+                      <div className="flex items-center space-x-2 text-dark-400 text-xs">
+                        {log.victory && (
+                          <>
+                            <span className="text-purple-400">+{log.experience_gained} XP</span>
+                            <span className="text-gold-400">+{log.gold_gained} 🪙</span>
+                          </>
+                        )}
+                        <span>{new Date(log.timestamp).toLocaleTimeString().slice(0, -3)}</span>
+                      </div>
                     </div>
                   </div>
                 ))}
+                {combatLogs.length > 5 && (
+                  <div className="text-center text-xs text-dark-500 py-1">
+                    ... и еще {combatLogs.length - 5} боев
+                  </div>
+                )}
               </div>
             ) : (
-              <div className="text-center py-4">
-                <div className="text-4xl mb-2">⚔️</div>
-                <p className="text-dark-400">История боев пуста</p>
-                <p className="text-xs text-dark-500 mt-1">Проведите первый бой, чтобы увидеть результаты</p>
+              <div className="text-center py-3">
+                <div className="text-2xl mb-1">⚔️</div>
+                <p className="text-dark-400 text-sm">История боев пуста</p>
+                <p className="text-xs text-dark-500">Проведите первый бой</p>
               </div>
             )}
           </div>
         </div>
       </div>
 
-      {/* Combat Tips */}
-      <div className="game-panel p-6">
-        <h2 className="text-lg font-bold text-white mb-4">Советы по бою</h2>
+      {/* Combat Tips - Compact */}
+      <div className="game-panel p-4">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-lg font-bold text-white">💡 Быстрые советы</h2>
+        </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-dark-200/30 rounded border border-dark-300/30 p-4">
-            <div className="text-2xl mb-2">⚔️</div>
-            <div className="font-semibold text-white mb-1">Выбор противника</div>
-            <div className="text-sm text-dark-400">
-              Сражайтесь с мобами вашего уровня для оптимального опыта и лута
-            </div>
+        <div className="grid grid-cols-3 gap-3">
+          <div className="text-center p-2 bg-dark-200/20 rounded border border-dark-300/20">
+            <div className="text-lg mb-1">⚔️</div>
+            <div className="text-xs font-semibold text-white mb-1">Уровень мобов</div>
+            <div className="text-xs text-dark-400">±2 для баланса</div>
           </div>
           
-          <div className="bg-dark-200/30 rounded border border-dark-300/30 p-4">
-            <div className="text-2xl mb-2">💊</div>
-            <div className="font-semibold text-white mb-1">Управление здоровьем</div>
-            <div className="text-sm text-dark-400">
-              Следите за здоровьем и используйте зелья для восстановления
-            </div>
+          <div className="text-center p-2 bg-dark-200/20 rounded border border-dark-300/20">
+            <div className="text-lg mb-1">💊</div>
+            <div className="text-xs font-semibold text-white mb-1">Здоровье</div>
+            <div className="text-xs text-dark-400">Следите за HP</div>
           </div>
           
-          <div className="bg-dark-200/30 rounded border border-dark-300/30 p-4">
-            <div className="text-2xl mb-2">🎯</div>
-            <div className="font-semibold text-white mb-1">Развитие</div>
-            <div className="text-sm text-dark-400">
-              Улучшайте характеристики и изучайте новые навыки для эффективности
-            </div>
+          <div className="text-center p-2 bg-dark-200/20 rounded border border-dark-300/20">
+            <div className="text-lg mb-1">🎯</div>
+            <div className="text-xs font-semibold text-white mb-1">Развитие</div>
+            <div className="text-xs text-dark-400">Улучшайте стат.</div>
           </div>
         </div>
       </div>
