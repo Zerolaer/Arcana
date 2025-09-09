@@ -229,7 +229,7 @@ export default function DatabaseInventoryPanel({ character, onUpdateCharacter, i
         const { data, error } = await (supabase as any)
           .rpc('use_consumable', {
             p_character_id: character.id,
-            p_slot_position: slotIndex
+            p_slot_position: item.slot_position
           })
 
         if (error) {
@@ -287,14 +287,14 @@ export default function DatabaseInventoryPanel({ character, onUpdateCharacter, i
         console.log('Calling equip_item with:', {
           character_id: character.id,
           item_key: itemData.item_key,
-          slot_position: slotIndex
+          slot_position: item.slot_position
         })
 
         const { data, error } = await (supabase as any)
           .rpc('equip_item', {
             p_character_id: character.id,
             p_item_key: itemData.item_key,
-            p_slot_position: slotIndex
+            p_slot_position: item.slot_position
           })
 
         if (error) {
