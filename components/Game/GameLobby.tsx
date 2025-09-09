@@ -69,8 +69,8 @@ export default function GameLobby({ user, onCharacterCreated, onLogout }: GameLo
         .single()
 
       if (!existingPlayer) {
-        const { error: playerError } = await (supabase
-          .from('players') as any)
+        const { error: playerError } = await supabase
+          .from('players')
           .insert({
             id: user.id,
             username: user.user_metadata?.username || characterName,
@@ -85,8 +85,8 @@ export default function GameLobby({ user, onCharacterCreated, onLogout }: GameLo
       }
 
       // Get first location
-      const { data: firstLocation } = await (supabase
-        .from('locations') as any)
+      const { data: firstLocation } = await supabase
+        .from('locations')
         .select('id')
         .order('min_level')
         .limit(1)

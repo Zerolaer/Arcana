@@ -28,23 +28,17 @@ function createSupabaseClient() {
   })
 }
 
-// Initialize client only in browser environment
-export const supabase = typeof window !== 'undefined' 
-  ? createSupabaseClient() 
-  : null as any // Fallback for SSG/SSR
+// Initialize client - always create the client
+export const supabase = createSupabaseClient()
 
-// Helper to ensure client is available
+// Helper to ensure client is available (keeping for compatibility)
 function ensureSupabaseClient() {
-  if (!supabase) {
-    throw new Error('Supabase client not available - make sure you are in browser environment')
-  }
   return supabase
 }
 
 // Auth helpers
 export const signUp = async (email: string, password: string, username: string) => {
-  const client = ensureSupabaseClient()
-  const { data, error } = await client.auth.signUp({
+  const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
@@ -76,8 +70,8 @@ export const getCurrentUser = async () => {
 
 // Game data helpers
 export const getCharacter = async (playerId: string) => {
-  const { data, error } = await (supabase
-    .from('characters') as any)
+  const { data, error } = await supabase
+    .from('characters')
     .select('*')
     .eq('player_id', playerId)
     .single()
@@ -86,18 +80,28 @@ export const getCharacter = async (playerId: string) => {
 }
 
 export const createCharacter = async (characterData: any) => {
-  const { data, error } = await (supabase
-    .from('characters') as any)
-    .insert([characterData])
-    .select()
-    .single()
-  
-  return { character: data, error }
+  try {
+    const { data, error } = await supabase
+      .from('characters')
+      .insert([characterData])
+      .select()
+      .single()
+    
+    if (error) {
+      console.error('Character creation error details:', error)
+      throw error
+    }
+    
+    return { character: data, error: null }
+  } catch (error) {
+    console.error('Character creation failed:', error)
+    return { character: null, error }
+  }
 }
 
 export const updateCharacter = async (characterId: string, updates: any) => {
-  const { data, error } = await (supabase
-    .from('characters') as any)
+  const { data, error } = await supabase
+    .from('characters')
     .update(updates)
     .eq('id', characterId)
     .select()
@@ -107,12 +111,22 @@ export const updateCharacter = async (characterId: string, updates: any) => {
 }
 
 export const getCharacterClasses = async () => {
-  const { data, error } = await supabase
-    .from('character_classes')
-    .select('*')
-    .order('name')
-  
-  return { classes: data, error }
+  try {
+    const { data, error } = await supabase
+      .from('character_classes')
+      .select('*')
+      .order('name')
+    
+    if (error) {
+      console.error('Error fetching character classes:', error)
+      throw error
+    }
+    
+    return { classes: data, error: null }
+  } catch (error) {
+    console.error('Character classes fetch failed:', error)
+    return { classes: null, error }
+  }
 }
 
 export const getLocations = async () => {
@@ -149,7 +163,7 @@ export const getFarmingSpots = async (locationId: string) => {
 }
 
 export const occupySpot = async (spotId: string, characterId: string) => {
-  const { data, error } = await (supabase as any).rpc('occupy_farming_spot', {
+  const { data, error } = await supabase.rpc('occupy_farming_spot', {
     spot_id: spotId,
     character_id: characterId
   })
@@ -158,7 +172,7 @@ export const occupySpot = async (spotId: string, characterId: string) => {
 }
 
 export const leaveSpot = async (spotId: string, characterId: string) => {
-  const { data, error } = await (supabase as any).rpc('leave_farming_spot', {
+  const { data, error } = await supabase.rpc('leave_farming_spot', {
     spot_id: spotId,
     character_id: characterId
   })
@@ -241,7 +255,7 @@ export const subscribeToGameEvents = (callback: (payload: any) => void) => {
 
 // Combat system
 export const initiateCombat = async (characterId: string, mobId: string) => {
-  const { data, error } = await (supabase as any).rpc('initiate_combat', {
+  const { data, error } = await supabase.rpc('initiate_combat', {
     character_id: characterId,
     mob_id: mobId
   })
@@ -250,7 +264,7 @@ export const initiateCombat = async (characterId: string, mobId: string) => {
 }
 
 export const performAttack = async (characterId: string, skillId?: string) => {
-  const { data, error } = await (supabase as any).rpc('perform_attack', {
+  const { data, error } = await supabase.rpc('perform_attack', {
     character_id: characterId,
     skill_id: skillId
   })

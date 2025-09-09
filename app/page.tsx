@@ -22,7 +22,7 @@ export default function HomePage() {
   const initializeApp = async () => {
     try {
       // Check for existing user session
-      const { user, error } = await getCurrentUser()
+      const { data: { user }, error } = await supabase.auth.getUser()
       
       if (error) {
         console.error('Error getting user:', error)
@@ -34,16 +34,27 @@ export default function HomePage() {
         setUser(user)
         
         // Check if user has a character
-        const { data: characters } = await supabase
-          .from('characters')
-          .select('*')
-          .eq('player_id', user.id)
-          .limit(1)
-        
-        if (characters && characters.length > 0) {
-          setCharacter(characters[0])
-          setGameState('game')
-        } else {
+        try {
+          const { data: characters, error: charactersError } = await supabase
+            .from('characters')
+            .select('*')
+            .eq('player_id', user.id)
+            .limit(1)
+          
+          if (charactersError) {
+            console.error('Error fetching characters:', charactersError)
+            setGameState('lobby')
+            return
+          }
+          
+          if (characters && characters.length > 0) {
+            setCharacter(characters[0] as Character)
+            setGameState('game')
+          } else {
+            setGameState('lobby')
+          }
+        } catch (err) {
+          console.error('Character fetch error:', err)
           setGameState('lobby')
         }
       } else {
