@@ -1,24 +1,50 @@
 import { createClient } from '@supabase/supabase-js'
 import { Database } from '@/types/database'
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+// Environment variables validation
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    persistSession: true,
-    autoRefreshToken: true,
-  },
-  realtime: {
-    params: {
-      eventsPerSecond: 10
-    }
+// Create supabase client with better error handling
+function createSupabaseClient() {
+  if (!supabaseUrl) {
+    throw new Error('Missing env var: NEXT_PUBLIC_SUPABASE_URL')
   }
-})
+
+  if (!supabaseAnonKey) {
+    throw new Error('Missing env var: NEXT_PUBLIC_SUPABASE_ANON_KEY')
+  }
+
+  return createClient<Database>(supabaseUrl, supabaseAnonKey, {
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+    },
+    realtime: {
+      params: {
+        eventsPerSecond: 10
+      }
+    }
+  })
+}
+
+// Initialize client only in browser environment
+export const supabase = typeof window !== 'undefined' 
+  ? createSupabaseClient() 
+  : null as any // Fallback for SSG/SSR
+
+// Helper to ensure client is available
+function ensureSupabaseClient() {
+  if (!supabase) {
+    throw new Error('Supabase client not available - make sure you are in browser environment')
+  }
+  return supabase
+}
 
 // Auth helpers
 export const signUp = async (email: string, password: string, username: string) => {
-  const { data, error } = await supabase.auth.signUp({
+  const client = ensureSupabaseClient()
+  const { data, error } = await client.auth.signUp({
     email,
     password,
     options: {

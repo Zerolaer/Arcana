@@ -39,7 +39,7 @@ export default function GameInterface({ character: initialCharacter, user, onLog
           table: 'characters',
           filter: `id=eq.${character.id}`
         }, 
-        (payload) => {
+        (payload: any) => {
           console.log('Character updated:', payload)
           if (payload.new) {
             setCharacter(payload.new as Character)
