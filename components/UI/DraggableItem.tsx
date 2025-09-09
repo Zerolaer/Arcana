@@ -37,6 +37,10 @@ export default function DraggableItem({
   const handleMouseDown = (e: React.MouseEvent) => {
     console.log('🚨 DraggableItem handleMouseDown CALLED!', { item: item.name, button: e.button })
     
+    // ВРЕМЕННО ОТКЛЮЧАЕМ ДРАГ & ДРОП
+    console.log('🚨 MouseDown - drag & drop DISABLED for now')
+    return
+    
     // Don't start drag if it's a right click or if we're clicking on a button
     if (e.button !== 0 || (e.target as HTMLElement).closest('button')) {
       console.log('🚨 MouseDown ignored - right click or button')
@@ -63,8 +67,7 @@ export default function DraggableItem({
     
     console.log('🖱️ DraggableItem clicked - opening tooltip')
     
-    // НЕ вызываем e.preventDefault() - пусть событие пройдет дальше к Tooltip
-    // Tooltip сам обработает клик и откроется
+    // Просто логируем - Tooltip сам обработает клик
   }
 
   const handleMouseMove = (e: MouseEvent) => {
