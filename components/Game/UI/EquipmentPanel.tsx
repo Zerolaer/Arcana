@@ -200,6 +200,7 @@ export default function EquipmentPanel({ character, onUpdateCharacter, isLoading
                       item={equippedItem.item}
                       onUnequip={() => handleUnequip(slot.key)}
                       showActions={true}
+                      isEquipped={true}
                     >
                       <div className="flex flex-col items-center space-y-1 cursor-pointer relative">
                         <div className="text-2xl">{equippedItem.item.icon}</div>

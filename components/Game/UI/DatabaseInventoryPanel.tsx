@@ -484,6 +484,7 @@ export default function DatabaseInventoryPanel({ character, onUpdateCharacter, i
                   onEquip={() => handleSlotClick(index)}
                   onUnequip={() => handleSlotClick(index)}
                   showActions={true}
+                  isEquipped={false}
                 />
               ) : (
                 <InventorySlot

@@ -49,6 +49,7 @@ interface ItemTooltipProps {
   onEquip?: () => void
   onUnequip?: () => void
   showActions?: boolean
+  isEquipped?: boolean
 }
 
 const rarityColors = {
@@ -86,7 +87,8 @@ export default function ItemTooltip({
   onUse, 
   onEquip, 
   onUnequip, 
-  showActions = false 
+  showActions = false,
+  isEquipped = false
 }: ItemTooltipProps) {
   const renderStats = () => {
     const stats = Object.entries(item.stats).filter(([_, value]) => value && value > 0)
@@ -230,7 +232,8 @@ export default function ItemTooltip({
               </button>
             )}
             
-            {((item.equipment_slot || (item.type === 'weapon' || item.type === 'armor' || item.type === 'accessory')) && item.type !== 'consumable' && item.type !== 'material') && onEquip && (
+            {/* Кнопка "Надеть" - только для неэкипированных предметов */}
+            {!isEquipped && ((item.equipment_slot || (item.type === 'weapon' || item.type === 'armor' || item.type === 'accessory')) && item.type !== 'consumable' && item.type !== 'material') && onEquip && (
               <button
                 onClick={(e) => {
                   console.log('🔍 Equip button clicked for item:', item.name, 'type:', item.type, 'equipment_slot:', item.equipment_slot)
@@ -244,9 +247,11 @@ export default function ItemTooltip({
               </button>
             )}
             
-            {onUnequip && (
+            {/* Кнопка "Снять" - только для экипированных предметов */}
+            {isEquipped && onUnequip && (
               <button
                 onClick={(e) => {
+                  console.log('🔍 Unequip button clicked for item:', item.name)
                   e.stopPropagation()
                   onUnequip()
                 }}

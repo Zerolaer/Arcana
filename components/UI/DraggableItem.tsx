@@ -14,6 +14,7 @@ interface DraggableItemProps {
   onEquip?: () => void
   onUnequip?: () => void
   showActions?: boolean
+  isEquipped?: boolean
 }
 
 export default function DraggableItem({ 
@@ -26,7 +27,8 @@ export default function DraggableItem({
   onUse,
   onEquip,
   onUnequip,
-  showActions = false
+  showActions = false,
+  isEquipped = false
 }: DraggableItemProps) {
   const [isDragging, setIsDragging] = useState(false)
   const dragRef = useRef<HTMLDivElement>(null)
@@ -134,6 +136,7 @@ export default function DraggableItem({
       onEquip={onEquip}
       onUnequip={onUnequip}
       showActions={showActions}
+      isEquipped={isEquipped}
     >
       <div
         ref={dragRef}
