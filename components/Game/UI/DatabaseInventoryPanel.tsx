@@ -208,6 +208,19 @@ export default function DatabaseInventoryPanel({ character, onUpdateCharacter, i
       })
       
       try {
+        // Нужно найти item_key по id предмета
+        const { data: itemData, error: itemError } = await (supabase as any)
+          .from('items')
+          .select('item_key')
+          .eq('id', item.id)
+          .single()
+
+        if (itemError || !itemData) {
+          console.error('Error finding item key:', itemError)
+          toast.error('Ошибка поиска предмета')
+          return
+        }
+
         const { data, error } = await (supabase as any)
           .rpc('use_consumable', {
             p_character_id: character.id,
@@ -243,10 +256,23 @@ export default function DatabaseInventoryPanel({ character, onUpdateCharacter, i
       })
       
       try {
+        // Нужно найти item_key по id предмета
+        const { data: itemData, error: itemError } = await (supabase as any)
+          .from('items')
+          .select('item_key')
+          .eq('id', item.id)
+          .single()
+
+        if (itemError || !itemData) {
+          console.error('Error finding item key:', itemError)
+          toast.error('Ошибка поиска предмета')
+          return
+        }
+
         const { data, error } = await (supabase as any)
           .rpc('equip_item', {
             p_character_id: character.id,
-            p_item_key: item.id,
+            p_item_key: itemData.item_key,
             p_slot_position: slotIndex
           })
 
