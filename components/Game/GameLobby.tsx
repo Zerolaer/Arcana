@@ -146,7 +146,7 @@ export default function GameLobby({ user, onCharacterCreated, onLogout }: GameLo
       
       if (error) {
         console.error('Character creation error:', error)
-        if (error.code === '23505') {
+        if ((error as any)?.code === '23505') {
           toast.error('Имя персонажа уже занято')
         } else {
           toast.error('Ошибка создания персонажа')
