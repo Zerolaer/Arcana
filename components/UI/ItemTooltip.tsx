@@ -237,16 +237,13 @@ export default function ItemTooltip({
             
             {/* Кнопка "Надеть" - только для неэкипированных предметов */}
             {(() => {
-              const showButton = !isEquipped && (item.equipment_slot || item.type === 'weapon' || item.type === 'armor' || item.type === 'accessory') && item.type !== 'consumable' && item.type !== 'material' && onEquip
-              console.log('🔍 EQUIP BUTTON CONDITION:', {
-                item: item.name,
+              console.log('🔍 RENDERING EQUIP BUTTON FOR:', item.name, {
                 isEquipped,
                 equipment_slot: item.equipment_slot,
                 type: item.type,
-                onEquip: !!onEquip,
-                showButton
+                onEquip: !!onEquip
               })
-              return showButton
+              return !isEquipped && (item.equipment_slot || item.type === 'weapon' || item.type === 'armor' || item.type === 'accessory') && item.type !== 'consumable' && item.type !== 'material' && onEquip
             })() && (
               <button
                 onClick={(e) => {
