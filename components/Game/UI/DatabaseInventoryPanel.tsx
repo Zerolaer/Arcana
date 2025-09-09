@@ -206,6 +206,14 @@ export default function DatabaseInventoryPanel({ character, onUpdateCharacter, i
       return
     }
 
+    console.log('🔍 Item details:', {
+      id: item.id,
+      name: item.name,
+      type: item.type,
+      equipment_slot: item.equipment_slot,
+      slot_position: item.slot_position
+    })
+
     if (item.type === 'consumable') {
       // Использование расходника
       console.log('Attempting to use consumable:', {
@@ -289,7 +297,9 @@ export default function DatabaseInventoryPanel({ character, onUpdateCharacter, i
         console.log('Calling equip_item with:', {
           character_id: character.id,
           item_key: itemData.item_key,
-          slot_position: item.slot_position
+          slot_position: item.slot_position,
+          item_id: item.id,
+          item_name: item.name
         })
 
         const { data, error } = await (supabase as any)
@@ -306,6 +316,8 @@ export default function DatabaseInventoryPanel({ character, onUpdateCharacter, i
         }
 
         console.log('Equip response:', data)
+        console.log('Equip success:', data?.success)
+        console.log('Equip error:', data?.error)
 
         if (data?.success) {
           toast.success(`${data.item_name} экипирован в слот ${data.slot_type}`)
