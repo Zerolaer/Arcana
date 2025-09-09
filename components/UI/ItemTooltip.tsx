@@ -271,7 +271,15 @@ export default function ItemTooltip({
             )}
             
             {/* Кнопка "Снять" - только для экипированных предметов */}
-            {isEquipped && onUnequip && (
+            {(() => {
+              console.log('🔍 UNEQUIP BUTTON CONDITION:', {
+                item: item.name,
+                isEquipped,
+                onUnequip: !!onUnequip,
+                showButton: isEquipped && onUnequip
+              })
+              return isEquipped && onUnequip
+            })() && (
               <button
                 onClick={(e) => {
                   console.log('🔍 Unequip button clicked for item:', item.name)
