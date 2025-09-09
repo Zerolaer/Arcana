@@ -70,8 +70,8 @@ export const getCurrentUser = async () => {
 
 // Game data helpers
 export const getCharacter = async (playerId: string) => {
-  const { data, error } = await supabase
-    .from('characters')
+  const { data, error } = await (supabase
+    .from('characters') as any)
     .select('*')
     .eq('player_id', playerId)
     .single()
@@ -81,8 +81,8 @@ export const getCharacter = async (playerId: string) => {
 
 export const createCharacter = async (characterData: any) => {
   try {
-    const { data, error } = await supabase
-      .from('characters')
+    const { data, error } = await (supabase
+      .from('characters') as any)
       .insert([characterData])
       .select()
       .single()
@@ -100,8 +100,8 @@ export const createCharacter = async (characterData: any) => {
 }
 
 export const updateCharacter = async (characterId: string, updates: any) => {
-  const { data, error } = await supabase
-    .from('characters')
+  const { data, error } = await (supabase
+    .from('characters') as any)
     .update(updates)
     .eq('id', characterId)
     .select()

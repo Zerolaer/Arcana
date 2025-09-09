@@ -58,8 +58,8 @@ export default function GameInterface({ character: initialCharacter, user, onLog
 
   const updateLastActivity = async () => {
     try {
-      await supabase
-        .from('characters')
+      await (supabase
+        .from('characters') as any)
         .update({
           last_activity: new Date().toISOString(),
           is_online: true
@@ -74,8 +74,8 @@ export default function GameInterface({ character: initialCharacter, user, onLog
     try {
       setIsLoading(true)
       
-      const { data, error } = await supabase
-        .from('characters')
+      const { data, error } = await (supabase
+        .from('characters') as any)
         .update(updates)
         .eq('id', character.id)
         .select()
