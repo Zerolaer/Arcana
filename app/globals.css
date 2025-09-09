@@ -569,3 +569,143 @@ a {
     filter: brightness(1);
   }
 }
+
+/* Advanced Tooltip Styles */
+.tooltip-trigger {
+  position: relative;
+}
+
+.tooltip-content {
+  background: 
+    linear-gradient(145deg, 
+      rgba(15, 15, 20, 0.98) 0%, 
+      rgba(20, 20, 25, 0.95) 50%, 
+      rgba(25, 25, 30, 0.98) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.8),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(12px);
+  color: white;
+  font-size: 14px;
+  max-width: 320px;
+  word-wrap: break-word;
+  z-index: 9999;
+}
+
+.item-tooltip {
+  min-width: 280px;
+}
+
+.animate-tooltip-show {
+  animation: tooltipShow 0.2s ease-out forwards;
+}
+
+@keyframes tooltipShow {
+  0% {
+    opacity: 0;
+    transform: translateY(10px) scale(0.95);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Drag & Drop System */
+.draggable-item {
+  cursor: grab;
+  transition: all 0.2s ease;
+  user-select: none;
+  position: relative;
+}
+
+.draggable-item:hover {
+  transform: scale(1.05);
+  z-index: 10;
+}
+
+.draggable-item.dragging {
+  cursor: grabbing;
+  transform: scale(1.1) rotate(5deg);
+  opacity: 0.8;
+  z-index: 1000;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+  pointer-events: none;
+}
+
+.drop-zone {
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.drop-zone.drag-over {
+  background: rgba(59, 130, 246, 0.2);
+  border-color: #3b82f6 !important;
+  transform: scale(1.02);
+}
+
+.drop-zone.drag-over::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  background: linear-gradient(45deg, #3b82f6, #8b5cf6);
+  border-radius: inherit;
+  z-index: -1;
+  animation: dragGlow 1s ease-in-out infinite alternate;
+}
+
+@keyframes dragGlow {
+  0% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+.inventory-slot {
+  width: 64px;
+  height: 64px;
+  background: 
+    linear-gradient(145deg, 
+      rgba(30, 30, 35, 0.8) 0%, 
+      rgba(25, 25, 30, 0.6) 100%);
+  border: 2px dashed rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.inventory-slot.occupied {
+  border-style: solid;
+  border-color: rgba(255, 255, 255, 0.2);
+  background: var(--bg-panel);
+}
+
+.inventory-slot.empty:hover {
+  border-color: rgba(255, 255, 255, 0.3);
+  background: rgba(40, 40, 45, 0.8);
+}
+
+.item-icon {
+  font-size: 32px;
+  filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.8));
+  pointer-events: none;
+}
+
+.item-stack-count {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  background: rgba(0, 0, 0, 0.8);
+  color: white;
+  border-radius: 4px;
+  padding: 1px 4px;
+  font-size: 10px;
+  font-weight: bold;
+  min-width: 16px;
+  text-align: center;
+  pointer-events: none;
+}
