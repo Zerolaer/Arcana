@@ -200,7 +200,7 @@ export default function DatabaseInventoryPanel({ character, onUpdateCharacter, i
 
   // Функция для экипировки предмета
   const handleEquipItem = useCallback(async (slotIndex: number) => {
-    console.log('🚨 handleEquipItem CALLED with slotIndex:', slotIndex)
+    console.log('🚨🚨🚨 handleEquipItem CALLED with slotIndex:', slotIndex)
     const item = inventory[slotIndex]
     console.log('🔍 Item at slot:', item)
     if (!item) {

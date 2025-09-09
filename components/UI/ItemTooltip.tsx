@@ -239,9 +239,16 @@ export default function ItemTooltip({
             {!isEquipped && ((item.equipment_slot || (item.type === 'weapon' || item.type === 'armor' || item.type === 'accessory')) && item.type !== 'consumable' && item.type !== 'material') && onEquip && (
               <button
                 onClick={(e) => {
-                  console.log('🚨 Equip button clicked!', item.name, 'type:', item.type, 'equipment_slot:', item.equipment_slot)
+                  console.log('🚨🚨🚨 EQUIP BUTTON CLICKED!', item.name, 'type:', item.type, 'equipment_slot:', item.equipment_slot)
+                  console.log('🚨🚨🚨 onEquip function:', onEquip)
                   e.stopPropagation()
-                  onEquip()
+                  e.preventDefault()
+                  if (onEquip) {
+                    console.log('🚨🚨🚨 Calling onEquip function')
+                    onEquip()
+                  } else {
+                    console.log('🚨🚨🚨 onEquip is null/undefined')
+                  }
                 }}
                 className="w-full px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-md transition-colors flex items-center justify-center space-x-2"
               >
