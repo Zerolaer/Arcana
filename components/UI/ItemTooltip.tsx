@@ -38,6 +38,7 @@ export interface GameItem {
     stats?: ItemStats
   }
   equipment_slot?: string
+  slot_position?: number
 }
 
 interface ItemTooltipProps {

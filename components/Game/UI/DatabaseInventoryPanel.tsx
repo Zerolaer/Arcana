@@ -71,7 +71,8 @@ export default function DatabaseInventoryPanel({ character, onUpdateCharacter, i
               durability: inventoryItem.item.durability,
               setBonus: inventoryItem.item.setBonus,
               requirements: inventoryItem.item.requirements,
-              equipment_slot: inventoryItem.item.equipment_slot || null
+              equipment_slot: inventoryItem.item.equipment_slot || null,
+              slot_position: inventoryItem.slot_position
             }
             
             // Debug logging
@@ -114,16 +115,17 @@ export default function DatabaseInventoryPanel({ character, onUpdateCharacter, i
         newInventory[fromIndex] = null
         newInventory[toIndex] = {
           ...targetItem,
-          stackSize: (targetItem.stackSize || 1) + (item.stackSize || 1)
+          stackSize: (targetItem.stackSize || 1) + (item.stackSize || 1),
+          slot_position: toIndex
         }
       } else if (targetItem) {
         // Меняем предметы местами
-        newInventory[fromIndex] = targetItem
-        newInventory[toIndex] = item
+        newInventory[fromIndex] = { ...targetItem, slot_position: fromIndex }
+        newInventory[toIndex] = { ...item, slot_position: toIndex }
       } else {
         // Просто перемещаем
         newInventory[fromIndex] = null
-        newInventory[toIndex] = item
+        newInventory[toIndex] = { ...item, slot_position: toIndex }
       }
 
       return newInventory
