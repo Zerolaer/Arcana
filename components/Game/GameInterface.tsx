@@ -70,7 +70,7 @@ export default function GameInterface({ character: initialCharacter, user, onLog
     }
   }
 
-  const updateCharacterData = async (updates: Partial<Character>) => {
+  const updateCharacterData = async (updates: Partial<Character>): Promise<boolean> => {
     try {
       setIsLoading(true)
       
@@ -84,15 +84,19 @@ export default function GameInterface({ character: initialCharacter, user, onLog
       if (error) {
         toast.error('Ошибка обновления персонажа')
         console.error('Character update error:', error)
-        return
+        return false
       }
 
       if (data) {
         setCharacter(data)
+        return true
       }
+      
+      return false
     } catch (error) {
       console.error('Error updating character:', error)
       toast.error('Произошла ошибка')
+      return false
     } finally {
       setIsLoading(false)
     }

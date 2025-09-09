@@ -11,7 +11,7 @@ import { toast } from 'react-hot-toast'
 
 interface DatabaseInventoryPanelProps {
   character: Character
-  onUpdateCharacter: (character: Partial<Character>) => Promise<void>
+  onUpdateCharacter: (character: Partial<Character>) => Promise<boolean>
   isLoading: boolean
 }
 

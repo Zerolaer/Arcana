@@ -9,7 +9,7 @@ import { GameItem } from '../../UI/ItemTooltip'
 
 interface InventoryPanelProps {
   character: Character
-  onUpdateCharacter: (character: Partial<Character>) => Promise<void>
+  onUpdateCharacter: (character: Partial<Character>) => Promise<boolean>
   isLoading: boolean
 }
 

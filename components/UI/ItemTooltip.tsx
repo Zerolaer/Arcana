@@ -63,7 +63,7 @@ const rarityNames = {
   mythic: 'Мифический'
 }
 
-const statNames = {
+const statNames: Record<string, string> = {
   damage: 'Урон',
   defense: 'Защита',
   health: 'Здоровье',
