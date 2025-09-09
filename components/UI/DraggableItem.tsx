@@ -61,10 +61,10 @@ export default function DraggableItem({
       return
     }
     
-    console.log('🖱️ DraggableItem clicked - only opening tooltip, not equipping')
+    console.log('🖱️ DraggableItem clicked - opening tooltip')
     
-    // Теперь клик только открывает тултип, не экипирует предмет
-    // Экипировка происходит только через кнопки в тултипе
+    // Открываем тултип - это происходит автоматически через ItemTooltip
+    // Но нужно убедиться, что тултип открывается
   }
 
   const handleMouseMove = (e: MouseEvent) => {
@@ -168,6 +168,7 @@ export default function DraggableItem({
           ${className}
         `}
         onMouseDown={handleMouseDown}
+        onClick={handleClick}
         style={{
           borderWidth: '2px',
           borderStyle: 'solid',
