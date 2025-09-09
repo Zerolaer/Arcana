@@ -257,17 +257,33 @@ export default function DatabaseInventoryPanel({ character, onUpdateCharacter, i
       
       try {
         // Нужно найти item_key по id предмета
+        console.log('Looking for item_key for item:', item.id)
+        
         const { data: itemData, error: itemError } = await (supabase as any)
           .from('items')
-          .select('item_key')
+          .select('item_key, name, equipment_slot')
           .eq('id', item.id)
           .single()
+
+        console.log('Item data from DB:', itemData, 'Error:', itemError)
 
         if (itemError || !itemData) {
           console.error('Error finding item key:', itemError)
           toast.error('Ошибка поиска предмета')
           return
         }
+
+        if (!itemData.equipment_slot) {
+          console.error('Item has no equipment_slot:', itemData)
+          toast.error('Предмет нельзя экипировать')
+          return
+        }
+
+        console.log('Calling equip_item with:', {
+          character_id: character.id,
+          item_key: itemData.item_key,
+          slot_position: slotIndex
+        })
 
         const { data, error } = await (supabase as any)
           .rpc('equip_item', {
