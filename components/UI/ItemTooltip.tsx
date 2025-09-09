@@ -229,7 +229,7 @@ export default function ItemTooltip({
               </button>
             )}
             
-            {item.equipment_slot && onEquip && (
+            {((item.equipment_slot || (item.type === 'weapon' || item.type === 'armor' || item.type === 'accessory')) && item.type !== 'consumable' && item.type !== 'material') && onEquip && (
               <button
                 onClick={(e) => {
                   e.stopPropagation()

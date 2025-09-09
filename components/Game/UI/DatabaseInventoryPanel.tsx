@@ -71,8 +71,16 @@ export default function DatabaseInventoryPanel({ character, onUpdateCharacter, i
               durability: inventoryItem.item.durability,
               setBonus: inventoryItem.item.setBonus,
               requirements: inventoryItem.item.requirements,
-              equipment_slot: inventoryItem.item.equipment_slot
+              equipment_slot: inventoryItem.item.equipment_slot || null
             }
+            
+            // Debug logging
+            console.log('Item loaded:', {
+              name: gameItem.name,
+              type: gameItem.type,
+              equipment_slot: gameItem.equipment_slot,
+              canEquip: !!gameItem.equipment_slot
+            })
             inventorySlots[inventoryItem.slot_position] = gameItem
           }
         })
@@ -193,6 +201,12 @@ export default function DatabaseInventoryPanel({ character, onUpdateCharacter, i
 
     if (item.type === 'consumable') {
       // Использование расходника
+      console.log('Attempting to use consumable:', {
+        itemId: item.id,
+        itemName: item.name,
+        slotIndex
+      })
+      
       try {
         const { data, error } = await (supabase as any)
           .rpc('use_consumable', {
@@ -202,22 +216,32 @@ export default function DatabaseInventoryPanel({ character, onUpdateCharacter, i
 
         if (error) {
           console.error('Error using consumable:', error)
-          toast.error('Ошибка использования предмета')
+          toast.error(`Ошибка использования: ${error.message}`)
           return
         }
+
+        console.log('Use consumable response:', data)
 
         if (data?.success) {
           toast.success(`${data.item_name} использован!`)
           await loadInventory()
         } else {
+          console.error('Use consumable failed:', data)
           toast.error(data?.error || 'Ошибка использования предмета')
         }
       } catch (error) {
         console.error('Error using consumable:', error)
         toast.error('Ошибка использования предмета')
       }
-    } else if (item.equipment_slot) {
+    } else if (item.equipment_slot || (item.type === 'weapon' || item.type === 'armor' || item.type === 'accessory')) {
       // Экипировка предмета
+      console.log('Attempting to equip item:', {
+        itemId: item.id,
+        itemName: item.name,
+        equipmentSlot: item.equipment_slot,
+        slotIndex
+      })
+      
       try {
         const { data, error } = await (supabase as any)
           .rpc('equip_item', {
@@ -228,14 +252,17 @@ export default function DatabaseInventoryPanel({ character, onUpdateCharacter, i
 
         if (error) {
           console.error('Error equipping item:', error)
-          toast.error('Ошибка экипировки предмета')
+          toast.error(`Ошибка экипировки: ${error.message}`)
           return
         }
+
+        console.log('Equip response:', data)
 
         if (data?.success) {
           toast.success(`${data.item_name} экипирован в слот ${data.slot_type}`)
           await loadInventory()
         } else {
+          console.error('Equip failed:', data)
           toast.error(data?.error || 'Ошибка экипировки предмета')
         }
       } catch (error) {
