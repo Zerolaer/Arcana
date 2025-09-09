@@ -8,9 +8,9 @@ interface LoadingScreenProps {
 
 export default function LoadingScreen({ message = 'Загрузка...' }: LoadingScreenProps) {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-dark-50 via-dark-100 to-dark-200">
+    <div className="full-height flex items-center justify-center bg-gradient-to-br from-dark-50 via-dark-100 to-dark-200 relative overflow-hidden">
       {/* Background Effects */}
-      <div className="absolute inset-0 overflow-hidden">
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-primary-500/10 rounded-full blur-3xl animate-pulse-slow" />
         <div className="absolute top-3/4 right-1/4 w-64 h-64 bg-purple-500/10 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: '1s' }} />
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-blue-500/5 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: '2s' }} />

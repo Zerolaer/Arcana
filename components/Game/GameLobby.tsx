@@ -190,9 +190,9 @@ export default function GameLobby({ user, onCharacterCreated, onLogout }: GameLo
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-dark-50 via-dark-100 to-dark-200 p-4">
+    <div className="full-height bg-gradient-to-br from-dark-50 via-dark-100 to-dark-200 p-4 relative overflow-auto">
       {/* Background Effects */}
-      <div className="absolute inset-0 overflow-hidden">
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-primary-500/5 rounded-full blur-3xl animate-pulse-slow" />
         <div className="absolute bottom-1/4 left-1/4 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: '1s' }} />
       </div>

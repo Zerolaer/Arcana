@@ -90,7 +90,7 @@ export default function HomePage() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-dark-50 via-dark-100 to-dark-200">
+    <main className="full-height-container bg-gradient-to-br from-dark-50 via-dark-100 to-dark-200">
       {gameState === 'auth' && (
         <AuthForm onAuthSuccess={handleAuthSuccess} />
       )}

@@ -161,7 +161,7 @@ export default function GameInterface({ character: initialCharacter, user, onLog
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-dark-50 via-dark-100 to-dark-200 flex flex-col">
+    <div className="full-height bg-gradient-to-br from-dark-50 via-dark-100 to-dark-200 flex flex-col relative">
       {/* Background Effects */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute top-0 right-0 w-96 h-96 bg-primary-500/3 rounded-full blur-3xl animate-pulse-slow" />
@@ -176,7 +176,7 @@ export default function GameInterface({ character: initialCharacter, user, onLog
       />
 
       {/* Main Game Area */}
-      <div className="flex-1 flex">
+      <div className="flex-1 flex overflow-hidden">
         {/* Sidebar */}
         <GameSidebar 
           character={character}
@@ -185,7 +185,7 @@ export default function GameInterface({ character: initialCharacter, user, onLog
         />
 
         {/* Main Content */}
-        <div className="flex-1 flex flex-col min-w-0">
+        <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
           {renderActivePanel()}
         </div>
       </div>

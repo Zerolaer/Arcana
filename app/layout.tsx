@@ -5,7 +5,15 @@ import { Toaster } from 'react-hot-toast'
 export const metadata: Metadata = {
   title: 'MMORPG Web Game',
   description: 'Classic MMORPG experience with modern UI',
-  viewport: 'width=device-width, initial-scale=1',
+}
+
+// Separate viewport export (new Next.js 14 way)
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false, // Предотвращает зум на мобильных
+  viewportFit: 'cover', // Для iPhone с вырезом
 }
 
 export default function RootLayout({
