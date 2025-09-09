@@ -23,6 +23,14 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link 
+          href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" 
+          rel="stylesheet" 
+        />
+      </head>
       <body className="antialiased">
         {children}
         <Toaster 
@@ -34,7 +42,8 @@ export default function RootLayout({
               color: '#f4f4f5',
               border: '1px solid rgb(82 82 91 / 0.5)',
               backdropFilter: 'blur(8px)',
-              fontFamily: 'Orbitron, monospace',
+              fontFamily: 'Poppins, system-ui, sans-serif',
+              fontWeight: '500',
             },
             success: {
               iconTheme: {
