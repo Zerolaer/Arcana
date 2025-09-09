@@ -56,7 +56,7 @@ export default function EquipmentPanel({ character, onUpdateCharacter, isLoading
       }
 
       // Создаем массив слотов экипировки
-      const equipmentSlots = equipmentSlots.map(slot => {
+      const equipmentData = equipmentSlots.map(slot => {
         const equippedItem = data?.find((item: any) => item.slot_type === slot.key)
         
         if (equippedItem) {
@@ -91,7 +91,7 @@ export default function EquipmentPanel({ character, onUpdateCharacter, isLoading
         }
       })
 
-      setEquipment(equipmentSlots)
+      setEquipment(equipmentData)
     } catch (error) {
       console.error('Error loading equipment:', error)
       toast.error('Ошибка загрузки экипировки')
