@@ -110,10 +110,10 @@ export default function CharacterPanel({ character, onUpdateCharacter, isLoading
       stat_points: remainingPoints
     }
 
-    // Recalculate derived stats
-    const maxHealth = newStats.vitality * 10 + 100
-    const maxMana = newStats.energy * 5 + 50
-    const maxStamina = newStats.vitality * 5 + newStats.dexterity * 3 + 100
+    // Recalculate derived stats - round to integers
+    const maxHealth = Math.round(newStats.vitality * 10 + 100)
+    const maxMana = Math.round(newStats.energy * 5 + 50)
+    const maxStamina = Math.round(newStats.vitality * 5 + newStats.dexterity * 3 + 100)
 
     const updates = {
       ...newStats,
@@ -123,14 +123,14 @@ export default function CharacterPanel({ character, onUpdateCharacter, isLoading
       health: Math.min(character.health, maxHealth),
       mana: Math.min(character.mana, maxMana),
       stamina: Math.min(character.stamina, maxStamina),
-      attack_damage: newStats.strength * 2 + newStats.dexterity,
-      magic_damage: newStats.intelligence * 2.5,
-      defense: newStats.vitality * 1.5 + newStats.strength * 0.5,
-      magic_resistance: newStats.energy + newStats.intelligence * 0.3,
-      critical_chance: Math.min(newStats.luck * 0.1 + newStats.dexterity * 0.05, 50),
-      critical_damage: 150 + newStats.strength * 0.5,
-      attack_speed: 100 + newStats.dexterity * 0.8,
-      movement_speed: 100 + newStats.dexterity * 0.5
+      attack_damage: Math.round(newStats.strength * 2 + newStats.dexterity),
+      magic_damage: Math.round(newStats.intelligence * 2.5),
+      defense: Math.round(newStats.vitality * 1.5 + newStats.strength * 0.5),
+      magic_resistance: Math.round(newStats.energy + newStats.intelligence * 0.3),
+      critical_chance: Math.round(Math.min(newStats.luck * 0.1 + newStats.dexterity * 0.05, 50) * 100) / 100,
+      critical_damage: Math.round((150 + newStats.strength * 0.5) * 100) / 100,
+      attack_speed: Math.round((100 + newStats.dexterity * 0.8) * 100) / 100,
+      movement_speed: Math.round((100 + newStats.dexterity * 0.5) * 100) / 100
     }
 
     const success = await onUpdateCharacter(updates)

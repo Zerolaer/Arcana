@@ -275,17 +275,17 @@ export const performAttack = async (characterId: string, skillId?: string) => {
 // Utility functions
 export const calculateStats = (character: any) => {
   const baseStats = {
-    health: character.vitality * 10 + 100,
-    mana: character.energy * 5 + 50,
-    stamina: character.vitality * 5 + character.dexterity * 3 + 100,
-    attack_damage: character.strength * 2 + character.dexterity,
-    magic_damage: character.intelligence * 2.5,
-    defense: character.vitality * 1.5 + character.strength * 0.5,
-    magic_resistance: character.energy + character.intelligence * 0.3,
-    critical_chance: Math.min(character.luck * 0.1 + character.dexterity * 0.05, 50),
-    critical_damage: 150 + character.strength * 0.5,
-    attack_speed: 100 + character.dexterity * 0.8,
-    movement_speed: 100 + character.dexterity * 0.5
+    health: Math.round(character.vitality * 10 + 100),
+    mana: Math.round(character.energy * 5 + 50),
+    stamina: Math.round(character.vitality * 5 + character.dexterity * 3 + 100),
+    attack_damage: Math.round(character.strength * 2 + character.dexterity),
+    magic_damage: Math.round(character.intelligence * 2.5),
+    defense: Math.round(character.vitality * 1.5 + character.strength * 0.5),
+    magic_resistance: Math.round(character.energy + character.intelligence * 0.3),
+    critical_chance: Math.round(Math.min(character.luck * 0.1 + character.dexterity * 0.05, 50) * 100) / 100,
+    critical_damage: Math.round((150 + character.strength * 0.5) * 100) / 100,
+    attack_speed: Math.round((100 + character.dexterity * 0.8) * 100) / 100,
+    movement_speed: Math.round((100 + character.dexterity * 0.5) * 100) / 100
   }
   
   return baseStats

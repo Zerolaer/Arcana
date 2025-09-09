@@ -97,14 +97,14 @@ export default function GameLobby({ user, onCharacterCreated, onLogout }: GameLo
         return
       }
 
-      // Calculate starting stats
+      // Calculate starting stats - round to integers
       const startingStats = {
-        strength: selectedClass.base_strength + (selectedClass.strength_per_level * 0),
-        dexterity: selectedClass.base_dexterity + (selectedClass.dexterity_per_level * 0),
-        intelligence: selectedClass.base_intelligence + (selectedClass.intelligence_per_level * 0),
-        vitality: selectedClass.base_vitality + (selectedClass.vitality_per_level * 0),
-        energy: selectedClass.base_energy + (selectedClass.energy_per_level * 0),
-        luck: selectedClass.base_luck + (selectedClass.luck_per_level * 0)
+        strength: Math.round(selectedClass.base_strength + (selectedClass.strength_per_level * 0)),
+        dexterity: Math.round(selectedClass.base_dexterity + (selectedClass.dexterity_per_level * 0)),
+        intelligence: Math.round(selectedClass.base_intelligence + (selectedClass.intelligence_per_level * 0)),
+        vitality: Math.round(selectedClass.base_vitality + (selectedClass.vitality_per_level * 0)),
+        energy: Math.round(selectedClass.base_energy + (selectedClass.energy_per_level * 0)),
+        luck: Math.round(selectedClass.base_luck + (selectedClass.luck_per_level * 0))
       }
 
       const maxHealth = startingStats.vitality * 10 + 100
@@ -127,14 +127,14 @@ export default function GameLobby({ user, onCharacterCreated, onLogout }: GameLo
         max_mana: maxMana,
         stamina: maxStamina,
         max_stamina: maxStamina,
-        attack_damage: startingStats.strength * 2 + startingStats.dexterity,
-        magic_damage: startingStats.intelligence * 2.5,
-        defense: startingStats.vitality * 1.5 + startingStats.strength * 0.5,
-        magic_resistance: startingStats.energy + startingStats.intelligence * 0.3,
-        critical_chance: Math.min(startingStats.luck * 0.1 + startingStats.dexterity * 0.05, 50),
-        critical_damage: 150 + startingStats.strength * 0.5,
-        attack_speed: 100 + startingStats.dexterity * 0.8,
-        movement_speed: 100 + startingStats.dexterity * 0.5,
+        attack_damage: Math.round(startingStats.strength * 2 + startingStats.dexterity),
+        magic_damage: Math.round(startingStats.intelligence * 2.5),
+        defense: Math.round(startingStats.vitality * 1.5 + startingStats.strength * 0.5),
+        magic_resistance: Math.round(startingStats.energy + startingStats.intelligence * 0.3),
+        critical_chance: Math.round(Math.min(startingStats.luck * 0.1 + startingStats.dexterity * 0.05, 50) * 100) / 100,
+        critical_damage: Math.round((150 + startingStats.strength * 0.5) * 100) / 100,
+        attack_speed: Math.round((100 + startingStats.dexterity * 0.8) * 100) / 100,
+        movement_speed: Math.round((100 + startingStats.dexterity * 0.5) * 100) / 100,
         gold: 100,
         current_location_id: firstLocation.id,
         is_online: true,
