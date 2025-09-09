@@ -48,7 +48,8 @@ BEGIN
                     'level', i.level_requirement,
                     'class', i.class_requirement,
                     'stats', i.requirements_stats
-                )
+                ),
+                'equipment_slot', i.equipment_slot
             )
         ) ORDER BY ci.slot_position
     ) INTO v_result

@@ -70,7 +70,8 @@ export default function DatabaseInventoryPanel({ character, onUpdateCharacter, i
               stackSize: inventoryItem.stack_size,
               durability: inventoryItem.item.durability,
               setBonus: inventoryItem.item.setBonus,
-              requirements: inventoryItem.item.requirements
+              requirements: inventoryItem.item.requirements,
+              equipment_slot: inventoryItem.item.equipment_slot
             }
             inventorySlots[inventoryItem.slot_position] = gameItem
           }
@@ -186,14 +187,63 @@ export default function DatabaseInventoryPanel({ character, onUpdateCharacter, i
     setDraggedFromIndex(undefined)
   }, [])
 
-  const handleSlotClick = useCallback((slotIndex: number) => {
-    // Можно добавить логику для использования предметов по клику
+  const handleSlotClick = useCallback(async (slotIndex: number) => {
     const item = inventory[slotIndex]
-    if (item && item.type === 'consumable') {
-      // Логика использования расходника
-      console.log('Using consumable:', item.name)
+    if (!item) return
+
+    if (item.type === 'consumable') {
+      // Использование расходника
+      try {
+        const { data, error } = await (supabase as any)
+          .rpc('use_consumable', {
+            p_character_id: character.id,
+            p_slot_position: slotIndex
+          })
+
+        if (error) {
+          console.error('Error using consumable:', error)
+          toast.error('Ошибка использования предмета')
+          return
+        }
+
+        if (data?.success) {
+          toast.success(`${data.item_name} использован!`)
+          await loadInventory()
+        } else {
+          toast.error(data?.error || 'Ошибка использования предмета')
+        }
+      } catch (error) {
+        console.error('Error using consumable:', error)
+        toast.error('Ошибка использования предмета')
+      }
+    } else if (item.equipment_slot) {
+      // Экипировка предмета
+      try {
+        const { data, error } = await (supabase as any)
+          .rpc('equip_item', {
+            p_character_id: character.id,
+            p_item_key: item.id,
+            p_slot_position: slotIndex
+          })
+
+        if (error) {
+          console.error('Error equipping item:', error)
+          toast.error('Ошибка экипировки предмета')
+          return
+        }
+
+        if (data?.success) {
+          toast.success(`${data.item_name} экипирован в слот ${data.slot_type}`)
+          await loadInventory()
+        } else {
+          toast.error(data?.error || 'Ошибка экипировки предмета')
+        }
+      } catch (error) {
+        console.error('Error equipping item:', error)
+        toast.error('Ошибка экипировки предмета')
+      }
     }
-  }, [inventory])
+  }, [inventory, character.id, loadInventory])
 
   // Автосортировка инвентаря
   const handleSortInventory = async () => {
