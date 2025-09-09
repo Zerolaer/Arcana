@@ -73,7 +73,8 @@ export default function DatabaseInventoryPanel({ character, onUpdateCharacter, i
               requirements: inventoryItem.item.requirements,
               equipment_slot: inventoryItem.item.equipment_slot || null,
               slot_position: inventoryItem.slot_position,
-              item_key: inventoryItem.item.item_key // Добавляем item_key
+              item_key: inventoryItem.item.item_key, // Добавляем item_key
+              isEquipped: inventoryItem.is_equipped || false // Добавляем информацию об экипировке
             }
             
             // Debug logging
@@ -81,6 +82,7 @@ export default function DatabaseInventoryPanel({ character, onUpdateCharacter, i
               name: gameItem.name,
               type: gameItem.type,
               equipment_slot: gameItem.equipment_slot,
+              isEquipped: gameItem.isEquipped,
               canEquip: !!gameItem.equipment_slot
             })
             inventorySlots[inventoryItem.slot_position] = gameItem
