@@ -51,8 +51,9 @@ export default function HomePage() {
           console.log('🔍 Characters found during initialization:', characters?.length || 0)
           
           if (characters && characters.length > 0) {
-            console.log('✅ Loading existing character:', characters[0].name)
-            setCharacter(characters[0] as Character)
+            const character = characters[0] as Character
+            console.log('✅ Loading existing character:', character.name)
+            setCharacter(character)
             setGameState('game')
           } else {
             console.log('➕ No character found, redirecting to creation')
@@ -91,8 +92,9 @@ export default function HomePage() {
       }
       
       if (characters && characters.length > 0) {
-        console.log('Found existing character:', characters[0].name)
-        setCharacter(characters[0] as Character)
+        const character = characters[0] as Character
+        console.log('Found existing character:', character.name)
+        setCharacter(character)
         setGameState('game')
       } else {
         console.log('No character found, redirecting to lobby')
