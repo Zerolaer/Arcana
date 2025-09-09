@@ -2,7 +2,7 @@
 
 import { useState, useCallback } from 'react'
 import { Character } from '@/types/game'
-import { Package, Search, Sort, Trash2, Filter } from 'lucide-react'
+import { Package, Search, ArrowUpDown, Trash2, Filter } from 'lucide-react'
 import DraggableItem from '../../UI/DraggableItem'
 import InventorySlot from '../../UI/InventorySlot'
 import { GameItem } from '../../UI/ItemTooltip'
@@ -262,7 +262,7 @@ export default function NewInventoryPanel({ character, onUpdateCharacter, isLoad
             onClick={handleSortInventory}
             className="game-button game-button--compact game-button--secondary flex items-center space-x-1"
           >
-            <Sort className="w-4 h-4" />
+            <ArrowUpDown className="w-4 h-4" />
             <span>Сортировка</span>
           </button>
         </div>

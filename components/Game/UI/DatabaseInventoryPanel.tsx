@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Character } from '@/types/game'
 import { supabase } from '@/lib/supabase'
-import { Package, Search, Sort, Trash2 } from 'lucide-react'
+import { Package, Search, ArrowUpDown, Trash2 } from 'lucide-react'
 import DraggableItem from '../../UI/DraggableItem'
 import InventorySlot from '../../UI/InventorySlot'
 import { GameItem } from '../../UI/ItemTooltip'
@@ -270,7 +270,7 @@ export default function DatabaseInventoryPanel({ character, onUpdateCharacter, i
             disabled={loading || isLoading}
             className="game-button game-button--compact game-button--secondary flex items-center space-x-1"
           >
-            <Sort className="w-4 h-4" />
+            <ArrowUpDown className="w-4 h-4" />
             <span>Сортировка</span>
           </button>
         </div>

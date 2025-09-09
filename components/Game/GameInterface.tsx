@@ -84,19 +84,15 @@ export default function GameInterface({ character: initialCharacter, user, onLog
       if (error) {
         toast.error('Ошибка обновления персонажа')
         console.error('Character update error:', error)
-        return false
+        return
       }
 
       if (data) {
         setCharacter(data)
-        return true
       }
-      
-      return false
     } catch (error) {
       console.error('Error updating character:', error)
       toast.error('Произошла ошибка')
-      return false
     } finally {
       setIsLoading(false)
     }
