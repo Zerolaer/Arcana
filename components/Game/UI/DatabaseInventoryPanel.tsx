@@ -95,6 +95,32 @@ export default function DatabaseInventoryPanel({ character, onUpdateCharacter, i
   const handleDrop = useCallback(async (item: GameItem, fromIndex: number, toIndex: number) => {
     if (fromIndex === toIndex) return
 
+    // Сначала обновляем UI мгновенно (оптимистичное обновление)
+    setInventory(prev => {
+      const newInventory = [...prev]
+      const targetItem = newInventory[toIndex]
+
+      if (targetItem && targetItem.id === item.id && item.stackable) {
+        // Объединяем стопки
+        newInventory[fromIndex] = null
+        newInventory[toIndex] = {
+          ...targetItem,
+          stackSize: (targetItem.stackSize || 1) + (item.stackSize || 1)
+        }
+      } else if (targetItem) {
+        // Меняем предметы местами
+        newInventory[fromIndex] = targetItem
+        newInventory[toIndex] = item
+      } else {
+        // Просто перемещаем
+        newInventory[fromIndex] = null
+        newInventory[toIndex] = item
+      }
+
+      return newInventory
+    })
+
+    // Затем синхронизируем с БД в фоне (без показа loading)
     try {
       const { data, error } = await (supabase as any)
         .rpc('move_inventory_item', {
@@ -105,43 +131,45 @@ export default function DatabaseInventoryPanel({ character, onUpdateCharacter, i
 
       if (error) {
         console.error('Error moving item:', error)
+        // В случае ошибки откатываем изменения
+        loadInventory()
         toast.error('Ошибка перемещения предмета')
         return
       }
 
       if (data?.success) {
-        // Обновляем локальное состояние
-        setInventory(prev => {
-          const newInventory = [...prev]
-          const targetItem = newInventory[toIndex]
-
-          if (data.action === 'stacked') {
-            // Предметы были объединены в стопку
-            newInventory[fromIndex] = null
-            // toIndex остается с обновленной стопкой (это будет обновлено при следующей загрузке)
-            toast.success(`Предметы объединены в стопку`)
-          } else if (data.action === 'swapped') {
-            // Предметы поменялись местами
-            newInventory[fromIndex] = targetItem
-            newInventory[toIndex] = item
-            toast.success(`Предметы поменялись местами`)
-          } else if (data.action === 'moved') {
-            // Предмет просто перемещен
-            newInventory[fromIndex] = null
-            newInventory[toIndex] = item
-            toast.success(`Предмет перемещен`)
-          }
-
-          return newInventory
-        })
-
-        // Перезагружаем инвентарь для синхронизации
-        setTimeout(loadInventory, 100)
+        // Обновляем UI на основе ответа БД (для корректных стопок)
+        if (data.action === 'stacked' && data.total_stack) {
+          setInventory(prev => {
+            const newInventory = [...prev]
+            const targetItem = newInventory[toIndex]
+            if (targetItem) {
+              newInventory[toIndex] = {
+                ...targetItem,
+                stackSize: data.total_stack
+              }
+            }
+            return newInventory
+          })
+        }
+        
+        // Показываем уведомление только при успехе
+        if (data.action === 'stacked') {
+          toast.success(`Предметы объединены в стопку`)
+        } else if (data.action === 'swapped') {
+          toast.success(`Предметы поменялись местами`)
+        } else if (data.action === 'moved') {
+          toast.success(`Предмет перемещен`)
+        }
       } else {
+        // В случае ошибки откатываем изменения
+        loadInventory()
         toast.error(data?.error || 'Ошибка перемещения предмета')
       }
     } catch (error) {
       console.error('Error moving item:', error)
+      // В случае ошибки откатываем изменения
+      loadInventory()
       toast.error('Ошибка перемещения предмета')
     }
 
@@ -181,6 +209,7 @@ export default function DatabaseInventoryPanel({ character, onUpdateCharacter, i
 
       if (data?.success) {
         toast.success(`Инвентарь отсортирован (${data.items_count} предметов)`)
+        // Перезагружаем инвентарь для отображения отсортированного результата
         await loadInventory()
       } else {
         toast.error(data?.error || 'Ошибка сортировки')
@@ -267,7 +296,7 @@ export default function DatabaseInventoryPanel({ character, onUpdateCharacter, i
         <div className="flex items-center space-x-2">
           <button
             onClick={handleSortInventory}
-            disabled={loading || isLoading}
+            disabled={loading}
             className="game-button game-button--compact game-button--secondary flex items-center space-x-1"
           >
             <ArrowUpDown className="w-4 h-4" />
@@ -374,8 +403,8 @@ export default function DatabaseInventoryPanel({ character, onUpdateCharacter, i
         </div>
       </div>
 
-      {/* Loading Overlay */}
-      {(isLoading || loading) && (
+      {/* Loading Overlay - только при первоначальной загрузке */}
+      {loading && (
         <div className="absolute inset-0 bg-dark-100/50 backdrop-blur-sm flex items-center justify-center">
           <div className="loading-spinner" />
         </div>
