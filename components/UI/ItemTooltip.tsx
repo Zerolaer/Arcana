@@ -284,7 +284,9 @@ export default function ItemTooltip({
                 onClick={(e) => {
                   console.log('🔍 Unequip button clicked for item:', item.name)
                   e.stopPropagation()
-                  onUnequip()
+                  if (onUnequip) {
+                    onUnequip()
+                  }
                 }}
                 className="w-full px-3 py-2 bg-red-600 hover:bg-red-700 text-white text-sm rounded-md transition-colors flex items-center justify-center space-x-2"
               >
