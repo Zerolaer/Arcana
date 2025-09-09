@@ -61,16 +61,10 @@ export default function DraggableItem({
       return
     }
     
-    console.log('🖱️ DraggableItem clicked:', { item: item.name, type: item.type })
+    console.log('🖱️ DraggableItem clicked - only opening tooltip, not equipping')
     
-    // Call appropriate handler based on item type
-    if (item.type === 'consumable' && onUse) {
-      console.log('🧪 Calling onUse for consumable')
-      onUse()
-    } else if ((item.type === 'weapon' || item.type === 'armor' || item.type === 'accessory') && onEquip) {
-      console.log('⚔️ Calling onEquip for equipment')
-      onEquip()
-    }
+    // Теперь клик только открывает тултип, не экипирует предмет
+    // Экипировка происходит только через кнопки в тултипе
   }
 
   const handleMouseMove = (e: MouseEvent) => {
@@ -170,6 +164,7 @@ export default function DraggableItem({
           ${getRarityBorderColor()} 
           ${getRarityGlow()}
           ${isDragging ? 'dragging' : ''}
+          ${isEquipped ? 'ring-2 ring-blue-500 ring-opacity-75' : ''}
           ${className}
         `}
         onMouseDown={handleMouseDown}
@@ -189,16 +184,23 @@ export default function DraggableItem({
           </div>
         )}
 
+        {/* Equipped Indicator */}
+        {isEquipped && (
+          <div className="absolute top-0 right-0 bg-blue-600 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-white">
+            E
+          </div>
+        )}
+
         {/* Durability Indicator */}
         {item.durability && (
-          <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-700 rounded-b">
+          <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-700 rounded-b overflow-hidden">
             <div
-              className={`h-full rounded-b transition-all duration-300 ${
+              className={`h-full transition-all duration-300 ${
                 (item.durability.current / item.durability.max) > 0.5 ? 'bg-green-400' :
                 (item.durability.current / item.durability.max) > 0.25 ? 'bg-yellow-400' : 'bg-red-400'
               }`}
               style={{
-                width: `${(item.durability.current / item.durability.max) * 100}%`
+                width: `${Math.min((item.durability.current / item.durability.max) * 100, 100)}%`
               }}
             />
           </div>

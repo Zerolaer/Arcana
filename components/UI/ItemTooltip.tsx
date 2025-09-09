@@ -40,6 +40,7 @@ export interface GameItem {
   equipment_slot?: string
   slot_position?: number
   item_key?: string
+  isEquipped?: boolean
 }
 
 interface ItemTooltipProps {
