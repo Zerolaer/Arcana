@@ -130,8 +130,8 @@ export const getCharacterClasses = async () => {
 }
 
 export const getLocations = async () => {
-  const { data, error } = await supabase
-    .from('locations')
+  const { data, error } = await (supabase
+    .from('locations') as any)
     .select(`
       *,
       farming_spots (
@@ -148,8 +148,8 @@ export const getLocations = async () => {
 }
 
 export const getFarmingSpots = async (locationId: string) => {
-  const { data, error } = await supabase
-    .from('farming_spots')
+  const { data, error } = await (supabase
+    .from('farming_spots') as any)
     .select(`
       *,
       mob_spawns (
@@ -163,7 +163,7 @@ export const getFarmingSpots = async (locationId: string) => {
 }
 
 export const occupySpot = async (spotId: string, characterId: string) => {
-  const { data, error } = await supabase.rpc('occupy_farming_spot', {
+  const { data, error } = await (supabase as any).rpc('occupy_farming_spot', {
     spot_id: spotId,
     character_id: characterId
   })
@@ -172,7 +172,7 @@ export const occupySpot = async (spotId: string, characterId: string) => {
 }
 
 export const leaveSpot = async (spotId: string, characterId: string) => {
-  const { data, error } = await supabase.rpc('leave_farming_spot', {
+  const { data, error } = await (supabase as any).rpc('leave_farming_spot', {
     spot_id: spotId,
     character_id: characterId
   })
@@ -181,8 +181,8 @@ export const leaveSpot = async (spotId: string, characterId: string) => {
 }
 
 export const getCharacterInventory = async (characterId: string) => {
-  const { data, error } = await supabase
-    .from('character_inventory')
+  const { data, error } = await (supabase
+    .from('character_inventory') as any)
     .select(`
       *,
       item:items (*)
@@ -194,8 +194,8 @@ export const getCharacterInventory = async (characterId: string) => {
 }
 
 export const getCharacterSkills = async (characterId: string) => {
-  const { data, error } = await supabase
-    .from('character_skills')
+  const { data, error } = await (supabase
+    .from('character_skills') as any)
     .select(`
       *,
       skill:skills (
@@ -255,7 +255,7 @@ export const subscribeToGameEvents = (callback: (payload: any) => void) => {
 
 // Combat system
 export const initiateCombat = async (characterId: string, mobId: string) => {
-  const { data, error } = await supabase.rpc('initiate_combat', {
+  const { data, error } = await (supabase as any).rpc('initiate_combat', {
     character_id: characterId,
     mob_id: mobId
   })
@@ -264,7 +264,7 @@ export const initiateCombat = async (characterId: string, mobId: string) => {
 }
 
 export const performAttack = async (characterId: string, skillId?: string) => {
-  const { data, error } = await supabase.rpc('perform_attack', {
+  const { data, error } = await (supabase as any).rpc('perform_attack', {
     character_id: characterId,
     skill_id: skillId
   })

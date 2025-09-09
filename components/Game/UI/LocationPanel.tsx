@@ -75,8 +75,8 @@ export default function LocationPanel({ character, onUpdateCharacter, isLoading 
 
   const loadFarmingSpots = async (locationId: string) => {
     try {
-      const { data, error } = await supabase
-        .from('farming_spots')
+      const { data, error } = await (supabase
+        .from('farming_spots') as any)
         .select('*')
         .eq('location_id', locationId)
 
