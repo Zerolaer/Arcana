@@ -7,7 +7,7 @@ import { toast } from 'react-hot-toast'
 import { Eye, EyeOff, Sword, Shield, Zap } from 'lucide-react'
 
 interface AuthFormProps {
-  onAuthSuccess: (user: User) => void
+  onAuthSuccess: (user: User) => void | Promise<void>
 }
 
 export default function AuthForm({ onAuthSuccess }: AuthFormProps) {

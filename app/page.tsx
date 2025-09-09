@@ -31,6 +31,7 @@ export default function HomePage() {
       }
 
       if (user) {
+        console.log('🎮 App initialization: User found', user.email)
         setUser(user)
         
         // Check if user has a character
@@ -42,19 +43,23 @@ export default function HomePage() {
             .limit(1)
           
           if (charactersError) {
-            console.error('Error fetching characters:', charactersError)
+            console.error('❌ Error fetching characters during initialization:', charactersError)
             setGameState('lobby')
             return
           }
           
+          console.log('🔍 Characters found during initialization:', characters?.length || 0)
+          
           if (characters && characters.length > 0) {
+            console.log('✅ Loading existing character:', characters[0].name)
             setCharacter(characters[0] as Character)
             setGameState('game')
           } else {
+            console.log('➕ No character found, redirecting to creation')
             setGameState('lobby')
           }
         } catch (err) {
-          console.error('Character fetch error:', err)
+          console.error('❌ Character fetch error during initialization:', err)
           setGameState('lobby')
         }
       } else {
@@ -68,9 +73,35 @@ export default function HomePage() {
     }
   }
 
-  const handleAuthSuccess = (user: User) => {
+  const handleAuthSuccess = async (user: User) => {
     setUser(user)
-    setGameState('lobby')
+    
+    // Check if user already has a character
+    try {
+      const { data: characters, error: charactersError } = await supabase
+        .from('characters')
+        .select('*')
+        .eq('player_id', user.id)
+        .limit(1)
+      
+      if (charactersError) {
+        console.error('Error fetching characters after login:', charactersError)
+        setGameState('lobby')
+        return
+      }
+      
+      if (characters && characters.length > 0) {
+        console.log('Found existing character:', characters[0].name)
+        setCharacter(characters[0] as Character)
+        setGameState('game')
+      } else {
+        console.log('No character found, redirecting to lobby')
+        setGameState('lobby')
+      }
+    } catch (err) {
+      console.error('Character check error after login:', err)
+      setGameState('lobby')
+    }
   }
 
   const handleCharacterCreated = (character: Character) => {
