@@ -1,0 +1,510 @@
+'use client'
+
+import { useState, useEffect } from 'react'
+import { Character } from '@/types/game'
+import { Swords, Target, Activity, Award, Clock, Zap } from 'lucide-react'
+import { supabase } from '@/lib/supabase'
+import { toast } from 'react-hot-toast'
+
+interface CombatPanelProps {
+  character: Character
+  onUpdateCharacter: (updates: Partial<Character>) => Promise<boolean>
+  isLoading: boolean
+}
+
+interface Mob {
+  id: string
+  name: string
+  description: string
+  level: number
+  health: number
+  attack_damage: number
+  defense: number
+  magic_resistance: number
+  aggressive: boolean
+  respawn_time: number
+  experience_reward: number
+  gold_reward: number
+  image: string
+}
+
+interface CombatLog {
+  id: string
+  mob_name: string
+  damage_dealt: number
+  damage_taken: number
+  victory: boolean
+  experience_gained: number
+  gold_gained: number
+  items_dropped: string[]
+  duration: number
+  timestamp: string
+}
+
+export default function CombatPanel({ character, onUpdateCharacter, isLoading }: CombatPanelProps) {
+  const [availableMobs, setAvailableMobs] = useState<Mob[]>([])
+  const [combatLogs, setCombatLogs] = useState<CombatLog[]>([])
+  const [selectedMob, setSelectedMob] = useState<Mob | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [inCombat, setInCombat] = useState(false)
+  const [combatProgress, setCombatProgress] = useState(0)
+
+  useEffect(() => {
+    loadAvailableMobs()
+    loadCombatLogs()
+  }, [character.current_location_id])
+
+  const loadAvailableMobs = async () => {
+    if (!character.current_location_id) {
+      setLoading(false)
+      return
+    }
+
+    try {
+      // Get farming spots in current location
+      const { data: spots, error: spotsError } = await supabase
+        .from('farming_spots')
+        .select(`
+          id,
+          mob_spawns (
+            mob_id,
+            mobs (*)
+          )
+        `)
+        .eq('location_id', character.current_location_id)
+
+      if (spotsError) {
+        console.error('Error loading mobs:', spotsError)
+        return
+      }
+
+      // Extract unique mobs
+      const mobs: Mob[] = []
+      const mobIds = new Set()
+
+      spots?.forEach(spot => {
+        spot.mob_spawns?.forEach(spawn => {
+          const mob = spawn.mobs
+          if (mob && !mobIds.has(mob.id)) {
+            mobIds.add(mob.id)
+            mobs.push(mob as Mob)
+          }
+        })
+      })
+
+      setAvailableMobs(mobs.sort((a, b) => a.level - b.level))
+    } catch (error) {
+      console.error('Error loading mobs:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const loadCombatLogs = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('combat_logs')
+        .select('*')
+        .eq('character_id', character.id)
+        .order('timestamp', { ascending: false })
+        .limit(10)
+
+      if (!error && data) {
+        setCombatLogs(data.map(log => ({
+          ...log,
+          mob_name: 'Враг' // We'll need to join with mobs table later
+        })))
+      }
+    } catch (error) {
+      console.error('Error loading combat logs:', error)
+    }
+  }
+
+  const simulateCombat = async (mob: Mob) => {
+    if (!character.current_location_id) {
+      toast.error('Вы должны находиться в локации для начала боя')
+      return
+    }
+
+    setInCombat(true)
+    setCombatProgress(0)
+    
+    // Update character state
+    await onUpdateCharacter({ is_in_combat: true })
+
+    // Simulate combat duration
+    const combatDuration = Math.random() * 3 + 2 // 2-5 seconds
+    const startTime = Date.now()
+    
+    const progressInterval = setInterval(() => {
+      const elapsed = Date.now() - startTime
+      const progress = Math.min((elapsed / (combatDuration * 1000)) * 100, 100)
+      setCombatProgress(progress)
+      
+      if (progress >= 100) {
+        clearInterval(progressInterval)
+        completeCombat(mob)
+      }
+    }, 50)
+  }
+
+  const completeCombat = async (mob: Mob) => {
+    // Calculate combat results
+    const playerPower = character.attack_damage + character.magic_damage + character.defense
+    const mobPower = mob.attack_damage + mob.defense
+    
+    const victory = playerPower > mobPower * 0.7 // Player has advantage
+    
+    let experienceGained = 0
+    let goldGained = 0
+    let damageTaken = 0
+    
+    if (victory) {
+      experienceGained = Math.floor(mob.experience_reward * (1 + Math.random() * 0.2))
+      goldGained = Math.floor(mob.gold_reward * (1 + Math.random() * 0.3))
+      damageTaken = Math.floor(mob.attack_damage * 0.3)
+    } else {
+      damageTaken = Math.floor(mob.attack_damage * 0.8)
+    }
+
+    // Update character
+    const newHealth = Math.max(1, character.health - damageTaken)
+    const newExperience = character.experience + experienceGained
+    const newGold = character.gold + goldGained
+
+    // Check for level up
+    let levelUp = false
+    let newLevel = character.level
+    let newExperienceToNext = character.experience_to_next
+    let newStatPoints = character.stat_points
+    let newSkillPoints = character.skill_points
+
+    if (newExperience >= character.experience_to_next) {
+      levelUp = true
+      newLevel = character.level + 1
+      newExperienceToNext = Math.floor(100 * Math.pow(newLevel + 1, 2.2))
+      newStatPoints = character.stat_points + 5
+      newSkillPoints = character.skill_points + 1
+    }
+
+    const updates = {
+      health: newHealth,
+      experience: newExperience,
+      gold: newGold,
+      is_in_combat: false,
+      ...(levelUp && {
+        level: newLevel,
+        experience_to_next: newExperienceToNext,
+        stat_points: newStatPoints,
+        skill_points: newSkillPoints
+      })
+    }
+
+    await onUpdateCharacter(updates)
+
+    // Show results
+    if (victory) {
+      toast.success(`Победа! +${experienceGained} опыта, +${goldGained} золота`)
+      if (levelUp) {
+        toast.success(`Поздравляем! Вы достигли ${newLevel} уровня!`, { duration: 5000 })
+      }
+    } else {
+      toast.error(`Поражение! -${damageTaken} здоровья`)
+    }
+
+    // Add to combat log
+    const logEntry: Partial<CombatLog> = {
+      mob_name: mob.name,
+      damage_dealt: Math.floor(character.attack_damage * (0.8 + Math.random() * 0.4)),
+      damage_taken: damageTaken,
+      victory,
+      experience_gained: experienceGained,
+      gold_gained: goldGained,
+      items_dropped: [],
+      duration: 3,
+      timestamp: new Date().toISOString()
+    }
+
+    setCombatLogs(prev => [logEntry as CombatLog, ...prev.slice(0, 9)])
+    setInCombat(false)
+    setCombatProgress(0)
+  }
+
+  const canFightMob = (mob: Mob) => {
+    const levelDifference = mob.level - character.level
+    return levelDifference <= 5 && character.health > character.max_health * 0.1
+  }
+
+  const getMobDifficultyColor = (mob: Mob) => {
+    const levelDifference = mob.level - character.level
+    if (levelDifference <= -3) return 'text-gray-400 border-gray-500/30' // Gray (trivial)
+    if (levelDifference <= 0) return 'text-green-400 border-green-500/30' // Green (easy)
+    if (levelDifference <= 2) return 'text-yellow-400 border-yellow-500/30' // Yellow (medium)
+    if (levelDifference <= 5) return 'text-red-400 border-red-500/30' // Red (hard)
+    return 'text-purple-400 border-purple-500/30' // Purple (very hard)
+  }
+
+  if (loading) {
+    return (
+      <div className="flex-1 p-6 flex items-center justify-center">
+        <div className="loading-spinner mr-3" />
+        <span className="text-white">Загрузка боевой информации...</span>
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex-1 p-6 space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-white flex items-center space-x-2">
+            <Swords className="w-6 h-6 text-red-400" />
+            <span>Боевая система</span>
+          </h1>
+          <p className="text-dark-400 mt-1">
+            {character.is_in_combat ? 'Вы находитесь в бою!' : 'Выберите противника для сражения'}
+          </p>
+        </div>
+
+        {/* Health Status */}
+        <div className="text-right">
+          <div className="text-sm text-dark-400">Здоровье:</div>
+          <div className={`text-xl font-bold ${
+            character.health < character.max_health * 0.3 ? 'text-red-400' : 'text-green-400'
+          }`}>
+            {character.health} / {character.max_health}
+          </div>
+        </div>
+      </div>
+
+      {/* Combat Progress */}
+      {inCombat && (
+        <div className="game-panel p-4">
+          <div className="flex items-center space-x-3 mb-2">
+            <Activity className="w-5 h-5 text-red-400 animate-pulse" />
+            <span className="text-white font-semibold">Идет бой с {selectedMob?.name}...</span>
+          </div>
+          <div className="w-full bg-dark-300/30 rounded-full h-3 overflow-hidden">
+            <div 
+              className="h-full bg-gradient-to-r from-red-500 to-red-400 transition-all duration-100"
+              style={{ width: `${combatProgress}%` }}
+            />
+          </div>
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Available Mobs */}
+        <div className="game-panel p-6">
+          <h2 className="text-lg font-bold text-white mb-4 flex items-center space-x-2">
+            <Target className="w-5 h-5 text-yellow-400" />
+            <span>Доступные противники</span>
+          </h2>
+
+          {availableMobs.length > 0 ? (
+            <div className="space-y-3">
+              {availableMobs.map((mob) => {
+                const canFight = canFightMob(mob)
+                const difficultyColor = getMobDifficultyColor(mob)
+
+                return (
+                  <div
+                    key={mob.id}
+                    onClick={() => canFight && !inCombat && setSelectedMob(mob)}
+                    className={`p-4 rounded border transition-all duration-200 ${difficultyColor} ${
+                      canFight && !inCombat ? 'cursor-pointer hover:bg-dark-200/30' : 'opacity-50 cursor-not-allowed'
+                    } ${selectedMob?.id === mob.id ? 'bg-dark-200/50' : ''}`}
+                  >
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center space-x-3">
+                        <div className="text-2xl">{mob.image}</div>
+                        <div>
+                          <div className="font-semibold text-white">{mob.name}</div>
+                          <div className="text-sm text-dark-400">Уровень {mob.level}</div>
+                        </div>
+                      </div>
+
+                      <div className="text-right text-sm">
+                        <div className="text-white font-semibold">{mob.health} HP</div>
+                        <div className="text-dark-400">{mob.attack_damage} урона</div>
+                      </div>
+                    </div>
+
+                    <p className="text-sm text-dark-300 mb-3">{mob.description}</p>
+
+                    <div className="flex items-center justify-between text-xs">
+                      <div className="flex items-center space-x-3">
+                        <span className="text-purple-400">+{mob.experience_reward} опыта</span>
+                        <span className="text-gold-400">+{mob.gold_reward} золота</span>
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <Clock className="w-3 h-3 text-dark-400" />
+                        <span className="text-dark-400">{mob.respawn_time}с</span>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          ) : (
+            <div className="text-center py-8">
+              <div className="text-4xl mb-2">🏜️</div>
+              <p className="text-dark-400">
+                {character.current_location_id 
+                  ? 'В этой локации нет противников' 
+                  : 'Отправьтесь в локацию, чтобы найти противников'
+                }
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Selected Mob & Combat Actions */}
+        <div className="space-y-6">
+          {/* Mob Details */}
+          {selectedMob && (
+            <div className="game-panel p-6">
+              <h2 className="text-lg font-bold text-white mb-4">Детали противника</h2>
+              
+              <div className="flex items-center space-x-4 mb-4">
+                <div className="text-4xl">{selectedMob.image}</div>
+                <div className="flex-1">
+                  <div className="text-xl font-bold text-white">{selectedMob.name}</div>
+                  <div className="text-dark-400">Уровень {selectedMob.level}</div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 mb-4">
+                <div className="bg-dark-200/30 rounded p-3">
+                  <div className="text-xs text-dark-400">Здоровье</div>
+                  <div className="text-lg font-bold text-red-400">{selectedMob.health}</div>
+                </div>
+                <div className="bg-dark-200/30 rounded p-3">
+                  <div className="text-xs text-dark-400">Урон</div>
+                  <div className="text-lg font-bold text-orange-400">{selectedMob.attack_damage}</div>
+                </div>
+                <div className="bg-dark-200/30 rounded p-3">
+                  <div className="text-xs text-dark-400">Защита</div>
+                  <div className="text-lg font-bold text-blue-400">{selectedMob.defense}</div>
+                </div>
+                <div className="bg-dark-200/30 rounded p-3">
+                  <div className="text-xs text-dark-400">Маг. защита</div>
+                  <div className="text-lg font-bold text-purple-400">{selectedMob.magic_resistance}</div>
+                </div>
+              </div>
+
+              <div className="mb-4">
+                <div className="text-sm text-dark-400 mb-2">Награды за победу:</div>
+                <div className="flex items-center space-x-4 text-sm">
+                  <span className="text-purple-400">+{selectedMob.experience_reward} опыта</span>
+                  <span className="text-gold-400">+{selectedMob.gold_reward} золота</span>
+                </div>
+              </div>
+
+              <button
+                onClick={() => simulateCombat(selectedMob)}
+                disabled={!canFightMob(selectedMob) || inCombat || isLoading}
+                className="w-full game-button py-3 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+              >
+                <Swords className="w-5 h-5" />
+                <span>{inCombat ? 'В бою...' : 'Атаковать'}</span>
+              </button>
+
+              {!canFightMob(selectedMob) && (
+                <div className="mt-2 text-xs text-red-400 text-center">
+                  {character.health <= character.max_health * 0.1 
+                    ? 'Недостаточно здоровья для боя'
+                    : 'Уровень противника слишком высок'
+                  }
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Combat Log */}
+          <div className="game-panel p-6">
+            <h2 className="text-lg font-bold text-white mb-4 flex items-center space-x-2">
+              <Award className="w-5 h-5 text-gold-400" />
+              <span>История боев</span>
+            </h2>
+
+            {combatLogs.length > 0 ? (
+              <div className="space-y-2 max-h-64 overflow-y-auto">
+                {combatLogs.map((log, index) => (
+                  <div
+                    key={index}
+                    className={`p-3 rounded border ${
+                      log.victory ? 'border-green-500/30 bg-green-500/5' : 'border-red-500/30 bg-red-500/5'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <span className={`font-semibold ${log.victory ? 'text-green-400' : 'text-red-400'}`}>
+                        {log.victory ? '✅ Победа' : '❌ Поражение'}
+                      </span>
+                      <span className="text-xs text-dark-500">
+                        {new Date(log.timestamp).toLocaleTimeString()}
+                      </span>
+                    </div>
+                    
+                    <div className="text-sm text-white mb-1">
+                      Бой против: {log.mob_name}
+                    </div>
+                    
+                    <div className="flex items-center space-x-4 text-xs text-dark-400">
+                      <span>Урон: {log.damage_dealt}</span>
+                      <span>Получено: {log.damage_taken}</span>
+                      {log.victory && (
+                        <>
+                          <span className="text-purple-400">+{log.experience_gained} опыта</span>
+                          <span className="text-gold-400">+{log.gold_gained} золота</span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-4">
+                <div className="text-4xl mb-2">⚔️</div>
+                <p className="text-dark-400">История боев пуста</p>
+                <p className="text-xs text-dark-500 mt-1">Проведите первый бой, чтобы увидеть результаты</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Combat Tips */}
+      <div className="game-panel p-6">
+        <h2 className="text-lg font-bold text-white mb-4">Советы по бою</h2>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="bg-dark-200/30 rounded border border-dark-300/30 p-4">
+            <div className="text-2xl mb-2">⚔️</div>
+            <div className="font-semibold text-white mb-1">Выбор противника</div>
+            <div className="text-sm text-dark-400">
+              Сражайтесь с мобами вашего уровня для оптимального опыта и лута
+            </div>
+          </div>
+          
+          <div className="bg-dark-200/30 rounded border border-dark-300/30 p-4">
+            <div className="text-2xl mb-2">💊</div>
+            <div className="font-semibold text-white mb-1">Управление здоровьем</div>
+            <div className="text-sm text-dark-400">
+              Следите за здоровьем и используйте зелья для восстановления
+            </div>
+          </div>
+          
+          <div className="bg-dark-200/30 rounded border border-dark-300/30 p-4">
+            <div className="text-2xl mb-2">🎯</div>
+            <div className="font-semibold text-white mb-1">Развитие</div>
+            <div className="text-sm text-dark-400">
+              Улучшайте характеристики и изучайте новые навыки для эффективности
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
