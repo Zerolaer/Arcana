@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import ItemTooltip, { GameItem } from './ItemTooltip'
 
 interface DraggableItemProps {
@@ -43,15 +43,13 @@ export default function DraggableItem({
       return
     }
     
-    console.log('🚨 MouseDown starting drag')
-    // Don't prevent default - let click events work
-    // e.preventDefault()
-    setIsDragging(true)
+    console.log('🚨 MouseDown - NOT starting drag immediately')
+    // Don't start drag immediately - let click work first
     dragStartPos.current = { x: e.clientX, y: e.clientY }
     
-    if (onDragStart) {
-      onDragStart(item, slotIndex)
-    }
+    // Add global listeners to detect if it's a drag or click
+    document.addEventListener('mousemove', handleMouseMove)
+    document.addEventListener('mouseup', handleMouseUp)
   }
 
   const handleClick = (e: React.MouseEvent) => {
@@ -76,40 +74,58 @@ export default function DraggableItem({
   }
 
   const handleMouseMove = (e: MouseEvent) => {
-    if (dragRef.current) {
-      const deltaX = e.clientX - dragStartPos.current.x
-      const deltaY = e.clientY - dragStartPos.current.y
+    const deltaX = e.clientX - dragStartPos.current.x
+    const deltaY = e.clientY - dragStartPos.current.y
+    
+    // Only start dragging if mouse moved more than 5 pixels
+    if (Math.abs(deltaX) > 5 || Math.abs(deltaY) > 5) {
+      console.log('🚨 MouseMove - starting drag!')
+      setIsDragging(true)
       
-      // Only start dragging if mouse moved more than 5 pixels
-      if (Math.abs(deltaX) > 5 || Math.abs(deltaY) > 5) {
+      if (dragRef.current) {
         dragRef.current.style.transform = `translate(${deltaX}px, ${deltaY}px)`
         dragRef.current.style.opacity = '0.8'
+      }
+      
+      if (onDragStart) {
+        onDragStart(item, slotIndex)
       }
     }
   }
 
-  const handleMouseUp = () => {
-    setIsDragging(false)
-    
-    if (dragRef.current) {
-      dragRef.current.style.transform = ''
-      dragRef.current.style.opacity = ''
-    }
-    
-    if (onDragEnd) {
-      onDragEnd()
-    }
+  const handleMouseUp = (e: MouseEvent) => {
+    console.log('🚨 MouseUp - cleaning up listeners')
     
     // Remove event listeners
     document.removeEventListener('mousemove', handleMouseMove)
     document.removeEventListener('mouseup', handleMouseUp)
+    
+    if (isDragging) {
+      console.log('🚨 MouseUp - ending drag')
+      setIsDragging(false)
+      
+      if (dragRef.current) {
+        dragRef.current.style.transform = ''
+        dragRef.current.style.opacity = ''
+      }
+      
+      if (onDragEnd) {
+        onDragEnd()
+      }
+    } else {
+      console.log('🚨 MouseUp - it was a click, calling handleClick')
+      // It was a click, not a drag - call handleClick
+      handleClick(e as any)
+    }
   }
 
-  // Add event listeners when dragging starts
-  if (isDragging) {
-    document.addEventListener('mousemove', handleMouseMove)
-    document.addEventListener('mouseup', handleMouseUp)
-  }
+  // Cleanup event listeners on unmount
+  useEffect(() => {
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove)
+      document.removeEventListener('mouseup', handleMouseUp)
+    }
+  }, [])
 
   const getRarityBorderColor = () => {
     const rarityColors = {
@@ -157,8 +173,6 @@ export default function DraggableItem({
           ${className}
         `}
         onMouseDown={handleMouseDown}
-        onMouseUp={handleClick}
-        onClick={handleClick}
         style={{
           borderWidth: '2px',
           borderStyle: 'solid',
