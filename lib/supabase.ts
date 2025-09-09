@@ -50,8 +50,8 @@ export const getCurrentUser = async () => {
 
 // Game data helpers
 export const getCharacter = async (playerId: string) => {
-  const { data, error } = await supabase
-    .from('characters')
+  const { data, error } = await (supabase
+    .from('characters') as any)
     .select('*')
     .eq('player_id', playerId)
     .single()
@@ -60,8 +60,8 @@ export const getCharacter = async (playerId: string) => {
 }
 
 export const createCharacter = async (characterData: any) => {
-  const { data, error } = await supabase
-    .from('characters')
+  const { data, error } = await (supabase
+    .from('characters') as any)
     .insert([characterData])
     .select()
     .single()
@@ -70,8 +70,8 @@ export const createCharacter = async (characterData: any) => {
 }
 
 export const updateCharacter = async (characterId: string, updates: any) => {
-  const { data, error } = await supabase
-    .from('characters')
+  const { data, error } = await (supabase
+    .from('characters') as any)
     .update(updates)
     .eq('id', characterId)
     .select()
@@ -123,7 +123,7 @@ export const getFarmingSpots = async (locationId: string) => {
 }
 
 export const occupySpot = async (spotId: string, characterId: string) => {
-  const { data, error } = await supabase.rpc('occupy_farming_spot', {
+  const { data, error } = await (supabase as any).rpc('occupy_farming_spot', {
     spot_id: spotId,
     character_id: characterId
   })
@@ -132,7 +132,7 @@ export const occupySpot = async (spotId: string, characterId: string) => {
 }
 
 export const leaveSpot = async (spotId: string, characterId: string) => {
-  const { data, error } = await supabase.rpc('leave_farming_spot', {
+  const { data, error } = await (supabase as any).rpc('leave_farming_spot', {
     spot_id: spotId,
     character_id: characterId
   })
@@ -148,7 +148,7 @@ export const getCharacterInventory = async (characterId: string) => {
       item:items (*)
     `)
     .eq('character_id', characterId)
-    .order('slot_position', { ascending: true, nullsLast: true })
+    .order('slot_position', { ascending: true, nullsFirst: false })
   
   return { inventory: data, error }
 }
@@ -215,7 +215,7 @@ export const subscribeToGameEvents = (callback: (payload: any) => void) => {
 
 // Combat system
 export const initiateCombat = async (characterId: string, mobId: string) => {
-  const { data, error } = await supabase.rpc('initiate_combat', {
+  const { data, error } = await (supabase as any).rpc('initiate_combat', {
     character_id: characterId,
     mob_id: mobId
   })
@@ -224,7 +224,7 @@ export const initiateCombat = async (characterId: string, mobId: string) => {
 }
 
 export const performAttack = async (characterId: string, skillId?: string) => {
-  const { data, error } = await supabase.rpc('perform_attack', {
+  const { data, error } = await (supabase as any).rpc('perform_attack', {
     character_id: characterId,
     skill_id: skillId
   })

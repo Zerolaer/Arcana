@@ -45,8 +45,8 @@ export default function LocationPanel({ character, onUpdateCharacter, isLoading 
 
   const loadLocations = async () => {
     try {
-      const { data, error } = await supabase
-        .from('locations')
+      const { data, error } = await (supabase
+        .from('locations') as any)
         .select('*')
         .order('min_level')
 
@@ -59,7 +59,7 @@ export default function LocationPanel({ character, onUpdateCharacter, isLoading 
       if (data) {
         setLocations(data)
         // Set current location as selected if available
-        const currentLocation = data.find(loc => loc.id === character.current_location_id)
+        const currentLocation = data.find((loc: any) => loc.id === character.current_location_id)
         if (currentLocation) {
           setSelectedLocation(currentLocation)
           loadFarmingSpots(currentLocation.id)
@@ -101,7 +101,7 @@ export default function LocationPanel({ character, onUpdateCharacter, isLoading 
 
     const success = await onUpdateCharacter({
       current_location_id: location.id,
-      current_spot_id: null // Clear current spot when traveling
+      current_spot_id: undefined // Clear current spot when traveling
     })
 
     if (success) {

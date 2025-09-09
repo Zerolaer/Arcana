@@ -62,8 +62,8 @@ export default function CombatPanel({ character, onUpdateCharacter, isLoading }:
 
     try {
       // Get farming spots in current location
-      const { data: spots, error: spotsError } = await supabase
-        .from('farming_spots')
+      const { data: spots, error: spotsError } = await (supabase
+        .from('farming_spots') as any)
         .select(`
           id,
           mob_spawns (
@@ -82,8 +82,8 @@ export default function CombatPanel({ character, onUpdateCharacter, isLoading }:
       const mobs: Mob[] = []
       const mobIds = new Set()
 
-      spots?.forEach(spot => {
-        spot.mob_spawns?.forEach(spawn => {
+      spots?.forEach((spot: any) => {
+        spot.mob_spawns?.forEach((spawn: any) => {
           const mob = spawn.mobs
           if (mob && !mobIds.has(mob.id)) {
             mobIds.add(mob.id)
@@ -102,15 +102,15 @@ export default function CombatPanel({ character, onUpdateCharacter, isLoading }:
 
   const loadCombatLogs = async () => {
     try {
-      const { data, error } = await supabase
-        .from('combat_logs')
+      const { data, error } = await (supabase
+        .from('combat_logs') as any)
         .select('*')
         .eq('character_id', character.id)
         .order('timestamp', { ascending: false })
         .limit(10)
 
       if (!error && data) {
-        setCombatLogs(data.map(log => ({
+        setCombatLogs(data.map((log: any) => ({
           ...log,
           mob_name: 'Враг' // We'll need to join with mobs table later
         })))

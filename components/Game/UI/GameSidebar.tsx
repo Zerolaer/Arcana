@@ -3,14 +3,16 @@
 import { Character } from '@/types/game'
 import { User, Backpack, Zap, Map, Swords, Target, Users } from 'lucide-react'
 
+type ActivePanel = 'character' | 'inventory' | 'skills' | 'location' | 'combat' | null
+
 interface GameSidebarProps {
   character: Character
-  activePanel: string | null
-  onPanelChange: (panel: string | null) => void
+  activePanel: ActivePanel
+  onPanelChange: (panel: ActivePanel) => void
 }
 
 type SidebarItem = {
-  id: string
+  id: Exclude<ActivePanel, null>
   name: string
   icon: React.ReactNode
   description: string
