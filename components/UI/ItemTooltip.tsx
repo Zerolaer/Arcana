@@ -44,6 +44,10 @@ interface ItemTooltipProps {
   item: GameItem
   children: ReactNode
   className?: string
+  onUse?: () => void
+  onEquip?: () => void
+  onUnequip?: () => void
+  showActions?: boolean
 }
 
 const rarityColors = {
@@ -74,7 +78,15 @@ const statNames: Record<string, string> = {
   speed: 'Скорость'
 }
 
-export default function ItemTooltip({ item, children, className }: ItemTooltipProps) {
+export default function ItemTooltip({ 
+  item, 
+  children, 
+  className, 
+  onUse, 
+  onEquip, 
+  onUnequip, 
+  showActions = false 
+}: ItemTooltipProps) {
   const renderStats = () => {
     const stats = Object.entries(item.stats).filter(([_, value]) => value && value > 0)
     
@@ -199,6 +211,52 @@ export default function ItemTooltip({ item, children, className }: ItemTooltipPr
           <span className="text-yellow-400">🪙</span>
         </div>
       </div>
+
+      {/* Action Buttons */}
+      {showActions && (
+        <div className="border-t border-white/10 pt-3 mt-3">
+          <div className="flex flex-col space-y-2">
+            {item.type === 'consumable' && onUse && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onUse()
+                }}
+                className="w-full px-3 py-2 bg-green-600 hover:bg-green-700 text-white text-sm rounded-md transition-colors flex items-center justify-center space-x-2"
+              >
+                <span>🧪</span>
+                <span>Использовать</span>
+              </button>
+            )}
+            
+            {item.equipment_slot && onEquip && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onEquip()
+                }}
+                className="w-full px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-md transition-colors flex items-center justify-center space-x-2"
+              >
+                <span>⚔️</span>
+                <span>Надеть</span>
+              </button>
+            )}
+            
+            {onUnequip && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  onUnequip()
+                }}
+                className="w-full px-3 py-2 bg-red-600 hover:bg-red-700 text-white text-sm rounded-md transition-colors flex items-center justify-center space-x-2"
+              >
+                <span>👕</span>
+                <span>Снять</span>
+              </button>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   )
 

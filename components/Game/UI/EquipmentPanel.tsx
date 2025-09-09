@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { Character } from '@/types/game'
 import { supabase } from '@/lib/supabase'
 import { GameItem } from '../../UI/ItemTooltip'
+import ItemTooltip from '../../UI/ItemTooltip'
 import { toast } from 'react-hot-toast'
 import { 
   Sword, Shield, Crown, Zap, Eye, 
@@ -190,9 +191,12 @@ export default function EquipmentPanel({ character, onUpdateCharacter, isLoading
               >
                 <div className="game-panel p-4 h-24 flex flex-col items-center justify-center relative group">
                   {equippedItem?.item ? (
-                    <>
-                      {/* Экипированный предмет */}
-                      <div className="flex flex-col items-center space-y-1">
+                    <ItemTooltip
+                      item={equippedItem.item}
+                      onUnequip={() => handleUnequip(slot.key)}
+                      showActions={true}
+                    >
+                      <div className="flex flex-col items-center space-y-1 cursor-pointer relative">
                         <div className="text-2xl">{equippedItem.item.icon}</div>
                         <div className="text-xs text-center text-white font-semibold truncate max-w-full">
                           {equippedItem.item.name}
@@ -200,31 +204,22 @@ export default function EquipmentPanel({ character, onUpdateCharacter, isLoading
                         <div className="text-xs text-gray-400">
                           {equippedItem.item.rarity}
                         </div>
-                      </div>
-
-                      {/* Кнопка снятия */}
-                      <button
-                        onClick={() => handleUnequip(slot.key)}
-                        className="absolute top-1 right-1 w-5 h-5 bg-red-600 hover:bg-red-700 rounded-full flex items-center justify-center text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity"
-                        title="Снять предмет"
-                      >
-                        ✕
-                      </button>
-
-                      {/* Индикатор прочности */}
-                      {equippedItem.currentDurability && equippedItem.item.durability && (
-                        <div className="absolute bottom-1 left-1 right-1">
-                          <div className="w-full bg-gray-700 rounded-full h-1">
-                            <div 
-                              className="bg-green-500 h-1 rounded-full transition-all duration-300"
-                              style={{ 
-                                width: `${(equippedItem.currentDurability / equippedItem.item.durability.max) * 100}%` 
-                              }}
-                            />
+                        
+                        {/* Индикатор прочности */}
+                        {equippedItem.currentDurability && equippedItem.item.durability && (
+                          <div className="absolute bottom-0 left-0 right-0">
+                            <div className="w-full bg-gray-700 rounded-full h-1">
+                              <div 
+                                className="bg-green-500 h-1 rounded-full transition-all duration-300"
+                                style={{ 
+                                  width: `${(equippedItem.currentDurability / equippedItem.item.durability.max) * 100}%` 
+                                }}
+                              />
+                            </div>
                           </div>
-                        </div>
-                      )}
-                    </>
+                        )}
+                      </div>
+                    </ItemTooltip>
                   ) : (
                     <>
                       {/* Пустой слот */}

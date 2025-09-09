@@ -10,6 +10,10 @@ interface DraggableItemProps {
   onDragEnd?: () => void
   className?: string
   showStackCount?: boolean
+  onUse?: () => void
+  onEquip?: () => void
+  onUnequip?: () => void
+  showActions?: boolean
 }
 
 export default function DraggableItem({ 
@@ -18,7 +22,11 @@ export default function DraggableItem({
   onDragStart, 
   onDragEnd,
   className = '',
-  showStackCount = true
+  showStackCount = true,
+  onUse,
+  onEquip,
+  onUnequip,
+  showActions = false
 }: DraggableItemProps) {
   const [isDragging, setIsDragging] = useState(false)
   const dragRef = useRef<HTMLDivElement>(null)
@@ -86,7 +94,13 @@ export default function DraggableItem({
   }
 
   return (
-    <ItemTooltip item={item}>
+    <ItemTooltip 
+      item={item}
+      onUse={onUse}
+      onEquip={onEquip}
+      onUnequip={onUnequip}
+      showActions={showActions}
+    >
       <div
         ref={dragRef}
         className={`

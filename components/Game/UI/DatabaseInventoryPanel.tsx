@@ -404,6 +404,9 @@ export default function DatabaseInventoryPanel({ character, onUpdateCharacter, i
                   slotIndex={index}
                   onDragStart={handleDragStart}
                   onDragEnd={handleDragEnd}
+                  onUse={() => handleSlotClick(index)}
+                  onEquip={() => handleSlotClick(index)}
+                  showActions={true}
                 />
               ) : (
                 <InventorySlot
