@@ -222,6 +222,7 @@ export default function ItemTooltip({
             {item.type === 'consumable' && onUse && (
               <button
                 onClick={(e) => {
+                  console.log('🚨 Use button clicked!')
                   e.stopPropagation()
                   onUse()
                 }}
@@ -236,7 +237,7 @@ export default function ItemTooltip({
             {!isEquipped && ((item.equipment_slot || (item.type === 'weapon' || item.type === 'armor' || item.type === 'accessory')) && item.type !== 'consumable' && item.type !== 'material') && onEquip && (
               <button
                 onClick={(e) => {
-                  console.log('🔍 Equip button clicked for item:', item.name, 'type:', item.type, 'equipment_slot:', item.equipment_slot)
+                  console.log('🚨 Equip button clicked!', item.name, 'type:', item.type, 'equipment_slot:', item.equipment_slot)
                   e.stopPropagation()
                   onEquip()
                 }}

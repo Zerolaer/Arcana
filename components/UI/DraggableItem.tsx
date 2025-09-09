@@ -50,8 +50,11 @@ export default function DraggableItem({
   }
 
   const handleClick = (e: React.MouseEvent) => {
+    console.log('🚨 DraggableItem handleClick CALLED!', { item: item.name, type: item.type })
+    
     // Don't handle click if we're clicking on a button (let the button handle it)
     if ((e.target as HTMLElement).closest('button')) {
+      console.log('🚨 Click on button, ignoring')
       return
     }
     
