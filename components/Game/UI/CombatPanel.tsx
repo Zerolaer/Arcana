@@ -403,7 +403,11 @@ export default function CombatPanel({ character, onUpdateCharacter, isLoading }:
               <button
                 onClick={() => simulateCombat(selectedMob)}
                 disabled={!canFightMob(selectedMob) || inCombat || isLoading}
-                className="w-full game-button py-3 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+                className={`w-full game-button flex items-center justify-center space-x-2 ${
+                  canFightMob(selectedMob) && !inCombat && !isLoading 
+                    ? 'game-button--danger' 
+                    : 'game-button--secondary'
+                }`}
               >
                 <Swords className="w-5 h-5" />
                 <span>{inCombat ? 'В бою...' : 'Атаковать'}</span>

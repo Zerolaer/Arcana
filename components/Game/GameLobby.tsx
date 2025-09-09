@@ -211,9 +211,9 @@ export default function GameLobby({ user, onCharacterCreated, onLogout }: GameLo
           
           <button
             onClick={onLogout}
-            className="flex items-center space-x-2 px-4 py-2 text-dark-400 hover:text-white transition-colors"
+            className="game-button game-button--compact game-button--secondary flex items-center space-x-2"
           >
-            <LogOut className="w-5 h-5" />
+            <LogOut className="w-4 h-4" />
             <span>Выйти</span>
           </button>
         </div>
@@ -359,7 +359,11 @@ export default function GameLobby({ user, onCharacterCreated, onLogout }: GameLo
               <button
                 onClick={handleCreateCharacter}
                 disabled={creating || !selectedClass || characterName.length < 3}
-                className="w-full game-button py-3 text-lg font-semibold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+                className={`w-full game-button flex items-center justify-center space-x-2 text-lg font-bold ${
+                  !creating && selectedClass && characterName.length >= 3 
+                    ? 'game-button--gold' 
+                    : 'game-button--secondary'
+                }`}
               >
                 {creating && <div className="loading-spinner" />}
                 <span>
