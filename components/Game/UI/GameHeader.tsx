@@ -36,6 +36,39 @@ export default function GameHeader({ character, user, onLogout }: GameHeaderProp
             <div className="text-xs leading-none opacity-80">{Math.floor(expPercentage)}%</div>
           </div>
 
+          {/* Resource Bars */}
+          <div className="max-w-[240px]">
+            <div className="space-y-3">
+              {/* Health Bar */}
+              <div className="flex items-center space-x-3">
+                <span className="text-xs text-red-300 w-8">HP</span>
+                <div className="flex-1 stat-bar">
+                  <div 
+                    className="stat-bar-fill health-bar"
+                    style={{ width: `${healthPercentage}%` }}
+                  />
+                  <div className="absolute inset-0 flex items-center justify-center text-xs font-semibold text-white">
+                    {formatNumber(character.health)}/{formatNumber(character.max_health)}
+                  </div>
+                </div>
+              </div>
+
+              {/* Mana Bar */}
+              <div className="flex items-center space-x-3">
+                <span className="text-xs text-blue-300 w-8">MP</span>
+                <div className="flex-1 stat-bar">
+                  <div 
+                    className="stat-bar-fill mana-bar"
+                    style={{ width: `${manaPercentage}%` }}
+                  />
+                  <div className="absolute inset-0 flex items-center justify-center text-xs font-semibold text-white">
+                    {formatNumber(character.mana)}/{formatNumber(character.max_mana)}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Name */}
           <div>
             <h1 className="text-xl font-bold text-white">{character.name}</h1>
@@ -45,39 +78,6 @@ export default function GameHeader({ character, user, onLogout }: GameHeaderProp
                 <span>В игре</span>
               </div>
             )}
-          </div>
-        </div>
-
-        {/* Resource Bars */}
-        <div className="flex-1 max-w-[240px] mx-8">
-          <div className="space-y-3">
-            {/* Health Bar */}
-            <div className="flex items-center space-x-3">
-              <span className="text-xs text-red-300 w-8">HP</span>
-              <div className="flex-1 stat-bar">
-                <div 
-                  className="stat-bar-fill health-bar"
-                  style={{ width: `${healthPercentage}%` }}
-                />
-                <div className="absolute inset-0 flex items-center justify-center text-xs font-semibold text-white">
-                  {formatNumber(character.health)}/{formatNumber(character.max_health)}
-                </div>
-              </div>
-            </div>
-
-            {/* Mana Bar */}
-            <div className="flex items-center space-x-3">
-              <span className="text-xs text-blue-300 w-8">MP</span>
-              <div className="flex-1 stat-bar">
-                <div 
-                  className="stat-bar-fill mana-bar"
-                  style={{ width: `${manaPercentage}%` }}
-                />
-                <div className="absolute inset-0 flex items-center justify-center text-xs font-semibold text-white">
-                  {formatNumber(character.mana)}/{formatNumber(character.max_mana)}
-                </div>
-              </div>
-            </div>
           </div>
         </div>
 
