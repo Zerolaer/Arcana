@@ -5,7 +5,8 @@ export interface Mob {
   name: string
   level: number
   health: number
-  attack: number
+  attack: number // Для совместимости с фронтендом
+  attack_damage?: number // Реальное поле в БД
   defense: number
   experience_reward: number
   gold_reward: number

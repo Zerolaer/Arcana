@@ -90,7 +90,7 @@ export class CombatSystem {
       const mobHitChance = this.calculateHitChance(mob, character)
       if (Math.random() < mobHitChance) {
         const damage = this.calculateDamage(
-          { attack: mob.attack, level: mob.level },
+          { attack: mob.attack_damage || mob.attack, level: mob.level },
           { defense: character.defense, level: character.level }
         )
         playerHealth -= damage
@@ -98,7 +98,7 @@ export class CombatSystem {
         combatLog.push({
           id: `mob_${turn}`,
           timestamp: Date.now(),
-          action: damage > (mob.attack * 1.8) ? 'critical' : 'attack',
+          action: damage > ((mob.attack_damage || mob.attack) * 1.8) ? 'critical' : 'attack',
           actor: 'mob',
           damage,
           message: `${mob.name} наносит ${damage} урона`
