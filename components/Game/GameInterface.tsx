@@ -194,7 +194,7 @@ export default function GameInterface({ character: initialCharacter, user, onLog
       {/* Regeneration System */}
       <RegenerationSystem 
         character={character}
-        onUpdateCharacter={updateCharacter}
+        onUpdateCharacter={updateCharacterData}
         isInCombat={character.is_in_combat}
       />
 
