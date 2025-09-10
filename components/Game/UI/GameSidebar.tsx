@@ -139,57 +139,6 @@ export default function GameSidebar({ character, activePanel, onPanelChange }: G
         })}
       </nav>
 
-      {/* Character Quick Info */}
-      <div className="mt-6 pt-4 border-t border-dark-300/30">
-        <div className="text-xs text-dark-500 space-y-2">
-          <div className="flex justify-between">
-            <span>Уровень:</span>
-            <span className="text-white font-semibold">{character.level}</span>
-          </div>
-          <div className="flex justify-between">
-            <span>Класс:</span>
-            <span className="text-primary-400 truncate ml-2">{character.class_id}</span>
-          </div>
-          {character.current_spot_id && (
-            <div className="flex justify-between">
-              <span>Спот:</span>
-              <span className="text-green-400">Занят</span>
-            </div>
-          )}
-        </div>
-
-        {/* Online Status */}
-        <div className="mt-3 flex items-center space-x-2 text-xs">
-          <div className={`w-2 h-2 rounded-full ${character.is_online ? 'bg-green-400' : 'bg-gray-400'}`}></div>
-          <span className={character.is_online ? 'text-green-400' : 'text-gray-400'}>
-            {character.is_online ? 'В сети' : 'Не в сети'}
-          </span>
-        </div>
-      </div>
-
-      {/* Quick Actions */}
-      <div className="mt-4 space-y-2">
-        {character.is_in_combat && (
-          <button className="w-full p-2 bg-red-500/20 border border-red-400/30 rounded text-red-300 text-sm hover:bg-red-500/30 transition-colors">
-            ⚔️ В бою
-          </button>
-        )}
-        
-        {character.is_afk_farming && (
-          <button className="w-full p-2 bg-green-500/20 border border-green-400/30 rounded text-green-300 text-sm hover:bg-green-500/30 transition-colors">
-            🤖 АФК фарм активен
-          </button>
-        )}
-        
-        {!character.is_in_combat && !character.is_afk_farming && (
-          <button 
-            onClick={() => onPanelChange('combat')}
-            className="w-full p-2 bg-primary-500/20 border border-primary-400/30 rounded text-primary-300 text-sm hover:bg-primary-500/30 transition-colors"
-          >
-            ⚔️ Начать бой
-          </button>
-        )}
-      </div>
     </div>
   )
 }
