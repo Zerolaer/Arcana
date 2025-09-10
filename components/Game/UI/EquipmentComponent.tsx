@@ -161,8 +161,9 @@ export default function EquipmentComponent({
   }
 
   return (
-    <div className="flex-1 flex items-center justify-center p-4">
-      <div className="flex items-center justify-center gap-8">
+    <div className="flex-1 flex flex-col items-center justify-center p-4">
+      {/* ОСНОВНАЯ ЭКИПИРОВКА */}
+      <div className="flex items-center justify-center gap-8 mb-6">
         
         {/* ЛЕВАЯ КОЛОНКА СЛОТОВ */}
         <div className="flex flex-col items-center justify-center">
@@ -214,26 +215,6 @@ export default function EquipmentComponent({
             </div>
           </div>
 
-          {/* Две пустые линии ячеек под персонажем */}
-          <div className="mt-6 space-y-2">
-            {/* Первая линия */}
-            <div className="flex justify-center gap-2">
-              {Array.from({ length: 6 }, (_, index) => (
-                <div key={`line1-${index}`} className="w-12 h-12 bg-dark-200/20 border border-dashed border-dark-300/30 rounded-lg flex items-center justify-center opacity-40">
-                  <div className="text-dark-500 text-xs">+</div>
-                </div>
-              ))}
-            </div>
-            
-            {/* Вторая линия */}
-            <div className="flex justify-center gap-2">
-              {Array.from({ length: 6 }, (_, index) => (
-                <div key={`line2-${index}`} className="w-12 h-12 bg-dark-200/20 border border-dashed border-dark-300/30 rounded-lg flex items-center justify-center opacity-40">
-                  <div className="text-dark-500 text-xs">+</div>
-                </div>
-              ))}
-            </div>
-          </div>
         </div>
 
         {/* ПРАВАЯ КОЛОНКА СЛОТОВ */}
@@ -246,6 +227,28 @@ export default function EquipmentComponent({
         </div>
         
       </div>
+
+      {/* ОТДЕЛЬНЫЕ ПУСТЫЕ ЯЧЕЙКИ ПОД ЭКИПИРОВКОЙ */}
+      <div className="space-y-2">
+        {/* Первая линия */}
+        <div className="flex justify-center gap-2">
+          {Array.from({ length: 6 }, (_, index) => (
+            <div key={`line1-${index}`} className="w-12 h-12 bg-dark-200/20 border border-dashed border-dark-300/30 rounded-lg flex items-center justify-center opacity-40">
+              <div className="text-dark-500 text-xs">+</div>
+            </div>
+          ))}
+        </div>
+        
+        {/* Вторая линия */}
+        <div className="flex justify-center gap-2">
+          {Array.from({ length: 6 }, (_, index) => (
+            <div key={`line2-${index}`} className="w-12 h-12 bg-dark-200/20 border border-dashed border-dark-300/30 rounded-lg flex items-center justify-center opacity-40">
+              <div className="text-dark-500 text-xs">+</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
     </div>
   )
 }

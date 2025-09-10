@@ -241,7 +241,7 @@ export default function InventoryPanelNew({ character, onUpdateCharacter, isLoad
           </div>
 
           <div className="text-xs text-gray-400 mb-4">
-            {itemCount}/200 предметов • Ценность: {totalValue.toLocaleString()}🪙
+            {itemCount}/100 предметов • Ценность: {totalValue.toLocaleString()}🪙
           </div>
 
           {/* Search and Filters */}
@@ -294,7 +294,7 @@ export default function InventoryPanelNew({ character, onUpdateCharacter, isLoad
                   padding: '4px'
                 }}
               >
-              {Array.from({ length: 200 }, (_, index) => {
+              {Array.from({ length: 100 }, (_, index) => {
                 const invItem = filteredItems.find(item => item.slot_position === index + 1)
                 
                 return (
@@ -306,7 +306,7 @@ export default function InventoryPanelNew({ character, onUpdateCharacter, isLoad
                         showActions={true}
                         isEquipped={false}
                       >
-                        <div className="w-12 h-12 bg-dark-200/30 border border-dark-300/50 rounded flex flex-col items-center justify-center p-1 cursor-pointer flex-shrink-0">
+                        <div className="w-16 h-16 bg-dark-200/30 border border-dark-300/50 rounded flex flex-col items-center justify-center p-1 cursor-pointer flex-shrink-0">
                           <div className="text-sm">{invItem.item.icon}</div>
                           {invItem.quantity > 1 && (
                             <div className="absolute -bottom-1 -right-1 bg-primary-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
@@ -316,7 +316,7 @@ export default function InventoryPanelNew({ character, onUpdateCharacter, isLoad
                         </div>
                       </ItemTooltip>
                     ) : (
-                      <div className="w-12 h-12 bg-dark-200/10 border border-dashed border-dark-300/30 rounded flex items-center justify-center flex-shrink-0">
+                      <div className="w-16 h-16 bg-dark-200/10 border border-dashed border-dark-300/30 rounded flex items-center justify-center flex-shrink-0">
                         <div className="text-dark-500 text-xs">+</div>
                       </div>
                     )}
