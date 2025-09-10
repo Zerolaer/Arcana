@@ -284,14 +284,16 @@ export default function InventoryPanelNew({ character, onUpdateCharacter, isLoad
             </div>
           </div>
 
-          {/* Inventory Grid - сетка с равномерным заполнением ширины */}
+          {/* Inventory Grid - заполнение от края до края с вычисляемой шириной */}
           <div className="flex-1 overflow-hidden">
             <div className="h-full overflow-y-auto pr-2">
               <div 
-                className="flex flex-wrap justify-center content-start"
+                className="grid auto-rows-min"
                 style={{ 
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(64px, 1fr))',
                   gap: '4px',
-                  padding: '4px'
+                  padding: '4px',
+                  justifyContent: 'stretch'
                 }}
               >
               {Array.from({ length: 100 }, (_, index) => {
@@ -306,7 +308,7 @@ export default function InventoryPanelNew({ character, onUpdateCharacter, isLoad
                         showActions={true}
                         isEquipped={false}
                       >
-                        <div className="w-16 h-16 bg-dark-200/30 border border-dark-300/50 rounded flex flex-col items-center justify-center p-1 cursor-pointer flex-shrink-0">
+                        <div className="aspect-square bg-dark-200/30 border border-dark-300/50 rounded flex flex-col items-center justify-center p-1 cursor-pointer">
                           <div className="text-sm">{invItem.item.icon}</div>
                           {invItem.quantity > 1 && (
                             <div className="absolute -bottom-1 -right-1 bg-primary-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
@@ -316,7 +318,7 @@ export default function InventoryPanelNew({ character, onUpdateCharacter, isLoad
                         </div>
                       </ItemTooltip>
                     ) : (
-                      <div className="w-16 h-16 bg-dark-200/10 border border-dashed border-dark-300/30 rounded flex items-center justify-center flex-shrink-0">
+                      <div className="aspect-square bg-dark-200/10 border border-dashed border-dark-300/30 rounded flex items-center justify-center">
                         <div className="text-dark-500 text-xs">+</div>
                       </div>
                     )}
