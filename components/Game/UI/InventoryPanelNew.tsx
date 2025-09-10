@@ -209,29 +209,29 @@ export default function InventoryPanelNew({ character, onUpdateCharacter, isLoad
 
   return (
     <div className="flex-1 game-content p-4 h-full overflow-hidden">
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 h-full">
+      <div className="flex gap-4 h-full">
         
-        {/* 1. Экипировка */}
-        <div className="game-panel p-6 overflow-hidden">
+        {/* 1. Экипировка - 30% ширины */}
+        <div className="w-[30%] game-panel p-6 overflow-hidden">
           <h2 className="text-lg font-bold text-white mb-4 flex items-center space-x-2">
             <Package className="w-5 h-5 text-purple-400" />
             <span>Экипировка</span>
           </h2>
 
-              <EquipmentComponent
-                key={equipmentKey}
-                character={character}
-                onUpdateCharacter={onUpdateCharacter}
-                onEquipmentChange={() => {
-                  setEquipmentKey(prev => prev + 1)
-                  loadInventory()
-                }}
-                layout="inventory"
-              />
+          <EquipmentComponent
+            key={equipmentKey}
+            character={character}
+            onUpdateCharacter={onUpdateCharacter}
+            onEquipmentChange={() => {
+              setEquipmentKey(prev => prev + 1)
+              loadInventory()
+            }}
+            layout="inventory"
+          />
         </div>
 
-        {/* 2. Инвентарь */}
-        <div className="game-panel p-6 flex flex-col overflow-hidden">
+        {/* 2. Инвентарь - 70% ширины */}
+        <div className="w-[70%] game-panel p-6 flex flex-col overflow-hidden">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-bold text-white flex items-center space-x-2">
               <Package className="w-5 h-5 text-blue-400" />
@@ -293,9 +293,17 @@ export default function InventoryPanelNew({ character, onUpdateCharacter, isLoad
             </div>
           </div>
 
-          {/* Inventory Grid - с внутренним скроллом */}
+          {/* Inventory Grid - автоматическая сетка с фиксированными отступами 4px */}
           <div className="flex-1 overflow-hidden">
-            <div className="grid grid-cols-6 gap-2 h-full overflow-y-auto pr-2">
+            <div className="h-full overflow-y-auto pr-2 p-1">
+              <div 
+                className="grid auto-rows-min"
+                style={{ 
+                  gridTemplateColumns: 'repeat(auto-fill, minmax(52px, 52px))',
+                  gap: '4px',
+                  justifyContent: 'start'
+                }}
+              >
               {Array.from({ length: 48 }, (_, index) => {
                 const invItem = filteredItems.find(item => item.slot_position === index + 1)
                 
@@ -308,7 +316,7 @@ export default function InventoryPanelNew({ character, onUpdateCharacter, isLoad
                         showActions={true}
                         isEquipped={false}
                       >
-                        <div className="w-12 h-12 bg-dark-200/30 border border-dark-300/50 rounded flex flex-col items-center justify-center p-1 cursor-pointer">
+                        <div className="w-12 h-12 bg-dark-200/30 border border-dark-300/50 rounded flex flex-col items-center justify-center p-1 cursor-pointer aspect-square">
                           <div className="text-sm">{invItem.item.icon}</div>
                           {invItem.quantity > 1 && (
                             <div className="absolute -bottom-1 -right-1 bg-primary-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
@@ -318,13 +326,14 @@ export default function InventoryPanelNew({ character, onUpdateCharacter, isLoad
                         </div>
                       </ItemTooltip>
                     ) : (
-                      <div className="w-12 h-12 bg-dark-200/10 border border-dashed border-dark-300/30 rounded flex items-center justify-center">
+                      <div className="w-12 h-12 bg-dark-200/10 border border-dashed border-dark-300/30 rounded flex items-center justify-center aspect-square">
                         <div className="text-dark-500 text-xs">+</div>
                       </div>
                     )}
                   </div>
                 )
               })}
+              </div>
             </div>
           </div>
         </div>
