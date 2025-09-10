@@ -214,7 +214,7 @@ export default function LocationMap({ character, onUpdateCharacter, isLoading = 
               <div
                 key={location.id}
                 onClick={() => handleLocationSelect(location)}
-                className={`p-4 rounded-lg border-2 cursor-pointer transition-all duration-200 ${
+                className={`p-4 rounded-lg border-2 cursor-pointer transition-colors duration-200 ${
                   selectedLocation?.id === location.id
                     ? 'border-primary-500 bg-primary-500/10'
                     : canAccessLocation(location)
@@ -280,7 +280,7 @@ export default function LocationMap({ character, onUpdateCharacter, isLoading = 
                     <div
                       key={spot.id}
                       onClick={() => handleSpotSelect(spot)}
-                      className={`p-4 rounded-lg border-2 cursor-pointer transition-all duration-200 ${
+                      className={`p-4 rounded-lg border-2 cursor-pointer transition-colors duration-200 ${
                         selectedSpot?.id === spot.id
                           ? 'border-primary-500 bg-primary-500/10'
                           : getSpotColor(spot)

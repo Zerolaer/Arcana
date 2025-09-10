@@ -289,7 +289,7 @@ export default function CombatPanel({ character, onUpdateCharacter, isLoading }:
                   <div
                     key={mob.id}
                     onClick={() => canFight && !inCombat && setSelectedMob(mob)}
-                    className={`p-3 rounded border transition-all duration-200 ${difficultyColor} ${
+                    className={`p-3 rounded border transition-colors duration-200 ${difficultyColor} ${
                       canFight && !inCombat ? 'cursor-pointer hover:bg-dark-200/30' : 'opacity-50 cursor-not-allowed'
                     } ${selectedMob?.id === mob.id ? 'bg-dark-200/50 ring-2 ring-primary-500/50' : ''}`}
                   >

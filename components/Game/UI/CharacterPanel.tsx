@@ -183,7 +183,7 @@ export default function CharacterPanel({ character, onUpdateCharacter, isLoading
       <div className="flex space-x-1 bg-dark-200/30 rounded-lg p-1">
         <button
           onClick={() => setActiveTab('stats')}
-          className={`flex-1 flex items-center justify-center space-x-2 py-2 px-4 rounded-md transition-all duration-200 ${
+          className={`flex-1 flex items-center justify-center space-x-2 py-2 px-4 rounded-md transition-colors duration-200 ${
             activeTab === 'stats'
               ? 'bg-primary-500 text-white'
               : 'text-gray-400 hover:text-white hover:bg-dark-300/50'
@@ -194,7 +194,7 @@ export default function CharacterPanel({ character, onUpdateCharacter, isLoading
         </button>
         <button
           onClick={() => setActiveTab('equipment')}
-          className={`flex-1 flex items-center justify-center space-x-2 py-2 px-4 rounded-md transition-all duration-200 ${
+          className={`flex-1 flex items-center justify-center space-x-2 py-2 px-4 rounded-md transition-colors duration-200 ${
             activeTab === 'equipment'
               ? 'bg-primary-500 text-white'
               : 'text-gray-400 hover:text-white hover:bg-dark-300/50'
@@ -290,7 +290,7 @@ export default function CharacterPanel({ character, onUpdateCharacter, isLoading
                 
                 <button
                   onClick={resetTempStats}
-                  className="px-4 py-2 bg-dark-300/20 hover:bg-dark-300/40 text-dark-400 hover:text-white rounded-md transition-all duration-200 border border-dark-300/50"
+                  className="px-4 py-2 bg-dark-300/20 hover:bg-dark-300/40 text-dark-400 hover:text-white rounded-md transition-colors duration-200 border border-dark-300/50"
                 >
                   <RotateCcw className="w-4 h-4" />
                 </button>

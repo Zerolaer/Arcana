@@ -366,7 +366,7 @@ export default function CombatInterface({ character, onUpdateCharacter, isLoadin
                 return (
                   <div
                     key={mob.id}
-                    className={`p-4 rounded-lg border-2 transition-all duration-200 ${
+                    className={`p-4 rounded-lg border-2 transition-colors duration-200 ${
                       canFight
                         ? 'border-blue-500/50 bg-blue-500/5 hover:border-blue-500 hover:bg-blue-500/10 cursor-pointer'
                         : 'border-gray-500/50 bg-gray-500/5 opacity-50 cursor-not-allowed'

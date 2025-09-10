@@ -150,7 +150,7 @@ export default function LocationPanel({ character, onUpdateCharacter, isLoading 
                 <div
                   key={location.id}
                   onClick={() => isAccessible && !isCurrent && travelToLocation(location)}
-                  className={`p-4 rounded border transition-all duration-200 ${getLocationStatusColor(location)} 
+                  className={`p-4 rounded border transition-colors duration-200 ${getLocationStatusColor(location)} 
                     ${isAccessible && !isCurrent ? 'cursor-pointer' : 'cursor-not-allowed'}`}
                 >
                   <div className="flex items-center justify-between mb-2">
@@ -218,7 +218,7 @@ export default function LocationPanel({ character, onUpdateCharacter, isLoading 
                   return (
                     <div
                       key={spot.id}
-                      className={`p-4 rounded border transition-all duration-200 ${
+                      className={`p-4 rounded border transition-colors duration-200 ${
                         isCurrentSpot 
                           ? 'border-green-400 bg-green-500/10' 
                           : isOccupied 

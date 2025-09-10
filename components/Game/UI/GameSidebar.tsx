@@ -102,7 +102,7 @@ export default function GameSidebar({ character, activePanel, onPanelChange }: G
               key={item.id}
               onClick={() => onPanelChange(item.id)}
               className={`
-                w-full p-3 rounded-lg border transition-all duration-200 text-left relative
+                w-full p-3 rounded-lg border transition-colors duration-200 text-left relative
                 ${getItemColor(item.color, isActive)}
                 ${isActive ? 'shadow-lg' : 'hover:bg-dark-200/30'}
               `}

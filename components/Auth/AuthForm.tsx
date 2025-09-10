@@ -117,7 +117,7 @@ export default function AuthForm({ onAuthSuccess }: AuthFormProps) {
             <button
               type="button"
               onClick={() => setIsLogin(true)}
-              className={`flex-1 py-2 px-4 text-sm font-medium rounded-l-md transition-all duration-200 ${
+              className={`flex-1 py-2 px-4 text-sm font-medium rounded-l-md transition-colors duration-200 ${
                 isLogin
                   ? 'bg-primary-600 text-white shadow-lg'
                   : 'bg-dark-200/50 text-dark-400 hover:text-white hover:bg-dark-200/80'
@@ -128,7 +128,7 @@ export default function AuthForm({ onAuthSuccess }: AuthFormProps) {
             <button
               type="button"
               onClick={() => setIsLogin(false)}
-              className={`flex-1 py-2 px-4 text-sm font-medium rounded-r-md transition-all duration-200 ${
+              className={`flex-1 py-2 px-4 text-sm font-medium rounded-r-md transition-colors duration-200 ${
                 !isLogin
                   ? 'bg-primary-600 text-white shadow-lg'
                   : 'bg-dark-200/50 text-dark-400 hover:text-white hover:bg-dark-200/80'

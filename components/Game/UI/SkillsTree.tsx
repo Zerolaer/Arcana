@@ -136,7 +136,7 @@ export default function SkillsTree({
                     <div
                       key={skill.id}
                       onClick={() => handleSkillClick(skill)}
-                      className={`p-4 rounded-lg border-2 cursor-pointer transition-all duration-200 ${
+                      className={`p-4 rounded-lg border-2 cursor-pointer transition-colors duration-200 ${
                         selectedSkill?.id === skill.id
                           ? 'border-primary-500 bg-primary-500/10'
                           : isLearned
