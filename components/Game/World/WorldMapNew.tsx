@@ -23,6 +23,8 @@ export default function WorldMapNew({ character, onUpdateCharacter }: WorldMapPr
   const [hoveredSpot, setHoveredSpot] = useState<FarmSpot | null>(null)
   const [selectedMob, setSelectedMob] = useState<Mob | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [clickedSpot, setClickedSpot] = useState<FarmSpot | null>(null)
+  const [showMobSelector, setShowMobSelector] = useState(false)
 
   // Получаем доступные континенты для текущего уровня игрока
   const availableContinents = getAvailableContinents(character.level)
@@ -57,9 +59,30 @@ export default function WorldMapNew({ character, onUpdateCharacter }: WorldMapPr
     setSelectedSpot(null)
   }
 
-  // Выбор моба для атаки
+  // Выбор моба для атаки из правой панели
   const handleMobSelect = (mob: Mob) => {
     setSelectedMob(mob)
+    setIsModalOpen(true)
+  }
+
+  // Клик по ячейке на карте
+  const handleSpotClick = (spot: FarmSpot) => {
+    if (spot.mobs.length === 1) {
+      // Если в ячейке один моб, сразу атакуем
+      setSelectedMob(spot.mobs[0])
+      setIsModalOpen(true)
+    } else if (spot.mobs.length > 1) {
+      // Если несколько мобов, показываем селектор
+      setClickedSpot(spot)
+      setShowMobSelector(true)
+    }
+  }
+
+  // Выбор моба из селектора
+  const handleMobSelectFromSpot = (mob: Mob) => {
+    setSelectedMob(mob)
+    setShowMobSelector(false)
+    setClickedSpot(null)
     setIsModalOpen(true)
   }
 
@@ -111,6 +134,12 @@ export default function WorldMapNew({ character, onUpdateCharacter }: WorldMapPr
   const handleCloseModal = () => {
     setIsModalOpen(false)
     setSelectedMob(null)
+  }
+
+  // Закрытие селектора мобов
+  const handleCloseMobSelector = () => {
+    setShowMobSelector(false)
+    setClickedSpot(null)
   }
 
   // Рендер континентов на карте мира
@@ -272,23 +301,48 @@ export default function WorldMapNew({ character, onUpdateCharacter }: WorldMapPr
                 className="relative bg-dark-200/30 border border-dark-300/50 rounded cursor-pointer group hover:bg-dark-200/50 hover:border-yellow-400/50 transition-all"
                 onMouseEnter={() => setHoveredSpot(spot)}
                 onMouseLeave={() => setHoveredSpot(null)}
-                onClick={() => setSelectedSpot(spot)}
+                onClick={() => handleSpotClick(spot)}
               >
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="text-center">
-                    <div className="text-2xl mb-1">
-                      {spot.mobs[0]?.icon || '👹'}
+                  {spot.mobs.length === 1 ? (
+                    <div className="text-center">
+                      <div className="text-2xl mb-1">
+                        {spot.mobs[0]?.icon || '👹'}
+                      </div>
+                      <div className="text-xs text-gray-400">
+                        Атаковать
+                      </div>
                     </div>
-                    <div className="text-xs text-gray-400">
-                      {spot.mobs.length} мобов
+                  ) : (
+                    <div className="text-center">
+                      <div className="grid grid-cols-2 gap-1 mb-1">
+                        {spot.mobs.slice(0, 4).map((mob, index) => (
+                          <div key={mob.id} className="text-sm">
+                            {mob.icon}
+                          </div>
+                        ))}
+                      </div>
+                      <div className="text-xs text-gray-400">
+                        {spot.mobs.length} мобов
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
+
+                {/* Индикатор множественных мобов */}
+                {spot.mobs.length > 1 && (
+                  <div className="absolute -top-1 -right-1 bg-yellow-400 text-dark-900 text-xs rounded-full w-4 h-4 flex items-center justify-center font-bold">
+                    {spot.mobs.length}
+                  </div>
+                )}
 
                 {/* Tooltip при наведении */}
                 {hoveredSpot?.id === spot.id && (
                   <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 bg-dark-100 border border-primary-400/50 rounded p-2 z-20 min-w-48">
                     <h4 className="text-sm font-bold text-white mb-1">{spot.name}</h4>
+                    <div className="text-xs text-gray-400 mb-2">
+                      {spot.mobs.length === 1 ? 'Нажмите для атаки' : 'Нажмите для выбора моба'}
+                    </div>
                     <div className="space-y-1">
                       {spot.mobs.map((mob) => (
                         <div key={mob.id} className="flex items-center justify-between text-xs">
@@ -405,6 +459,72 @@ export default function WorldMapNew({ character, onUpdateCharacter }: WorldMapPr
           onClose={handleCloseModal}
           onAttack={handleAttackMob}
         />
+      )}
+
+      {/* Селектор мобов */}
+      {showMobSelector && clickedSpot && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-dark-100 border border-primary-400/50 rounded-lg p-6 max-w-md w-full mx-4">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold text-white flex items-center space-x-2">
+                <Sword className="w-6 h-6 text-yellow-400" />
+                <span>Выберите цель</span>
+              </h2>
+              <button
+                onClick={handleCloseMobSelector}
+                className="text-gray-400 hover:text-white"
+              >
+                <span className="text-xl">×</span>
+              </button>
+            </div>
+
+            <div className="mb-4">
+              <h3 className="text-lg text-white mb-2">{clickedSpot.name}</h3>
+              <p className="text-sm text-gray-400">
+                В этой зоне обитает несколько видов монстров. Выберите, на кого хотите напасть:
+              </p>
+            </div>
+
+            <div className="space-y-2 max-h-60 overflow-y-auto">
+              {clickedSpot.mobs.map((mob) => (
+                <div
+                  key={mob.id}
+                  className="p-3 bg-dark-200/30 border border-dark-300/50 rounded cursor-pointer hover:bg-dark-200/50 hover:border-red-400/50 transition-all"
+                  onClick={() => handleMobSelectFromSpot(mob)}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <span className="text-2xl">{mob.icon}</span>
+                      <div>
+                        <h4 className="text-white font-semibold">{mob.name}</h4>
+                        <div className="flex items-center space-x-2 text-sm">
+                          <span className="text-yellow-400">Ур. {mob.level}</span>
+                          <span className="text-gray-400">•</span>
+                          <span className="text-red-400">{mob.health} HP</span>
+                          <span className="text-gray-400">•</span>
+                          <span className="text-orange-400">{mob.attack} атк</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-sm text-green-400">+{mob.experience_reward} опыта</div>
+                      <div className="text-sm text-yellow-400">+{mob.gold_reward} золота</div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-4 flex justify-end">
+              <button
+                onClick={handleCloseMobSelector}
+                className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded transition-colors"
+              >
+                Отмена
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )
