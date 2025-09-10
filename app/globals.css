@@ -667,3 +667,10 @@ a {
   text-align: center;
   pointer-events: none;
 }
+
+/* Исправление для растягивания ячеек инвентаря с ItemTooltip */
+.tooltip-trigger {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+}
