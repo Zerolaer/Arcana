@@ -252,45 +252,47 @@ export default function ItemTooltip({
                 onUnequip: !!onUnequip
               })
               
-              return canEquip && (onEquip || onUnequip)
-            })() && (
-              <button
-                onMouseDown={(e) => {
-                  console.log('🚨🚨🚨 BUTTON MOUSE DOWN!', item.name, 'isEquipped:', isItemEquipped)
-                  e.stopPropagation()
-                }}
-                onClick={(e) => {
-                  console.log('🚨🚨🚨 BUTTON CLICKED!', item.name, 'isEquipped:', isItemEquipped)
-                  e.stopPropagation()
-                  e.preventDefault()
-                  
-                  if (isItemEquipped) {
-                    // Снимаем предмет
-                    if (onUnequip) {
-                      console.log('🚨🚨🚨 Calling onUnequip function')
-                      onUnequip()
-                      if (onClose) onClose()
+              if (!canEquip || (!onEquip && !onUnequip)) return null
+              
+              return (
+                <button
+                  onMouseDown={(e) => {
+                    console.log('🚨🚨🚨 BUTTON MOUSE DOWN!', item.name, 'isEquipped:', isItemEquipped)
+                    e.stopPropagation()
+                  }}
+                  onClick={(e) => {
+                    console.log('🚨🚨🚨 BUTTON CLICKED!', item.name, 'isEquipped:', isItemEquipped)
+                    e.stopPropagation()
+                    e.preventDefault()
+                    
+                    if (isItemEquipped) {
+                      // Снимаем предмет
+                      if (onUnequip) {
+                        console.log('🚨🚨🚨 Calling onUnequip function')
+                        onUnequip()
+                        if (onClose) onClose()
+                      }
+                    } else {
+                      // Надеваем предмет
+                      if (onEquip) {
+                        console.log('🚨🚨🚨 Calling onEquip function')
+                        onEquip()
+                        if (onClose) onClose()
+                      }
                     }
-                  } else {
-                    // Надеваем предмет
-                    if (onEquip) {
-                      console.log('🚨🚨🚨 Calling onEquip function')
-                      onEquip()
-                      if (onClose) onClose()
-                    }
-                  }
-                }}
-                className={`w-full px-3 py-2 text-white text-sm rounded-md transition-colors flex items-center justify-center space-x-2 ${
-                  isItemEquipped 
-                    ? 'bg-red-600 hover:bg-red-700' 
-                    : 'bg-blue-600 hover:bg-blue-700'
-                }`}
-                style={{ pointerEvents: 'auto', zIndex: 10000 }}
-              >
-                <span>{isItemEquipped ? '👕' : '⚔️'}</span>
-                <span>{isItemEquipped ? 'Снять' : 'Надеть'}</span>
-              </button>
-            )}
+                  }}
+                  className={`w-full px-3 py-2 text-white text-sm rounded-md transition-colors flex items-center justify-center space-x-2 ${
+                    isItemEquipped 
+                      ? 'bg-red-600 hover:bg-red-700' 
+                      : 'bg-blue-600 hover:bg-blue-700'
+                  }`}
+                  style={{ pointerEvents: 'auto', zIndex: 10000 }}
+                >
+                  <span>{isItemEquipped ? '👕' : '⚔️'}</span>
+                  <span>{isItemEquipped ? 'Снять' : 'Надеть'}</span>
+                </button>
+              )
+            })()}
             
           </div>
         </div>
