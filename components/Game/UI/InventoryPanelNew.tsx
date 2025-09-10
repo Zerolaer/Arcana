@@ -6,6 +6,7 @@ import { toast } from 'react-hot-toast'
 import { Package, ArrowUpDown, Search, Filter, X } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import ItemTooltip, { GameItem } from '../../UI/ItemTooltip'
+import EquipmentComponent from './EquipmentComponent'
 
 interface InventoryPanelProps {
   character: Character
@@ -20,48 +21,9 @@ interface InventoryItem {
   quantity: number
 }
 
-interface EquipmentSlot {
-  slotType: string
-  item?: GameItem
-}
-
-// Новая раскладка слотов вокруг персонажа
-const equipmentLayout = {
-  top: [
-    { key: 'head', name: 'Голова', icon: '🪖', row: 0, col: 1 },
-  ],
-  left: [
-    { key: 'main_weapon', name: 'Основное оружие', icon: '⚔️', row: 1, col: 0 },
-    { key: 'chest', name: 'Доспехи', icon: '🦺', row: 2, col: 0 },
-    { key: 'legs', name: 'Поножи', icon: '🦵', row: 3, col: 0 },
-  ],
-  right: [
-    { key: 'off_weapon', name: 'Доп. оружие', icon: '🛡️', row: 1, col: 2 },
-    { key: 'belt', name: 'Пояс', icon: '🔗', row: 2, col: 2 },
-    { key: 'feet', name: 'Ботинки', icon: '👢', row: 3, col: 2 },
-  ],
-  bottom: [
-    { key: 'ring1', name: 'Кольцо 1', icon: '💍', row: 4, col: 0 },
-    { key: 'necklace', name: 'Ожерелье', icon: '📿', row: 4, col: 1 },
-    { key: 'ring2', name: 'Кольцо 2', icon: '💍', row: 4, col: 2 },
-  ],
-  accessories: [
-    { key: 'earrings', name: 'Серьги', icon: '💎', row: 0, col: 0 },
-    { key: 'gloves', name: 'Перчатки', icon: '🧤', row: 0, col: 2 },
-  ]
-}
-
-const allEquipmentSlots = [
-  ...equipmentLayout.top,
-  ...equipmentLayout.left,
-  ...equipmentLayout.right,
-  ...equipmentLayout.bottom,
-  ...equipmentLayout.accessories,
-]
 
 export default function InventoryPanelNew({ character, onUpdateCharacter, isLoading }: InventoryPanelProps) {
   const [inventory, setInventory] = useState<InventoryItem[]>([])
-  const [equipment, setEquipment] = useState<EquipmentSlot[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [activeFilter, setActiveFilter] = useState<string>('all')
@@ -88,27 +50,9 @@ export default function InventoryPanelNew({ character, onUpdateCharacter, isLoad
     }
   }, [character.id])
 
-  // Загрузка экипировки
-  const loadEquipment = useCallback(async () => {
-    try {
-      const { data, error } = await (supabase as any)
-        .rpc('get_character_equipment', { p_character_id: character.id })
-
-      if (error) {
-        console.error('Error loading equipment:', error)
-        return
-      }
-
-      setEquipment(data || [])
-    } catch (error) {
-      console.error('Error loading equipment:', error)
-    }
-  }, [character.id])
-
   useEffect(() => {
     loadInventory()
-    loadEquipment()
-  }, [loadInventory, loadEquipment])
+  }, [loadInventory])
 
   // Сортировка инвентаря (исправленная версия)
   const handleSortInventory = async () => {
@@ -181,7 +125,6 @@ export default function InventoryPanelNew({ character, onUpdateCharacter, isLoad
       if (data?.success) {
         toast.success(`${item.name} экипирован`)
         await loadInventory()
-        await loadEquipment()
         // Обновляем характеристики персонажа
         const updatedChar = { ...character }
         await onUpdateCharacter(updatedChar)
@@ -212,7 +155,6 @@ export default function InventoryPanelNew({ character, onUpdateCharacter, isLoad
       if (data?.success) {
         toast.success('Предмет снят')
         await loadInventory()
-        await loadEquipment()
         // Обновляем характеристики персонажа
         const updatedChar = { ...character }
         await onUpdateCharacter(updatedChar)
@@ -266,84 +208,11 @@ export default function InventoryPanelNew({ character, onUpdateCharacter, isLoad
             <span>Экипировка</span>
           </h2>
 
-          {/* Equipment Layout - вокруг персонажа */}
-          <div className="flex-1 flex items-center justify-center">
-            <div className="relative">
-              {/* Создаем сетку 5x3 для размещения слотов */}
-              <div className="grid grid-cols-3 gap-4" style={{ gridTemplateRows: 'repeat(5, 60px)' }}>
-                {Array.from({ length: 15 }, (_, index) => {
-                  const row = Math.floor(index / 3)
-                  const col = index % 3
-                  const slot = allEquipmentSlots.find(s => s.row === row && s.col === col)
-                  
-                  if (!slot) {
-                    // Центральная ячейка (1,1) - персонаж
-                    if (row === 1 && col === 1) {
-                      return (
-                        <div key={`character-${index}`} className="w-16 h-16 flex items-center justify-center">
-                          <div className="w-12 h-12 bg-gradient-to-br from-primary-500/20 to-primary-600/20 border border-primary-400/30 rounded-full flex items-center justify-center">
-                            <span className="text-lg">👤</span>
-                          </div>
-                        </div>
-                      )
-                    }
-                    // Другие центральные ячейки - заглушка для персонажа
-                    if (row === 2 && col === 1) {
-                      return (
-                        <div key={`character-body-${index}`} className="w-16 h-16 flex items-center justify-center">
-                          <div className="w-12 h-12 bg-gradient-to-br from-primary-500/10 to-primary-600/10 border border-primary-400/20 rounded flex items-center justify-center">
-                            <span className="text-sm text-primary-300">👕</span>
-                          </div>
-                        </div>
-                      )
-                    }
-                    if (row === 3 && col === 1) {
-                      return (
-                        <div key={`character-legs-${index}`} className="w-16 h-16 flex items-center justify-center">
-                          <div className="w-12 h-12 bg-gradient-to-br from-primary-500/10 to-primary-600/10 border border-primary-400/20 rounded flex items-center justify-center">
-                            <span className="text-sm text-primary-300">👖</span>
-                          </div>
-                        </div>
-                      )
-                    }
-                    return <div key={`empty-${index}`} className="w-16 h-16"></div>
-                  }
-
-                  const equippedItem = equipment.find(eq => eq.slotType === slot.key)
-                  const hasItem = !!equippedItem?.item
-                  
-                  return (
-                    <div key={slot.key} className="relative">
-                      {hasItem && equippedItem?.item ? (
-                        <ItemTooltip
-                          item={equippedItem.item}
-                          onUnequip={() => handleUnequipItem(slot.key)}
-                          showActions={true}
-                          isEquipped={true}
-                        >
-                          <div className="w-16 h-16 rounded-lg flex flex-col items-center justify-center p-1 cursor-pointer bg-dark-200/50 border-2 border-solid border-gold-400/60">
-                            <div className="w-full h-full flex flex-col items-center justify-center">
-                              <div className="text-lg">{equippedItem.item.icon}</div>
-                              <div className="text-xs text-gray-400 mt-0.5">
-                                {equippedItem.item.level} ур.
-                              </div>
-                            </div>
-                          </div>
-                        </ItemTooltip>
-                      ) : (
-                        <div className="w-16 h-16 rounded-lg flex flex-col items-center justify-center p-1 cursor-pointer bg-dark-200/20 border-2 border-dashed border-dark-300/30">
-                          <div className="w-full h-full flex flex-col items-center justify-center text-gray-500 opacity-40">
-                            <div className="text-sm">{slot.icon}</div>
-                            <div className="text-xs text-center mt-0.5 leading-tight">{slot.name}</div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
-          </div>
+          <EquipmentComponent 
+            character={character}
+            onUpdateCharacter={onUpdateCharacter}
+            layout="inventory"
+          />
         </div>
 
         {/* 2. Инвентарь */}

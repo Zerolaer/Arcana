@@ -7,6 +7,7 @@ import { Plus, Minus, RotateCcw, Crown, TrendingUp, Sword, Shield, Star, Zap, Ey
 import { supabase } from '@/lib/supabase'
 import { GameItem } from '../../UI/ItemTooltip'
 import ItemTooltip from '../../UI/ItemTooltip'
+import EquipmentComponent from './EquipmentComponent'
 
 interface CharacterPanelProps {
   character: Character
@@ -14,27 +15,7 @@ interface CharacterPanelProps {
   isLoading: boolean
 }
 
-interface EquipmentSlot {
-  slotType: string
-  item?: GameItem
-  currentDurability?: number
-  upgradeLevel?: number
-  equippedAt?: string
-}
 
-const equipmentSlots = [
-  { key: 'weapon', name: 'Основное оружие', icon: <Sword className="w-5 h-5 text-red-400" />, position: 'top-left' },
-  { key: 'offhand', name: 'Доп. оружие', icon: <Sword className="w-5 h-5 text-orange-400" />, position: 'top-right' },
-  { key: 'helmet', name: 'Голова', icon: <Crown className="w-5 h-5 text-blue-400" />, position: 'left' },
-  { key: 'earrings', name: 'Серьги', icon: <Star className="w-5 h-5 text-pink-400" />, position: 'right' },
-  { key: 'armor', name: 'Доспехи', icon: <Shield className="w-5 h-5 text-green-400" />, position: 'left' },
-  { key: 'amulet', name: 'Ожерелье', icon: <Crown className="w-5 h-5 text-gold-400" />, position: 'right' },
-  { key: 'belt', name: 'Пояс', icon: <Zap className="w-5 h-5 text-yellow-400" />, position: 'left' },
-  { key: 'ring1', name: 'Кольцо 1', icon: <Star className="w-5 h-5 text-purple-400" />, position: 'right' },
-  { key: 'pants', name: 'Поножи', icon: <Shield className="w-5 h-5 text-cyan-400" />, position: 'left' },
-  { key: 'ring2', name: 'Кольцо 2', icon: <Star className="w-5 h-5 text-purple-400" />, position: 'right' },
-  { key: 'boots', name: 'Ботинки', icon: <Eye className="w-5 h-5 text-indigo-400" />, position: 'bottom' }
-]
 
 export default function CharacterPanelUnified({ character, onUpdateCharacter, isLoading }: CharacterPanelProps) {
   const [tempStats, setTempStats] = useState({
@@ -45,8 +26,6 @@ export default function CharacterPanelUnified({ character, onUpdateCharacter, is
     energy: 0,
     luck: 0
   })
-  const [equipment, setEquipment] = useState<EquipmentSlot[]>([])
-  const [equipmentLoading, setEquipmentLoading] = useState(true)
 
   const totalAllocatedPoints = Object.values(tempStats).reduce((sum, val) => sum + val, 0)
   const remainingPoints = character.stat_points - totalAllocatedPoints
@@ -401,46 +380,11 @@ export default function CharacterPanelUnified({ character, onUpdateCharacter, is
             <span>Экипировка</span>
           </h2>
 
-          {/* Equipment Grid 3x4 */}
-          <div className="grid grid-cols-3 gap-2">
-            {equipmentSlots.map((slot) => {
-              const equippedItem = equipment.find(eq => eq.slotType === slot.key)
-              const hasItem = !!equippedItem?.item
-              
-              return (
-                <div key={slot.key} className="relative">
-                  {hasItem && equippedItem?.item ? (
-                    <ItemTooltip
-                      item={equippedItem.item}
-                      onUnequip={() => unequipItem(slot.key)}
-                      showActions={true}
-                      isEquipped={true}
-                    >
-                      <div 
-                        className="w-16 h-16 rounded-lg flex flex-col items-center justify-center p-1 cursor-pointer bg-dark-200/50 border-2 border-solid border-gold-400/60"
-                      >
-                        <div className="w-full h-full flex flex-col items-center justify-center">
-                          <div className="text-lg">{equippedItem.item.icon}</div>
-                          <div className="text-xs text-gray-400 mt-0.5">
-                            {equippedItem.item.level} ур.
-                          </div>
-                        </div>
-                      </div>
-                    </ItemTooltip>
-                  ) : (
-                    <div 
-                      className="w-16 h-16 rounded-lg flex flex-col items-center justify-center p-1 cursor-pointer bg-dark-200/20 border-2 border-dashed border-dark-300/30"
-                    >
-                      <div className="w-full h-full flex flex-col items-center justify-center text-gray-500 opacity-40">
-                        <div className="text-sm">{slot.icon}</div>
-                        <div className="text-xs text-center mt-0.5 leading-tight">{slot.name}</div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )
-            })}
-          </div>
+          <EquipmentComponent 
+            character={character}
+            onUpdateCharacter={onUpdateCharacter}
+            layout="character"
+          />
         </div>
       </div>
 
