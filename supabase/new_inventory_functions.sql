@@ -29,12 +29,11 @@ BEGIN
                 'category_id', i.category_id,
                 'subcategory_id', i.subcategory_id
             )
-        )
+        ) ORDER BY ci.slot_position
     ) INTO v_result
     FROM character_inventory ci
     JOIN items_new i ON ci.item_id = i.id
-    WHERE ci.character_id = p_character_id
-    ORDER BY ci.slot_position;
+    WHERE ci.character_id = p_character_id;
     
     RETURN COALESCE(v_result, '[]'::json);
 END;
@@ -63,7 +62,7 @@ BEGIN
                 'category_id', i.category_id,
                 'subcategory_id', i.subcategory_id
             )
-        )
+        ) ORDER BY ce.slot_type
     ) INTO v_result
     FROM character_equipment ce
     JOIN items_new i ON ce.item_id = i.id
@@ -242,18 +241,25 @@ BEGIN
     RAISE NOTICE 'Тестируем функции для персонажа: %', test_char_id;
     
     -- Тест получения инвентаря
-    IF EXISTS (SELECT 1 FROM get_character_inventory(test_char_id) LIMIT 1) THEN
-        RAISE NOTICE '✅ Функция get_character_inventory работает';
-    ELSE
-        RAISE NOTICE 'ℹ️ Функция get_character_inventory работает (инвентарь пуст)';
-    END IF;
-    
-    -- Тест получения экипировки  
-    IF EXISTS (SELECT 1 FROM get_character_equipment(test_char_id) LIMIT 1) THEN
-        RAISE NOTICE '✅ Функция get_character_equipment работает';
-    ELSE
-        RAISE NOTICE 'ℹ️ Функция get_character_equipment работает (экипировка пуста)';
-    END IF;
+    DECLARE
+        inventory_result JSON;
+        equipment_result JSON;
+    BEGIN
+        SELECT get_character_inventory(test_char_id) INTO inventory_result;
+        IF inventory_result IS NOT NULL THEN
+            RAISE NOTICE '✅ Функция get_character_inventory работает';
+        ELSE
+            RAISE NOTICE '❌ Ошибка в функции get_character_inventory';
+        END IF;
+        
+        -- Тест получения экипировки  
+        SELECT get_character_equipment(test_char_id) INTO equipment_result;
+        IF equipment_result IS NOT NULL THEN
+            RAISE NOTICE '✅ Функция get_character_equipment работает';
+        ELSE
+            RAISE NOTICE '❌ Ошибка в функции get_character_equipment';
+        END IF;
+    END;
     
     RAISE NOTICE '🎉 Все функции работают корректно!';
 END $$;

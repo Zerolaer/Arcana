@@ -100,7 +100,7 @@ export default function DatabaseInventoryPanel({ character, onUpdateCharacter, i
               subType: '',
               icon: inventoryItem.item.icon,
               level: 1,
-              stats: inventoryItem.actual_stats || {},
+              stats: inventoryItem.actual_stats && typeof inventoryItem.actual_stats === 'object' ? inventoryItem.actual_stats : {},
               value: inventoryItem.value || 0,
               stackable: true,
               stackSize: inventoryItem.stack_size || 1,

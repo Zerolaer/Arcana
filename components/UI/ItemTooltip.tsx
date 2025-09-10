@@ -95,6 +95,8 @@ export default function ItemTooltip({
   isEquipped = false
 }: ItemTooltipProps) {
   const renderStats = () => {
+    if (!item.stats || typeof item.stats !== 'object') return null
+    
     const stats = Object.entries(item.stats).filter(([_, value]) => value && value > 0)
     
     if (stats.length === 0) return null
