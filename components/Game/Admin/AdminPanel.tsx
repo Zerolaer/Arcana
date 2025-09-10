@@ -63,7 +63,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, character, onC
         .eq('character_id', character.id)
         .order('slot_position');
 
-      const usedSlots = inventory?.map(item => item.slot_position) || [];
+      const usedSlots = inventory?.map((item: any) => item.slot_position) || [];
       let freeSlot = 1;
       while (usedSlots.includes(freeSlot)) {
         freeSlot++;
