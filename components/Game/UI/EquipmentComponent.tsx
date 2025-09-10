@@ -178,7 +178,7 @@ export default function EquipmentComponent({
           {/* Информация о персонаже */}
           <div className="text-center mb-4">
             <div className="text-white font-semibold">{character.name}</div>
-            <div className="text-sm text-gray-400">Lv {character.level} {character.character_class}</div>
+            <div className="text-sm text-gray-400">Lv {character.level} {character.class_id}</div>
           </div>
           
           {/* Большая фигура персонажа */}
@@ -197,11 +197,11 @@ export default function EquipmentComponent({
           {/* Базовые характеристики под персонажем */}
           <div className="mt-4 grid grid-cols-2 gap-4 text-xs">
             <div className="text-center">
-              <div className="text-green-400 font-semibold">{character.current_health}</div>
+              <div className="text-green-400 font-semibold">{character.health}</div>
               <div className="text-gray-400">Health Points</div>
             </div>
             <div className="text-center">
-              <div className="text-blue-400 font-semibold">{character.current_mana}</div>
+              <div className="text-blue-400 font-semibold">{character.mana}</div>
               <div className="text-gray-400">Magic Power</div>
             </div>
             <div className="text-center">
