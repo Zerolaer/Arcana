@@ -1,12 +1,9 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState } from 'react'
 import { Character } from '@/types/game'
 import { toast } from 'react-hot-toast'
 import { Plus, Minus, RotateCcw, Crown, TrendingUp, Sword, Shield, Star, Zap, Eye, Package } from 'lucide-react'
-import { supabase } from '@/lib/supabase'
-import { GameItem } from '../../UI/ItemTooltip'
-import ItemTooltip from '../../UI/ItemTooltip'
 import EquipmentComponent from './EquipmentComponent'
 
 interface CharacterPanelProps {
@@ -69,65 +66,6 @@ export default function CharacterPanelUnified({ character, onUpdateCharacter, is
     }
   ]
 
-  // Загрузка экипировки
-  const loadEquipment = useCallback(async () => {
-    try {
-      setEquipmentLoading(true)
-      
-      const { data, error } = await (supabase as any)
-        .rpc('get_character_equipment', { p_character_id: character.id })
-
-      if (error) {
-        console.error('Error loading equipment:', error)
-        return
-      }
-
-      const equipmentData = equipmentSlots.map(slot => {
-        const equippedItem = data?.find((item: any) => item.slot_type === slot.key)
-        
-        if (equippedItem) {
-          return {
-            slotType: slot.key,
-            item: {
-              id: equippedItem.item.id,
-              name: equippedItem.item.name,
-              description: equippedItem.item.description,
-              rarity: equippedItem.item.rarity,
-              type: equippedItem.item.type,
-              subType: equippedItem.item.subType,
-              icon: equippedItem.item.icon,
-              level: equippedItem.item.level,
-              stats: equippedItem.item.stats,
-              value: equippedItem.item.value,
-              stackable: false,
-              stackSize: 1,
-              durability: equippedItem.item.durability,
-              setBonus: equippedItem.item.setBonus,
-              requirements: equippedItem.item.requirements
-            },
-            currentDurability: equippedItem.current_durability,
-            upgradeLevel: equippedItem.upgrade_level,
-            equippedAt: equippedItem.equipped_at
-          }
-        } else {
-          return {
-            slotType: slot.key,
-            item: undefined
-          }
-        }
-      })
-
-      setEquipment(equipmentData)
-    } catch (error) {
-      console.error('Error loading equipment:', error)
-    } finally {
-      setEquipmentLoading(false)
-    }
-  }, [character.id])
-
-  useEffect(() => {
-    loadEquipment()
-  }, [loadEquipment])
 
   const adjustTempStat = (stat: keyof typeof tempStats, change: number) => {
     const newValue = tempStats[stat] + change
@@ -204,28 +142,6 @@ export default function CharacterPanelUnified({ character, onUpdateCharacter, is
     return character[stat] + tempStats[stat]
   }
 
-  // Функция для снятия экипировки
-  const unequipItem = async (slotType: string) => {
-    try {
-      const { error } = await (supabase as any)
-        .rpc('unequip_item', { 
-          p_character_id: character.id, 
-          p_slot_type: slotType 
-        })
-
-      if (error) {
-        console.error('Error unequipping item:', error)
-        toast.error('Ошибка снятия предмета')
-        return
-      }
-
-      toast.success('Предмет снят')
-      loadEquipment() // Перезагружаем экипировку
-    } catch (error) {
-      console.error('Error unequipping item:', error)
-      toast.error('Ошибка снятия предмета')
-    }
-  }
 
   return (
     <div className="flex-1 game-content p-4">
