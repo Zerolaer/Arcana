@@ -68,6 +68,34 @@ const CLASS_NAMES: Record<string, string> = {
   'berserker': 'Берсерк'
 }
 
+// Маппинг аватарок для классов (эмодзи и изображения)
+const CLASS_AVATARS: Record<string, { emoji: string; image?: string }> = {
+  'mage': { emoji: '🔮', image: '/avatars/mage.svg' }, // Маг - кристальный шар
+  'wizard': { emoji: '🧙‍♂️', image: '/avatars/wizard.png' }, // Волшебник - волшебник с бородой
+  'sorcerer': { emoji: '🧙‍♀️', image: '/avatars/sorcerer.png' }, // Чародей - волшебница
+  'warlock': { emoji: '👹', image: '/avatars/warlock.png' }, // Варлок - демон
+  'necromancer': { emoji: '💀', image: '/avatars/necromancer.png' }, // Некромант - череп
+  'shaman': { emoji: '🌩️', image: '/avatars/shaman.png' }, // Шаман - молния
+  'druid': { emoji: '🌿', image: '/avatars/druid.png' }, // Друид - листья
+  'priest': { emoji: '⛪', image: '/avatars/priest.png' }, // Жрец - церковь
+  'cleric': { emoji: '⛪', image: '/avatars/cleric.png' }, // Клирик - церковь
+  'paladin': { emoji: '🛡️', image: '/avatars/paladin.png' }, // Паладин - щит
+  'warrior': { emoji: '⚔️', image: '/avatars/warrior.svg' }, // Воин - мечи
+  'fighter': { emoji: '⚔️', image: '/avatars/warrior.svg' }, // Боец - мечи
+  'knight': { emoji: '🛡️', image: '/avatars/warrior.svg' }, // Рыцарь - щит
+  'barbarian': { emoji: '🪓', image: '/avatars/warrior.svg' }, // Варвар - топор
+  'berserker': { emoji: '🪓', image: '/avatars/warrior.svg' }, // Берсерк - топор
+  'rogue': { emoji: '🗡️', image: '/avatars/rogue.svg' }, // Разбойник - кинжал
+  'thief': { emoji: '🗡️', image: '/avatars/thief.png' }, // Вор - кинжал
+  'assassin': { emoji: '🗡️', image: '/avatars/assassin.png' }, // Убийца - кинжал
+  'archer': { emoji: '🏹', image: '/avatars/archer.png' }, // Лучник - лук
+  'hunter': { emoji: '🏹', image: '/avatars/hunter.png' }, // Охотник - лук
+  'ranger': { emoji: '🏹', image: '/avatars/ranger.png' }, // Следопыт - лук
+  'monk': { emoji: '🥋', image: '/avatars/monk.png' }, // Монах - кимоно
+  'bard': { emoji: '🎵', image: '/avatars/bard.png' }, // Бард - нота
+  'death_knight': { emoji: '💀', image: '/avatars/death_knight.png' } // Рыцарь Смерти - череп
+}
+
 export default function EquipmentComponent({ 
   character, 
   onUpdateCharacter, 
@@ -220,14 +248,45 @@ export default function EquipmentComponent({
           </div>
           
           {/* Большая фигура персонажа */}
-          <div className="relative w-48 h-64 bg-gradient-to-b from-dark-100/20 to-dark-200/40 border border-dark-300/30 rounded-lg flex items-center justify-center">
-            <div className="text-8xl opacity-50">👤</div>
+          <div className="relative w-48 h-64 bg-gradient-to-b from-dark-100/20 to-dark-200/40 border border-dark-300/30 rounded-lg flex items-center justify-center overflow-hidden">
+            {/* Аватарка класса */}
+            {(() => {
+              const avatarData = CLASS_AVATARS[character.class_id]
+              if (avatarData?.image) {
+                // Показываем изображение если оно есть
+                return (
+                  <img 
+                    src={avatarData.image} 
+                    alt={CLASS_NAMES[character.class_id] || 'Персонаж'}
+                    className="w-full h-full object-cover opacity-90"
+                    onError={(e) => {
+                      // Если изображение не загрузилось, показываем эмодзи
+                      const target = e.target as HTMLImageElement
+                      target.style.display = 'none'
+                      const parent = target.parentElement
+                      if (parent) {
+                        const emojiDiv = document.createElement('div')
+                        emojiDiv.className = 'text-8xl opacity-80 absolute inset-0 flex items-center justify-center'
+                        emojiDiv.textContent = avatarData.emoji
+                        parent.appendChild(emojiDiv)
+                      }
+                    }}
+                  />
+                )
+              } else {
+                // Показываем эмодзи
+                return (
+                  <div className="text-8xl opacity-80">
+                    {avatarData?.emoji || '👤'}
+                  </div>
+                )
+              }
+            })()}
             
-            {/* Заглушка для будущей картинки персонажа */}
-            <div className="absolute inset-0 flex items-center justify-center">
-              <div className="text-center text-gray-500">
-                <div className="text-sm">Character</div>
-                <div className="text-sm">Portrait</div>
+            {/* Дополнительная информация о классе */}
+            <div className="absolute bottom-2 left-2 right-2 text-center">
+              <div className="text-xs text-gray-400 bg-dark-200/50 rounded px-2 py-1">
+                {CLASS_NAMES[character.class_id] || 'Неизвестный класс'}
               </div>
             </div>
           </div>
