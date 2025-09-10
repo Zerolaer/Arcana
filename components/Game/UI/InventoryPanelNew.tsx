@@ -27,6 +27,7 @@ export default function InventoryPanelNew({ character, onUpdateCharacter, isLoad
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [activeFilter, setActiveFilter] = useState<string>('all')
+  const [equipmentKey, setEquipmentKey] = useState(0) // Для принудительного обновления EquipmentComponent
 
   // Загрузка инвентаря
   const loadInventory = useCallback(async () => {
@@ -133,6 +134,7 @@ export default function InventoryPanelNew({ character, onUpdateCharacter, isLoad
       if (data?.success) {
         toast.success(`${item.name} экипирован`)
         await loadInventory()
+        setEquipmentKey(prev => prev + 1) // Принудительно обновляем EquipmentComponent
         // Обновляем характеристики персонажа
         const updatedChar = { ...character }
         await onUpdateCharacter(updatedChar)
@@ -216,11 +218,16 @@ export default function InventoryPanelNew({ character, onUpdateCharacter, isLoad
             <span>Экипировка</span>
           </h2>
 
-          <EquipmentComponent 
-            character={character}
-            onUpdateCharacter={onUpdateCharacter}
-            layout="inventory"
-          />
+              <EquipmentComponent
+                key={equipmentKey}
+                character={character}
+                onUpdateCharacter={onUpdateCharacter}
+                onEquipmentChange={() => {
+                  setEquipmentKey(prev => prev + 1)
+                  loadInventory()
+                }}
+                layout="inventory"
+              />
         </div>
 
         {/* 2. Инвентарь */}

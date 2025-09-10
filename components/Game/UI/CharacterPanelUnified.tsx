@@ -23,6 +23,7 @@ export default function CharacterPanelUnified({ character, onUpdateCharacter, is
     energy: 0,
     luck: 0
   })
+  const [equipmentKey, setEquipmentKey] = useState(0) // Для принудительного обновления EquipmentComponent
 
   const totalAllocatedPoints = Object.values(tempStats).reduce((sum, val) => sum + val, 0)
   const remainingPoints = character.stat_points - totalAllocatedPoints
@@ -297,6 +298,7 @@ export default function CharacterPanelUnified({ character, onUpdateCharacter, is
           </h2>
 
           <EquipmentComponent 
+            key={equipmentKey}
             character={character}
             onUpdateCharacter={onUpdateCharacter}
             layout="character"

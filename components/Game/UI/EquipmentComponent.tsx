@@ -9,12 +9,16 @@ import ItemTooltip, { GameItem } from '../../UI/ItemTooltip'
 interface EquipmentComponentProps {
   character: Character
   onUpdateCharacter?: (updates: Partial<Character>) => Promise<boolean>
+  onEquipmentChange?: () => void // Callback для уведомления об изменениях экипировки
   layout?: 'character' | 'inventory' // Тип макета
 }
 
 interface EquipmentSlot {
   slotType: string
   item?: GameItem
+  current_durability?: number
+  upgrade_level?: number
+  equipped_at?: string
 }
 
 // Единая раскладка слотов для обоих вариантов
@@ -49,6 +53,7 @@ const equipmentLayout = {
 export default function EquipmentComponent({ 
   character, 
   onUpdateCharacter, 
+  onEquipmentChange,
   layout = 'character' 
 }: EquipmentComponentProps) {
   const [equipment, setEquipment] = useState<EquipmentSlot[]>([])
@@ -66,6 +71,7 @@ export default function EquipmentComponent({
         return
       }
 
+      console.log('Equipment data from DB:', data) // Для отладки
       setEquipment(data || [])
     } catch (error) {
       console.error('Error loading equipment:', error)
@@ -96,6 +102,8 @@ export default function EquipmentComponent({
       if (data?.success) {
         toast.success('Предмет снят')
         await loadEquipment()
+        // Уведомляем родительский компонент об изменении
+        onEquipmentChange?.()
         // Обновляем характеристики персонажа если есть функция
         if (onUpdateCharacter) {
           const updatedChar = { ...character }
