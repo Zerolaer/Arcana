@@ -47,6 +47,8 @@ export default function CharacterPanelUnified({ character, onUpdateCharacter, is
   })
   const [equipment, setEquipment] = useState<EquipmentSlot[]>([])
   const [equipmentLoading, setEquipmentLoading] = useState(true)
+  const [selectedItem, setSelectedItem] = useState<{ item: GameItem, slotType: string } | null>(null)
+  const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 })
 
   const totalAllocatedPoints = Object.values(tempStats).reduce((sum, val) => sum + val, 0)
   const remainingPoints = character.stat_points - totalAllocatedPoints
@@ -249,26 +251,26 @@ export default function CharacterPanelUnified({ character, onUpdateCharacter, is
   }
 
   return (
-    <div className="flex-1 game-content p-6 space-y-6">
+    <div className="flex-1 game-content p-4 space-y-4">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between mb-4">
         <div>
-          <h1 className="text-2xl font-bold text-white flex items-center space-x-2">
-            <Crown className="w-6 h-6 text-gold-400" />
+          <h1 className="text-xl font-bold text-white flex items-center space-x-2">
+            <Crown className="w-5 h-5 text-gold-400" />
             <span>Персонаж</span>
           </h1>
-          <p className="text-dark-400 mt-1">Развитие и характеристики вашего героя</p>
+          <p className="text-dark-400 text-sm">Развитие и характеристики вашего героя</p>
         </div>
 
         {/* Available Points */}
         <div className="text-right">
-          <div className="text-sm text-dark-400">Доступно очков:</div>
-          <div className="text-2xl font-bold text-primary-400">{remainingPoints}</div>
+          <div className="text-xs text-dark-400">Доступно очков:</div>
+          <div className="text-xl font-bold text-primary-400">{remainingPoints}</div>
         </div>
       </div>
 
       {/* Main Content - Three Sections */}
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 h-full">
         
         {/* 1. Характеристики */}
         <div className="game-panel p-6">
@@ -418,8 +420,23 @@ export default function CharacterPanelUnified({ character, onUpdateCharacter, is
               const equippedItem = equipment.find(eq => eq.slotType === slot.key)
               
               return (
-                <div key={slot.key} className="relative group">
-                  <div className="w-15 h-15 bg-dark-200/30 border-2 border-dashed border-dark-300/50 rounded-lg flex flex-col items-center justify-center p-1 hover:border-dark-300/70 transition-colors relative">
+                <div key={slot.key} className="relative">
+                  <div 
+                    className="w-16 h-16 bg-dark-200/30 border-2 border-dashed border-dark-300/50 rounded-lg flex flex-col items-center justify-center p-1 cursor-pointer hover:border-dark-300/70 transition-colors"
+                    onClick={(e) => {
+                      if (equippedItem?.item) {
+                        const rect = e.currentTarget.getBoundingClientRect()
+                        setTooltipPosition({
+                          x: rect.right + 10,
+                          y: rect.top
+                        })
+                        setSelectedItem({
+                          item: equippedItem.item,
+                          slotType: slot.key
+                        })
+                      }
+                    }}
+                  >
                     {equippedItem?.item ? (
                       <div className="w-full h-full flex flex-col items-center justify-center">
                         <div className="text-lg mb-0.5">{equippedItem.item.icon}</div>
@@ -428,17 +445,6 @@ export default function CharacterPanelUnified({ character, onUpdateCharacter, is
                         </div>
                         <div className="text-xs text-gray-400">
                           {equippedItem.item.level} ур.
-                        </div>
-                        
-                        {/* Hover overlay with unequip button */}
-                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center rounded-lg">
-                          <button
-                            onClick={() => unequipItem(slot.key)}
-                            className="px-2 py-1 bg-red-500/80 hover:bg-red-500 text-white text-xs rounded transition-colors"
-                            title="Снять предмет"
-                          >
-                            Снять
-                          </button>
                         </div>
                       </div>
                     ) : (
@@ -454,6 +460,59 @@ export default function CharacterPanelUnified({ character, onUpdateCharacter, is
           </div>
         </div>
       </div>
+
+      {/* Equipment Item Tooltip */}
+      {selectedItem && (
+        <div
+          className="fixed z-50 pointer-events-none"
+          style={{
+            left: `${tooltipPosition.x}px`,
+            top: `${tooltipPosition.y}px`,
+          }}
+        >
+          <div className="bg-dark-100 border border-dark-300 rounded-lg p-4 shadow-xl max-w-xs">
+            <div className="flex items-center space-x-2 mb-2">
+              <div className="text-lg">{selectedItem.item.icon}</div>
+              <div>
+                <div className="text-white font-semibold text-sm">{selectedItem.item.name}</div>
+                <div className="text-gray-400 text-xs">Уровень {selectedItem.item.level}</div>
+              </div>
+            </div>
+            
+            <div className="text-xs text-gray-300 mb-3">
+              {selectedItem.item.description}
+            </div>
+
+            {selectedItem.item.stats && Object.keys(selectedItem.item.stats).length > 0 && (
+              <div className="space-y-1 mb-3">
+                {Object.entries(selectedItem.item.stats).map(([key, value]) => (
+                  <div key={key} className="text-xs text-green-400">
+                    +{value} {key}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <button
+              onClick={() => {
+                unequipItem(selectedItem.slotType)
+                setSelectedItem(null)
+              }}
+              className="w-full px-3 py-1 bg-red-500/80 hover:bg-red-500 text-white text-xs rounded transition-colors pointer-events-auto"
+            >
+              Снять предмет
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Click outside to close tooltip */}
+      {selectedItem && (
+        <div
+          className="fixed inset-0 z-40"
+          onClick={() => setSelectedItem(null)}
+        />
+      )}
     </div>
   )
 }
