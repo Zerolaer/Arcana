@@ -7,7 +7,6 @@ import { WORLD_DATA, getAvailableContinents, getAvailableZones } from '@/lib/wor
 import { Map, Sword, Users, Trophy, Lock, ChevronRight } from 'lucide-react'
 import MobAttackModal from './MobAttackModal'
 import { CombatSystem } from '@/lib/combatSystem'
-import { toast } from 'react-hot-toast'
 
 interface WorldMapProps {
   character: Character
@@ -71,7 +70,7 @@ export default function WorldMapNew({ character, onUpdateCharacter }: WorldMapPr
       
       if (result) {
         // Обновляем персонажа локально
-        const updates = {
+        const updates: any = {
           experience: character.experience + result.experience,
           gold: character.gold + result.gold,
           health: Math.max(1, character.health - Math.floor(Math.random() * 20)), // Потеря здоровья в бою
@@ -86,14 +85,14 @@ export default function WorldMapNew({ character, onUpdateCharacter }: WorldMapPr
           updates.health = updates.max_health // Полное восстановление при повышении уровня
           updates.mana = updates.max_mana
           
-          toast.success(`🎉 Повышение уровня! Теперь ${updates.level} уровень!`)
+          console.log(`🎉 Повышение уровня! Теперь ${updates.level} уровень!`)
         }
         
         await onUpdateCharacter(updates)
         
         return result
       } else {
-        toast.error('💀 Вы проиграли бой! Потеряно немного здоровья.')
+        console.log('💀 Вы проиграли бой! Потеряно немного здоровья.')
         
         // Обновляем здоровье после поражения
         const newHealth = Math.max(1, Math.floor(character.health * 0.75))
@@ -103,7 +102,7 @@ export default function WorldMapNew({ character, onUpdateCharacter }: WorldMapPr
       }
     } catch (error) {
       console.error('Combat error:', error)
-      toast.error('Ошибка во время боя')
+      console.error('Ошибка во время боя')
       return null
     }
   }
