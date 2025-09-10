@@ -288,7 +288,7 @@ export default function CombatInterface({ character, onUpdateCharacter, isLoadin
         {combatState.isInCombat && (
           <button
             onClick={stopCombat}
-            className="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-lg transition-colors"
+            className="px-4 py-2 bg-red-500/20 text-red-400 rounded-lg"
           >
             Остановить бой
           </button>
@@ -368,7 +368,7 @@ export default function CombatInterface({ character, onUpdateCharacter, isLoadin
                     key={mob.id}
                     className={`p-4 rounded-lg border-2 transition-colors duration-200 ${
                       canFight
-                        ? 'border-blue-500/50 bg-blue-500/5 hover:border-blue-500 hover:bg-blue-500/10 cursor-pointer'
+                        ? 'border-blue-500/50 bg-blue-500/5 cursor-pointer'
                         : 'border-gray-500/50 bg-gray-500/5 opacity-50 cursor-not-allowed'
                     }`}
                     onClick={() => canFight && !combatState.isInCombat && startCombat(mob)}
@@ -406,7 +406,7 @@ export default function CombatInterface({ character, onUpdateCharacter, isLoadin
                           e.stopPropagation()
                           startCombat(mob)
                         }}
-                        className="w-full mt-3 px-3 py-1 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 rounded text-sm transition-colors"
+                        className="w-full mt-3 px-3 py-1 bg-blue-500/20 text-blue-400 rounded text-sm"
                       >
                         Начать бой
                       </button>

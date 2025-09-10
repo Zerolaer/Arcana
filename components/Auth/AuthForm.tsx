@@ -120,7 +120,7 @@ export default function AuthForm({ onAuthSuccess }: AuthFormProps) {
               className={`flex-1 py-2 px-4 text-sm font-medium rounded-l-md transition-colors duration-200 ${
                 isLogin
                   ? 'bg-primary-600 text-white shadow-lg'
-                  : 'bg-dark-200/50 text-dark-400 hover:text-white hover:bg-dark-200/80'
+                  : 'bg-dark-200/50 text-dark-400'
               }`}
             >
               Вход
@@ -131,7 +131,7 @@ export default function AuthForm({ onAuthSuccess }: AuthFormProps) {
               className={`flex-1 py-2 px-4 text-sm font-medium rounded-r-md transition-colors duration-200 ${
                 !isLogin
                   ? 'bg-primary-600 text-white shadow-lg'
-                  : 'bg-dark-200/50 text-dark-400 hover:text-white hover:bg-dark-200/80'
+                  : 'bg-dark-200/50 text-dark-400'
               }`}
             >
               Регистрация
@@ -194,7 +194,7 @@ export default function AuthForm({ onAuthSuccess }: AuthFormProps) {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-dark-400 hover:text-white transition-colors"
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-dark-400"
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
@@ -239,7 +239,7 @@ export default function AuthForm({ onAuthSuccess }: AuthFormProps) {
                   <button
                     type="button"
                     onClick={() => setIsLogin(false)}
-                    className="text-primary-400 hover:text-primary-300 font-medium transition-colors"
+                    className="text-primary-400 font-medium"
                   >
                     Зарегистрироваться
                   </button>
@@ -250,7 +250,7 @@ export default function AuthForm({ onAuthSuccess }: AuthFormProps) {
                   <button
                     type="button"
                     onClick={() => setIsLogin(true)}
-                    className="text-primary-400 hover:text-primary-300 font-medium transition-colors"
+                    className="text-primary-400 font-medium"
                   >
                     Войти
                   </button>

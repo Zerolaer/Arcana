@@ -150,7 +150,7 @@ export default function InventoryGrid({
         
         <button
           onClick={() => setShowFilters(!showFilters)}
-          className="flex items-center space-x-1 px-3 py-1 bg-dark-200/50 rounded-lg text-sm text-gray-300 hover:text-white hover:bg-dark-200/70 transition-colors"
+          className="flex items-center space-x-1 px-3 py-1 bg-dark-200/50 rounded-lg text-sm text-gray-300"
         >
           <Filter className="w-4 h-4" />
           <span>Фильтры</span>
@@ -181,7 +181,7 @@ export default function InventoryGrid({
                 className={`flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors ${
                   activeFilter === option.value
                     ? 'bg-primary-500 text-white'
-                    : 'bg-dark-300 text-gray-300 hover:bg-dark-400'
+                    : 'bg-dark-300 text-gray-300'
                 }`}
               >
                 <span>{option.label}</span>

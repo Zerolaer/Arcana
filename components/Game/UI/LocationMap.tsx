@@ -197,7 +197,7 @@ export default function LocationMap({ character, onUpdateCharacter, isLoading = 
         {character.current_spot_id && (
           <button
             onClick={handleLeaveSpot}
-            className="px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-lg transition-colors"
+            className="px-4 py-2 bg-red-500/20 text-red-400 rounded-lg"
           >
             Покинуть спот
           </button>
@@ -218,7 +218,7 @@ export default function LocationMap({ character, onUpdateCharacter, isLoading = 
                   selectedLocation?.id === location.id
                     ? 'border-primary-500 bg-primary-500/10'
                     : canAccessLocation(location)
-                    ? 'border-blue-500/50 bg-blue-500/5 hover:border-blue-500 hover:bg-blue-500/10'
+                    ? 'border-blue-500/50 bg-blue-500/5'
                     : 'border-gray-500/50 bg-gray-500/5 opacity-50 cursor-not-allowed'
                 }`}
               >
@@ -331,7 +331,7 @@ export default function LocationMap({ character, onUpdateCharacter, isLoading = 
                             e.stopPropagation()
                             handleOccupySpot(spot)
                           }}
-                          className="w-full mt-3 px-3 py-1 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 rounded text-sm transition-colors"
+                          className="w-full mt-3 px-3 py-1 bg-blue-500/20 text-blue-400 rounded text-sm"
                         >
                           Занять спот
                         </button>

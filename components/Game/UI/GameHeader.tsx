@@ -93,17 +93,17 @@ export default function GameHeader({ character, user, onLogout }: GameHeaderProp
 
           {/* Action Buttons */}
           <div className="flex items-center space-x-2">
-            <button className="p-2 text-dark-400 hover:text-white transition-colors rounded-lg hover:bg-dark-200/50">
+            <button className="p-2 text-dark-400 rounded-lg">
               <Bell className="w-5 h-5" />
             </button>
             
-            <button className="p-2 text-dark-400 hover:text-white transition-colors rounded-lg hover:bg-dark-200/50">
+            <button className="p-2 text-dark-400 rounded-lg">
               <Settings className="w-5 h-5" />
             </button>
             
             <button
               onClick={onLogout}
-              className="p-2 text-dark-400 hover:text-red-400 transition-colors rounded-lg hover:bg-dark-200/50"
+              className="p-2 text-dark-400 rounded-lg"
               title="Выйти из игры"
             >
               <LogOut className="w-5 h-5" />

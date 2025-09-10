@@ -306,7 +306,7 @@ export default function CharacterPanelUnified({ character, onUpdateCharacter, is
                         <button
                           onClick={() => adjustTempStat(stat.key, -1)}
                           disabled={tempValue <= 0}
-                          className="w-6 h-6 rounded bg-red-500/20 hover:bg-red-500/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-red-400 transition-colors"
+                          className="w-6 h-6 rounded bg-red-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-red-400"
                         >
                           <Minus className="w-3 h-3" />
                         </button>
@@ -318,7 +318,7 @@ export default function CharacterPanelUnified({ character, onUpdateCharacter, is
                         <button
                           onClick={() => adjustTempStat(stat.key, 1)}
                           disabled={remainingPoints <= 0}
-                          className="w-6 h-6 rounded bg-green-500/20 hover:bg-green-500/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-green-400 transition-colors relative group"
+                          className="w-6 h-6 rounded bg-green-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-green-400 relative group"
                         >
                           <Plus className="w-3 h-3" />
                           
@@ -354,7 +354,7 @@ export default function CharacterPanelUnified({ character, onUpdateCharacter, is
               
               <button
                 onClick={resetTempStats}
-                className="px-3 py-2 bg-dark-300/20 hover:bg-dark-300/40 text-dark-400 hover:text-white rounded-md transition-colors duration-200 border border-dark-300/50"
+                className="px-3 py-2 bg-dark-300/20 text-dark-400 rounded-md border border-dark-300/50"
               >
                 <RotateCcw className="w-4 h-4" />
               </button>
@@ -417,7 +417,7 @@ export default function CharacterPanelUnified({ character, onUpdateCharacter, is
                       isEquipped={true}
                     >
                       <div 
-                        className="w-16 h-16 rounded-lg flex flex-col items-center justify-center p-1 cursor-pointer transition-colors duration-200 bg-dark-200/50 border-2 border-solid border-gold-400/60 hover:border-gold-400/80"
+                        className="w-16 h-16 rounded-lg flex flex-col items-center justify-center p-1 cursor-pointer bg-dark-200/50 border-2 border-solid border-gold-400/60"
                       >
                         <div className="w-full h-full flex flex-col items-center justify-center">
                           <div className="text-lg">{equippedItem.item.icon}</div>
@@ -429,7 +429,7 @@ export default function CharacterPanelUnified({ character, onUpdateCharacter, is
                     </ItemTooltip>
                   ) : (
                     <div 
-                      className="w-16 h-16 rounded-lg flex flex-col items-center justify-center p-1 cursor-pointer transition-colors duration-200 bg-dark-200/20 border-2 border-dashed border-dark-300/30 hover:border-dark-300/50"
+                      className="w-16 h-16 rounded-lg flex flex-col items-center justify-center p-1 cursor-pointer bg-dark-200/20 border-2 border-dashed border-dark-300/30"
                     >
                       <div className="w-full h-full flex flex-col items-center justify-center text-gray-500 opacity-40">
                         <div className="text-sm">{slot.icon}</div>

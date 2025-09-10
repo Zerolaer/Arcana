@@ -64,11 +64,11 @@ export default function GameSidebar({ character, activePanel, onPanelChange }: G
 
   const getItemColor = (color: string, isActive: boolean) => {
     const colors = {
-      blue: isActive ? 'border-blue-400 bg-blue-500/10 text-blue-300' : 'border-dark-300/50 text-dark-400 hover:border-blue-400/50 hover:text-blue-300',
-      green: isActive ? 'border-green-400 bg-green-500/10 text-green-300' : 'border-dark-300/50 text-dark-400 hover:border-green-400/50 hover:text-green-300',
-      purple: isActive ? 'border-purple-400 bg-purple-500/10 text-purple-300' : 'border-dark-300/50 text-dark-400 hover:border-purple-400/50 hover:text-purple-300',
-      yellow: isActive ? 'border-yellow-400 bg-yellow-500/10 text-yellow-300' : 'border-dark-300/50 text-dark-400 hover:border-yellow-400/50 hover:text-yellow-300',
-      red: isActive ? 'border-red-400 bg-red-500/10 text-red-300' : 'border-dark-300/50 text-dark-400 hover:border-red-400/50 hover:text-red-300',
+      blue: isActive ? 'border-blue-400 bg-blue-500/10 text-blue-300' : 'border-dark-300/50 text-dark-400',
+      green: isActive ? 'border-green-400 bg-green-500/10 text-green-300' : 'border-dark-300/50 text-dark-400',
+      purple: isActive ? 'border-purple-400 bg-purple-500/10 text-purple-300' : 'border-dark-300/50 text-dark-400',
+      yellow: isActive ? 'border-yellow-400 bg-yellow-500/10 text-yellow-300' : 'border-dark-300/50 text-dark-400',
+      red: isActive ? 'border-red-400 bg-red-500/10 text-red-300' : 'border-dark-300/50 text-dark-400',
     }
     return colors[color as keyof typeof colors] || colors.blue
   }
@@ -102,9 +102,9 @@ export default function GameSidebar({ character, activePanel, onPanelChange }: G
               key={item.id}
               onClick={() => onPanelChange(item.id)}
               className={`
-                w-full p-3 rounded-lg border transition-colors duration-200 text-left relative
+                w-full p-3 rounded-lg border text-left relative
                 ${getItemColor(item.color, isActive)}
-                ${isActive ? 'shadow-lg' : 'hover:bg-dark-200/30'}
+                ${isActive ? 'shadow-lg' : ''}
               `}
             >
               <div className="flex items-center space-x-3">

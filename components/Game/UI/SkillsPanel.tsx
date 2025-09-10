@@ -34,7 +34,7 @@ export default function SkillsPanel({ character, onUpdateCharacter, isLoading }:
             ].map((skill) => (
               <div
                 key={skill.name}
-                className="p-4 bg-dark-200/30 rounded border border-dark-300/30 hover:border-dark-200 transition-colors cursor-pointer"
+                className="p-4 bg-dark-200/30 rounded border border-dark-300/30 cursor-pointer"
               >
                 <div className="flex items-center space-x-3 mb-2">
                   <div className="w-10 h-10 bg-dark-300/30 rounded border border-dark-300/50 flex items-center justify-center text-xl">

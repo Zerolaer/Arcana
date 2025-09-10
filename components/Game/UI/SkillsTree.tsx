@@ -140,10 +140,10 @@ export default function SkillsTree({
                         selectedSkill?.id === skill.id
                           ? 'border-primary-500 bg-primary-500/10'
                           : isLearned
-                          ? 'border-green-500 bg-green-500/10 hover:border-green-400'
+                          ? 'border-green-500 bg-green-500/10'
                           : canLearn
-                          ? 'border-yellow-500 bg-yellow-500/10 hover:border-yellow-400'
-                          : 'border-gray-500 bg-gray-500/10 hover:border-gray-400'
+                          ? 'border-yellow-500 bg-yellow-500/10'
+                          : 'border-gray-500 bg-gray-500/10'
                       }`}
                     >
                       <div className="flex items-start space-x-3">
@@ -180,7 +180,7 @@ export default function SkillsTree({
                                     e.stopPropagation()
                                     handleLearnSkill(skill.id)
                                   }}
-                                  className="px-2 py-1 bg-green-500 text-white text-xs rounded hover:bg-green-600 transition-colors"
+                                  className="px-2 py-1 bg-green-500 text-white text-xs rounded"
                                 >
                                   Изучить
                                 </button>
@@ -192,7 +192,7 @@ export default function SkillsTree({
                                     e.stopPropagation()
                                     handleUpgradeSkill(skill.id)
                                   }}
-                                  className="px-2 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600 transition-colors"
+                                  className="px-2 py-1 bg-blue-500 text-white text-xs rounded"
                                 >
                                   Улучшить
                                 </button>

@@ -243,7 +243,7 @@ export default function GameLobby({ user, onCharacterCreated, onLogout }: GameLo
                     className={`relative p-4 rounded-lg border-2 transition-colors duration-200 cursor-pointer ${
                       selectedClass?.id === characterClass.id
                         ? 'border-primary-400 bg-primary-500/10 shadow-lg shadow-primary-500/20'
-                        : 'border-dark-300/50 bg-dark-200/30 hover:border-dark-200 hover:bg-dark-200/50'
+                        : 'border-dark-300/50 bg-dark-200/30'
                     }`}
                   >
                     {/* Class Icon */}

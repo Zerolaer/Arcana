@@ -118,7 +118,7 @@ export default function LocationPanel({ character, onUpdateCharacter, isLoading 
 
   const getLocationStatusColor = (location: Location) => {
     if (location.id === character.current_location_id) return 'border-green-400 bg-green-500/10'
-    if (canAccessLocation(location)) return 'border-blue-400/50 hover:border-blue-400'
+    if (canAccessLocation(location)) return 'border-blue-400/50'
     return 'border-red-400/30 bg-red-500/5'
   }
 
@@ -223,7 +223,7 @@ export default function LocationPanel({ character, onUpdateCharacter, isLoading 
                           ? 'border-green-400 bg-green-500/10' 
                           : isOccupied 
                             ? 'border-red-400/30 bg-red-500/5' 
-                            : 'border-blue-400/50 hover:border-blue-400 cursor-pointer'
+                            : 'border-blue-400/50 cursor-pointer'
                       }`}
                     >
                       <div className="flex items-center justify-between mb-2">

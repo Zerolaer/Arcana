@@ -333,7 +333,7 @@ export default function NewInventoryPanel({ character, onUpdateCharacter, isLoad
               {item && process.env.NODE_ENV === 'development' && (
                 <button
                   onClick={() => handleDeleteItem(index)}
-                  className="absolute -top-2 -right-2 w-5 h-5 bg-red-600 hover:bg-red-700 rounded-full flex items-center justify-center text-xs text-white opacity-0 hover:opacity-100 transition-opacity"
+                  className="absolute -top-2 -right-2 w-5 h-5 bg-red-600 rounded-full flex items-center justify-center text-xs text-white opacity-0"
                 >
                   ✕
                 </button>

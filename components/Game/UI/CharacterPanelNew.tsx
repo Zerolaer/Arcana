@@ -206,7 +206,7 @@ export default function CharacterPanel({ character, onUpdateCharacter, isLoading
                       <button
                         onClick={() => adjustTempStat(stat.key, -1)}
                         disabled={tempValue <= 0}
-                        className="w-7 h-7 rounded bg-red-500/20 hover:bg-red-500/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-red-400 transition-colors"
+                        className="w-7 h-7 rounded bg-red-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-red-400"
                       >
                         <Minus className="w-3 h-3" />
                       </button>
@@ -218,7 +218,7 @@ export default function CharacterPanel({ character, onUpdateCharacter, isLoading
                       <button
                         onClick={() => adjustTempStat(stat.key, 1)}
                         disabled={remainingPoints <= 0}
-                        className="w-7 h-7 rounded bg-green-500/20 hover:bg-green-500/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-green-400 transition-colors"
+                        className="w-7 h-7 rounded bg-green-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center text-green-400"
                       >
                         <Plus className="w-3 h-3" />
                       </button>
@@ -253,7 +253,7 @@ export default function CharacterPanel({ character, onUpdateCharacter, isLoading
             
             <button
               onClick={resetTempStats}
-              className="px-4 py-2 bg-dark-300/20 hover:bg-dark-300/40 text-dark-400 hover:text-white rounded-md transition-colors duration-200 border border-dark-300/50"
+              className="px-4 py-2 bg-dark-300/20 text-dark-400 rounded-md border border-dark-300/50"
             >
               <RotateCcw className="w-4 h-4" />
             </button>
