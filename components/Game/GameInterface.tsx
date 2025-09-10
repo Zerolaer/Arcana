@@ -71,9 +71,11 @@ export default function GameInterface({ character: initialCharacter, user, onLog
     }
   }
 
-  const updateCharacterData = async (updates: Partial<Character>): Promise<boolean> => {
+  const updateCharacterData = async (updates: Partial<Character>, silent: boolean = false): Promise<boolean> => {
     try {
-      setIsLoading(true)
+      if (!silent) {
+        setIsLoading(true)
+      }
       
       const { data, error } = await (supabase
         .from('characters') as any)
@@ -83,7 +85,9 @@ export default function GameInterface({ character: initialCharacter, user, onLog
         .single()
 
       if (error) {
-        toast.error('Ошибка обновления персонажа')
+        if (!silent) {
+          toast.error('Ошибка обновления персонажа')
+        }
         console.error('Character update error:', error)
         return false
       }
@@ -96,10 +100,14 @@ export default function GameInterface({ character: initialCharacter, user, onLog
       return false
     } catch (error) {
       console.error('Error updating character:', error)
-      toast.error('Произошла ошибка')
+      if (!silent) {
+        toast.error('Произошла ошибка')
+      }
       return false
     } finally {
-      setIsLoading(false)
+      if (!silent) {
+        setIsLoading(false)
+      }
     }
   }
 

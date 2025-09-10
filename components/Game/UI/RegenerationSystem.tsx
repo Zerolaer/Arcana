@@ -7,7 +7,7 @@ import { toast } from 'react-hot-toast'
 
 interface RegenerationSystemProps {
   character: Character
-  onUpdateCharacter: (updates: Partial<Character>) => Promise<boolean>
+  onUpdateCharacter: (updates: Partial<Character>, silent?: boolean) => Promise<boolean>
   isInCombat?: boolean
 }
 
@@ -53,7 +53,7 @@ export default function RegenerationSystem({
           health_regen: Math.round(baseHealthRegen * 100) / 100,
           mana_regen: Math.round(baseManaRegen * 100) / 100,
           stamina_regen: Math.round(baseStaminaRegen * 100) / 100
-        })
+        }, true) // Тихое обновление
         isUpdating.current = false
         return
       }
@@ -95,7 +95,7 @@ export default function RegenerationSystem({
         // Обновляем только если есть изменения
         if (Object.keys(updates).length > 0) {
           isUpdating.current = true
-          await onUpdateCharacter(updates)
+          await onUpdateCharacter(updates, true) // Тихое обновление
           isUpdating.current = false
         }
 
@@ -134,7 +134,7 @@ export default function RegenerationSystem({
         // Обновляем только если есть изменения
         if (Object.keys(updates).length > 0) {
           isUpdating.current = true
-          await onUpdateCharacter(updates)
+          await onUpdateCharacter(updates, true) // Тихое обновление
           isUpdating.current = false
         }
       }
