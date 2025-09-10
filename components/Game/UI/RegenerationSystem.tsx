@@ -63,16 +63,22 @@ export default function RegenerationSystem({
         .rpc('apply_regeneration', { p_character_id: character.id })
 
       if (error) {
-        console.error('Error applying regeneration:', error)
+        // Тихо обрабатываем ошибки регенерации
         return
       }
 
       if (data?.success) {
-        // Обновляем состояние персонажа
-        const updates: Partial<Character> = {
-          health: data.new_health,
-          mana: data.new_mana,
-          stamina: data.new_stamina
+        // Обновляем состояние персонажа только если есть реальные изменения
+        const updates: Partial<Character> = {}
+        
+        if (data.new_health !== character.health) {
+          updates.health = data.new_health
+        }
+        if (data.new_mana !== character.mana) {
+          updates.mana = data.new_mana
+        }
+        if (data.new_stamina !== character.stamina) {
+          updates.stamina = data.new_stamina
         }
 
         // Обновляем регенерацию, если она изменилась (с небольшой погрешностью)
@@ -93,23 +99,10 @@ export default function RegenerationSystem({
           isUpdating.current = false
         }
 
-        // Показываем уведомление о регенерации (только если что-то восстановилось)
-        if (data.health_restored > 0 || data.mana_restored > 0 || data.stamina_restored > 0) {
-          const restored = []
-          if (data.health_restored > 0) restored.push(`+${data.health_restored} HP`)
-          if (data.mana_restored > 0) restored.push(`+${data.mana_restored} MP`)
-          if (data.stamina_restored > 0) restored.push(`+${data.stamina_restored} Stamina`)
-          
-          if (restored.length > 0) {
-            toast.success(restored.join(', '), {
-              duration: 2000,
-              position: 'bottom-right'
-            })
-          }
-        }
+        // Регенерация происходит тихо, без уведомлений
       }
     } catch (error) {
-      console.error('Error in regeneration system:', error)
+      // Тихо обрабатываем ошибки регенерации
     }
   }, [character, onUpdateCharacter, isInCombat])
 
@@ -120,7 +113,7 @@ export default function RegenerationSystem({
         .rpc('calculate_character_regeneration', { p_character_id: character.id })
 
       if (error) {
-        console.error('Error calculating regeneration:', error)
+        // Тихо обрабатываем ошибки расчета регенерации
         return
       }
 
@@ -146,7 +139,7 @@ export default function RegenerationSystem({
         }
       }
     } catch (error) {
-      console.error('Error recalculating regeneration:', error)
+      // Тихо обрабатываем ошибки пересчета регенерации
     }
   }, [character.id, character.health_regen, character.mana_regen, character.stamina_regen, onUpdateCharacter])
 
@@ -157,10 +150,10 @@ export default function RegenerationSystem({
       clearInterval(intervalRef.current)
     }
 
-    // Запускаем новый интервал каждую секунду
+    // Запускаем новый интервал каждые 2 секунды (реже обновлений)
     intervalRef.current = setInterval(() => {
       applyRegeneration()
-    }, 1000)
+    }, 2000)
 
     // Очищаем интервал при размонтировании
     return () => {
