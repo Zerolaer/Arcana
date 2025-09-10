@@ -108,7 +108,7 @@ export default function InventoryPanel({ character, onUpdateCharacter, isLoading
           {Array.from({ length: 25 }, (_, i) => (
             <div 
               key={`empty-${i}`}
-              className="item-card border-dashed border-white/20 bg-transparent hover:transform-none hover:border-white/30 hover:box-shadow-none"
+              className="item-card border-dashed border-white/20 bg-transparent hover:border-white/30 hover:box-shadow-none"
             >
               <div className="h-full flex items-center justify-center">
                 <div className="text-3xl text-white/20">+</div>
@@ -147,7 +147,7 @@ export default function InventoryPanel({ character, onUpdateCharacter, isLoading
             { slot: 'amulet', name: 'Амулет', icon: '📿' }
           ].map((slot) => (
             <div key={slot.slot} className="text-center">
-              <div className="item-card border-dashed border-white/30 bg-transparent hover:transform-none hover:border-white/40 mb-2">
+              <div className="item-card border-dashed border-white/30 bg-transparent hover:border-white/40 mb-2">
                 <div className="h-full flex flex-col items-center justify-center">
                   <div className="text-2xl text-white/40 mb-1">{slot.icon}</div>
                 </div>

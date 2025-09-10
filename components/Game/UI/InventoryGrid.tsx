@@ -131,7 +131,7 @@ export default function InventoryGrid({
         onDropItem={(item) => handleItemDrop(item, index)}
         isDraggedOver={isDraggedOver}
         isEmpty={isEmpty}
-        className="transition-all duration-200 hover:scale-105"
+        className="transition-all duration-200"
       />
     )
   }
