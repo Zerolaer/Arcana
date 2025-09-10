@@ -25,7 +25,7 @@ export default function Tooltip({
   onOpenChange
 }: TooltipProps) {
   const [internalIsVisible, setInternalIsVisible] = useState(false)
-  const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 })
+  const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0, transform: 'translateX(-50%)' })
   const timeoutRef = useRef<NodeJS.Timeout>()
   const triggerRef = useRef<HTMLDivElement>(null)
 
@@ -35,33 +35,77 @@ export default function Tooltip({
 
   const updatePosition = () => {
     const rect = triggerRef.current?.getBoundingClientRect()
-    if (rect) {
-      let x = rect.left + rect.width / 2
-      let y = rect.top - 10
+    if (!rect) return
 
-      // Auto positioning based on viewport
-      if (position === 'auto') {
-        const viewportHeight = window.innerHeight
-        const viewportWidth = window.innerWidth
-        
-        // If too close to top, show below
-        if (y < 200) {
-          y = rect.bottom + 10
-        }
-        
-        // If too close to right edge, adjust left
-        if (x > viewportWidth - 200) {
-          x = viewportWidth - 200
-        }
-        
-        // If too close to left edge, adjust right
-        if (x < 200) {
-          x = 200
-        }
+    const viewportHeight = window.innerHeight
+    const viewportWidth = window.innerWidth
+    const scrollX = window.scrollX
+    const scrollY = window.scrollY
+    
+    // Примерные размеры тултипа (можем настроить)
+    const tooltipWidth = 320 // примерная ширина тултипа
+    const tooltipHeight = 200 // примерная высота тултипа
+    const margin = 10 // отступ от краев экрана
+
+    let x = rect.left + scrollX + rect.width / 2
+    let y = rect.top + scrollY
+    let transformX = '-50%' // центрируем по X
+    let transformY = '0%'
+
+    // Определяем оптимальную позицию
+    if (position === 'auto' || position === 'top') {
+      // Пробуем разместить сверху
+      if (rect.top > tooltipHeight + margin) {
+        y = rect.top + scrollY - margin
+        transformY = '-100%' // размещаем сверху
+      } else {
+        // Размещаем снизу
+        y = rect.bottom + scrollY + margin
+        transformY = '0%'
       }
-
-      setTooltipPosition({ x, y })
     }
+
+    // Проверяем горизонтальные границы
+    const tooltipLeft = x - tooltipWidth / 2
+    const tooltipRight = x + tooltipWidth / 2
+
+    if (tooltipLeft < margin) {
+      // Слишком близко к левому краю
+      x = margin + tooltipWidth / 2
+      transformX = '-50%'
+    } else if (tooltipRight > viewportWidth - margin) {
+      // Слишком близко к правому краю
+      x = viewportWidth - margin - tooltipWidth / 2
+      transformX = '-50%'
+    }
+
+    // Дополнительная проверка для очень узких экранов
+    if (tooltipWidth > viewportWidth - 2 * margin) {
+      x = viewportWidth / 2
+      transformX = '-50%'
+    }
+
+    // Проверяем вертикальные границы
+    if (position === 'auto') {
+      const tooltipTop = transformY === '-100%' ? y - tooltipHeight : y
+      const tooltipBottom = transformY === '-100%' ? y : y + tooltipHeight
+
+      if (tooltipTop < margin) {
+        // Тултип выходит за верхний край, размещаем снизу
+        y = rect.bottom + scrollY + margin
+        transformY = '0%'
+      } else if (tooltipBottom > viewportHeight - margin) {
+        // Тултип выходит за нижний край, размещаем сверху
+        y = rect.top + scrollY - margin
+        transformY = '-100%'
+      }
+    }
+
+    setTooltipPosition({ 
+      x, 
+      y, 
+      transform: `translateX(${transformX}) translateY(${transformY})` 
+    })
   }
 
   const handleMouseEnter = (e: React.MouseEvent) => {
@@ -114,6 +158,31 @@ export default function Tooltip({
     }
   }, [trigger, isVisible, setIsVisible])
 
+  // Пересчитываем позицию при изменении размера окна или скролле
+  useEffect(() => {
+    if (!isVisible) return
+
+    const handleResize = () => {
+      if (isVisible) {
+        updatePosition()
+      }
+    }
+
+    const handleScroll = () => {
+      if (isVisible) {
+        updatePosition()
+      }
+    }
+
+    window.addEventListener('resize', handleResize)
+    window.addEventListener('scroll', handleScroll, true) // capture phase для всех скроллов
+
+    return () => {
+      window.removeEventListener('resize', handleResize)
+      window.removeEventListener('scroll', handleScroll, true)
+    }
+  }, [isVisible])
+
   useEffect(() => {
     return () => {
       if (timeoutRef.current) {
@@ -130,9 +199,11 @@ export default function Tooltip({
           position: 'fixed',
           left: tooltipPosition.x,
           top: tooltipPosition.y,
-          transform: 'translateX(-50%)',
+          transform: tooltipPosition.transform,
           zIndex: 9999,
-          pointerEvents: trigger === 'click' ? 'auto' : 'none'
+          pointerEvents: trigger === 'click' ? 'auto' : 'none',
+          maxWidth: '320px',
+          width: 'max-content'
         }}
       >
         <div className="tooltip-content animate-tooltip-show">

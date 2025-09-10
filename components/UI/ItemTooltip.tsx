@@ -22,25 +22,27 @@ export interface GameItem {
   type: 'weapon' | 'armor' | 'accessory' | 'consumable' | 'material'
   subType?: string
   icon: string
-  level: number
+  level?: number
   stats: ItemStats
   value: number
   stackable?: boolean
   stackSize?: number
-  durability?: {
-    current: number
-    max: number
-  }
+  
+  // НОВАЯ СИСТЕМА КАЧЕСТВА (вместо прочности)
+  quality?: number // 1-100
+  
+  // Базовые и актуальные статы
+  base_stats?: ItemStats
+  actual_stats?: ItemStats
+  
   setBonus?: string
-  requirements?: {
-    level?: number
-    class?: string
-    stats?: ItemStats
-  }
   equipment_slot?: string
   slot_position?: number
   item_key?: string
   isEquipped?: boolean
+  
+  // Убираем requirements (по требованию пользователя)
+  // requirements?: { ... }
 }
 
 interface ItemTooltipProps {
@@ -112,47 +114,42 @@ export default function ItemTooltip({
     )
   }
 
-  const renderRequirements = () => {
-    if (!item.requirements) return null
+  const renderQuality = () => {
+    if (!item.quality) return null
+
+    const qualityColor = item.quality >= 80 ? 'text-green-400' : 
+                        item.quality >= 60 ? 'text-blue-400' : 
+                        item.quality >= 40 ? 'text-yellow-400' : 
+                        item.quality >= 20 ? 'text-orange-400' : 'text-red-400'
+
+    const qualityBgColor = item.quality >= 80 ? 'bg-green-400' : 
+                          item.quality >= 60 ? 'bg-blue-400' : 
+                          item.quality >= 40 ? 'bg-yellow-400' : 
+                          item.quality >= 20 ? 'bg-orange-400' : 'bg-red-400'
+
+    const qualityName = item.quality >= 90 ? 'Превосходное' :
+                       item.quality >= 80 ? 'Отличное' :
+                       item.quality >= 60 ? 'Хорошее' :
+                       item.quality >= 40 ? 'Среднее' :
+                       item.quality >= 20 ? 'Плохое' : 'Ужасное'
 
     return (
       <div className="border-t border-white/20 pt-3 mt-3">
-        <div className="text-sm font-semibold text-yellow-400 mb-2">Требования:</div>
-        {item.requirements.level && (
-          <div className="text-sm text-gray-300">
-            Уровень: {item.requirements.level}
+        <div className="flex items-center justify-between text-sm mb-2">
+          <span className="text-gray-300">Качество:</span>
+          <div className="flex items-center space-x-2">
+            <span className={qualityColor}>{qualityName}</span>
+            <span className={qualityColor + ' font-bold'}>{item.quality}%</span>
           </div>
-        )}
-        {item.requirements.class && (
-          <div className="text-sm text-gray-300">
-            Класс: {item.requirements.class}
-          </div>
-        )}
-      </div>
-    )
-  }
-
-  const renderDurability = () => {
-    if (!item.durability) return null
-
-    const percentage = (item.durability.current / item.durability.max) * 100
-    const durabilityColor = percentage > 50 ? 'text-green-400' : percentage > 25 ? 'text-yellow-400' : 'text-red-400'
-
-    return (
-      <div className="border-t border-white/20 pt-3 mt-3">
-        <div className="text-sm">
-          <span className="text-gray-300">Прочность: </span>
-          <span className={durabilityColor}>
-            {item.durability.current}/{item.durability.max}
-          </span>
         </div>
-        <div className="w-full bg-gray-700 rounded-full h-1 mt-1">
+        <div className="w-full bg-gray-700 rounded-full h-2">
           <div 
-            className={`h-1 rounded-full transition-all duration-300 ${
-              percentage > 50 ? 'bg-green-400' : percentage > 25 ? 'bg-yellow-400' : 'bg-red-400'
-            }`}
-            style={{ width: `${percentage}%` }}
+            className={`h-2 rounded-full transition-all duration-300 ${qualityBgColor}`}
+            style={{ width: `${item.quality}%` }}
           />
+        </div>
+        <div className="text-xs text-gray-400 mt-1">
+          Влияет на статы предмета
         </div>
       </div>
     )
@@ -194,6 +191,9 @@ export default function ItemTooltip({
       {/* Stats */}
       {renderStats()}
 
+      {/* Quality */}
+      {renderQuality()}
+
       {/* Set Bonus */}
       {item.setBonus && (
         <div className="border-t border-white/20 pt-3 mt-3">
@@ -202,18 +202,17 @@ export default function ItemTooltip({
         </div>
       )}
 
-      {/* Requirements */}
-      {renderRequirements()}
-
-      {/* Durability */}
-      {renderDurability()}
-
-      {/* Value */}
-      <div className="border-t border-white/20 pt-3 mt-3 flex items-center justify-between">
-        <span className="text-sm text-gray-400">Стоимость:</span>
-        <div className="flex items-center space-x-1">
-          <span className="text-yellow-400 font-semibold">{item.value}</span>
-          <span className="text-yellow-400">🪙</span>
+      {/* Value and Actions */}
+      <div className="border-t border-white/20 pt-3 mt-3">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-sm text-gray-400">Стоимость:</span>
+          <div className="flex items-center space-x-1">
+            <span className="text-yellow-400 font-semibold">{item.value}</span>
+            <span className="text-yellow-400">🪙</span>
+          </div>
+        </div>
+        <div className="text-xs text-gray-400">
+          💰 Можно продать • ⚡ Можно разобрать на осколки
         </div>
       </div>
 
