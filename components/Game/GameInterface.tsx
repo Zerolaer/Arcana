@@ -14,6 +14,7 @@ import DatabaseInventoryPanel from './UI/DatabaseInventoryPanel'
 import LocationPanel from './UI/LocationPanel'
 import SkillsPanel from './UI/SkillsPanel'
 import CombatPanel from './UI/CombatPanel'
+import RegenerationSystem from './UI/RegenerationSystem'
 
 interface GameInterfaceProps {
   character: Character
@@ -189,6 +190,13 @@ export default function GameInterface({ character: initialCharacter, user, onLog
           {renderActivePanel()}
         </div>
       </div>
+
+      {/* Regeneration System */}
+      <RegenerationSystem 
+        character={character}
+        onUpdateCharacter={updateCharacter}
+        isInCombat={character.is_in_combat}
+      />
 
       {/* Loading Overlay */}
       {isLoading && (

@@ -121,6 +121,11 @@ export default function CharacterPanel({ character, onUpdateCharacter, isLoading
     const maxMana = Math.round(newStats.energy * 5 + 50)
     const maxStamina = Math.round(newStats.vitality * 5 + newStats.dexterity * 3 + 100)
 
+    // Calculate regeneration stats
+    const healthRegen = Math.round((1.0 + newStats.vitality * 0.1 + character.level * 0.05) * 100) / 100
+    const manaRegen = Math.round((0.5 + newStats.energy * 0.08 + newStats.intelligence * 0.03 + character.level * 0.02) * 100) / 100
+    const staminaRegen = Math.round((2.0 + newStats.dexterity * 0.15 + newStats.vitality * 0.05 + character.level * 0.03) * 100) / 100
+
     const updates = {
       ...newStats,
       max_health: maxHealth,
@@ -136,7 +141,10 @@ export default function CharacterPanel({ character, onUpdateCharacter, isLoading
       critical_chance: Math.round(Math.min(newStats.luck * 0.1 + newStats.dexterity * 0.05, 50) * 100) / 100,
       critical_damage: Math.round((150 + newStats.strength * 0.5) * 100) / 100,
       attack_speed: Math.round((100 + newStats.dexterity * 0.8) * 100) / 100,
-      movement_speed: Math.round((100 + newStats.dexterity * 0.5) * 100) / 100
+      movement_speed: Math.round((100 + newStats.dexterity * 0.5) * 100) / 100,
+      health_regen: healthRegen,
+      mana_regen: manaRegen,
+      stamina_regen: staminaRegen
     }
 
     const success = await onUpdateCharacter(updates)
@@ -306,14 +314,17 @@ export default function CharacterPanel({ character, onUpdateCharacter, isLoading
                 { name: 'Критический шанс', value: `${character.critical_chance.toFixed(1)}%`, icon: '💥' },
                 { name: 'Критический урон', value: `${character.critical_damage.toFixed(0)}%`, icon: '⚡' },
                 { name: 'Скорость атаки', value: `${character.attack_speed.toFixed(0)}%`, icon: '🏃' },
-                { name: 'Скорость движения', value: `${character.movement_speed.toFixed(0)}%`, icon: '💨' }
+                { name: 'Скорость движения', value: `${character.movement_speed.toFixed(0)}%`, icon: '💨' },
+                { name: 'Регенерация HP', value: `${character.health_regen?.toFixed(1) || '0.0'}/сек`, icon: '❤️', color: 'text-red-400' },
+                { name: 'Регенерация MP', value: `${character.mana_regen?.toFixed(1) || '0.0'}/сек`, icon: '💙', color: 'text-blue-400' },
+                { name: 'Регенерация Stamina', value: `${character.stamina_regen?.toFixed(1) || '0.0'}/сек`, icon: '💚', color: 'text-green-400' }
               ].map((stat) => (
                 <div key={stat.name} className="flex items-center justify-between p-3 bg-dark-200/30 rounded border border-dark-300/30">
                   <div className="flex items-center space-x-2">
                     <span className="text-lg">{stat.icon}</span>
                     <span className="text-sm text-dark-300">{stat.name}</span>
                   </div>
-                  <span className="font-semibold text-white">{stat.value}</span>
+                  <span className={`font-semibold ${stat.color || 'text-white'}`}>{stat.value}</span>
                 </div>
               ))}
             </div>

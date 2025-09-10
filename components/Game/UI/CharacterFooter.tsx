@@ -63,8 +63,13 @@ export default function CharacterFooter({ character }: CharacterFooterProps) {
                 />
                 <div className="absolute inset-0 bg-gradient-to-r from-red-500/30 via-transparent to-transparent animate-pulse" />
               </div>
-              <div className="text-xs text-gray-300 mt-1">
-                {character.health} / {character.max_health}
+              <div className="text-xs text-gray-300 mt-1 flex items-center justify-between">
+                <span>{character.health} / {character.max_health}</span>
+                {character.health_regen && character.health < character.max_health && !character.is_in_combat && (
+                  <span className="text-green-400 text-xs">
+                    +{character.health_regen.toFixed(1)}/сек
+                  </span>
+                )}
               </div>
             </div>
           </div>
@@ -80,8 +85,13 @@ export default function CharacterFooter({ character }: CharacterFooterProps) {
                 />
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-500/30 via-transparent to-transparent animate-pulse" />
               </div>
-              <div className="text-xs text-gray-300 mt-1">
-                {character.mana} / {character.max_mana}
+              <div className="text-xs text-gray-300 mt-1 flex items-center justify-between">
+                <span>{character.mana} / {character.max_mana}</span>
+                {character.mana_regen && character.mana < character.max_mana && !character.is_in_combat && (
+                  <span className="text-blue-400 text-xs">
+                    +{character.mana_regen.toFixed(1)}/сек
+                  </span>
+                )}
               </div>
             </div>
           </div>

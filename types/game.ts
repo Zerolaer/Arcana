@@ -47,6 +47,11 @@ export interface Character {
   attack_speed: number;
   movement_speed: number;
   
+  // Regeneration stats
+  health_regen: number;
+  mana_regen: number;
+  stamina_regen: number;
+  
   // Economy
   gold: number;
   
