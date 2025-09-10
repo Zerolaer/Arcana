@@ -116,7 +116,7 @@ export default function InventoryGrid({
   }
 
   const renderInventorySlot = (item: GameItem | null, index: number) => {
-    const isDraggedOver = draggedItem && draggedFromIndex !== index
+    const isDraggedOver = !!(draggedItem && draggedFromIndex !== index)
     const isEmpty = item === null
 
     return (

@@ -144,7 +144,7 @@ export default function CombatInterface({ character, onUpdateCharacter, isLoadin
     }
 
     try {
-      const { data, error } = await supabase.rpc('initiate_combat', {
+      const { data, error } = await (supabase as any).rpc('initiate_combat', {
         character_id: character.id,
         mob_id: mob.id
       })
@@ -184,7 +184,7 @@ export default function CombatInterface({ character, onUpdateCharacter, isLoadin
 
     if (timeSinceLastAttack >= attackInterval) {
       try {
-        const { data, error } = await supabase.rpc('perform_attack', {
+        const { data, error } = await (supabase as any).rpc('perform_attack', {
           character_id: character.id,
           skill_id: null
         })
@@ -262,7 +262,7 @@ export default function CombatInterface({ character, onUpdateCharacter, isLoadin
       is_in_combat: false
     })
 
-    toast.info('Бой остановлен')
+    toast.success('Бой остановлен')
   }
 
   if (loading) {
@@ -438,7 +438,7 @@ export default function CombatInterface({ character, onUpdateCharacter, isLoadin
                     }`}
                   >
                     <div className="flex items-center justify-between mb-1">
-                      <span className="font-medium text-white">{log.mob_name}</span>
+                      <span className="font-medium text-white">Моб #{log.mob_id}</span>
                       <span className={`text-sm ${log.victory ? 'text-green-400' : 'text-red-400'}`}>
                         {log.victory ? 'Победа' : 'Поражение'}
                       </span>

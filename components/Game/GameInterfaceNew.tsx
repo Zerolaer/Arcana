@@ -104,7 +104,7 @@ export default function GameInterface({ character: initialCharacter, user, onLog
 
   const handleInventoryMove = async (fromIndex: number, toIndex: number): Promise<boolean> => {
     try {
-      const { data, error } = await supabase.rpc('move_inventory_item', {
+      const { data, error } = await (supabase as any).rpc('move_inventory_item', {
         p_character_id: character.id,
         p_from_slot: fromIndex,
         p_to_slot: toIndex
@@ -127,7 +127,7 @@ export default function GameInterface({ character: initialCharacter, user, onLog
   const handleItemUse = async (item: any, index: number): Promise<boolean> => {
     try {
       // Implement item usage logic here
-      toast.info(`Использован предмет: ${item.name}`)
+      toast.success(`Использован предмет: ${item.name}`)
       return true
     } catch (error) {
       console.error('Error using item:', error)
@@ -139,7 +139,7 @@ export default function GameInterface({ character: initialCharacter, user, onLog
   const handleItemDrop = async (item: any, index: number): Promise<boolean> => {
     try {
       // Implement item dropping logic here
-      toast.info(`Предмет удален: ${item.name}`)
+      toast.success(`Предмет удален: ${item.name}`)
       return true
     } catch (error) {
       console.error('Error dropping item:', error)
@@ -151,7 +151,7 @@ export default function GameInterface({ character: initialCharacter, user, onLog
   const handleLearnSkill = async (skillId: string): Promise<boolean> => {
     try {
       // Implement skill learning logic here
-      toast.info('Навык изучен!')
+      toast.success('Навык изучен!')
       return true
     } catch (error) {
       console.error('Error learning skill:', error)
@@ -163,7 +163,7 @@ export default function GameInterface({ character: initialCharacter, user, onLog
   const handleUpgradeSkill = async (skillId: string): Promise<boolean> => {
     try {
       // Implement skill upgrade logic here
-      toast.info('Навык улучшен!')
+      toast.success('Навык улучшен!')
       return true
     } catch (error) {
       console.error('Error upgrading skill:', error)
@@ -175,7 +175,7 @@ export default function GameInterface({ character: initialCharacter, user, onLog
   const handleSelectNode = async (skillId: string, nodeId: string): Promise<boolean> => {
     try {
       // Implement node selection logic here
-      toast.info('Нода выбрана!')
+      toast.success('Нода выбрана!')
       return true
     } catch (error) {
       console.error('Error selecting node:', error)

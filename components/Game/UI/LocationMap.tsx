@@ -39,7 +39,7 @@ export default function LocationMap({ character, onUpdateCharacter, isLoading = 
   const loadLocations = async () => {
     try {
       setLoading(true)
-      const { locations: data, error } = await supabase
+      const { data, error } = await supabase
         .from('locations')
         .select(`
           *,
@@ -117,7 +117,7 @@ export default function LocationMap({ character, onUpdateCharacter, isLoading = 
     }
 
     try {
-      const { success, error } = await supabase.rpc('occupy_farming_spot', {
+      const { success, error } = await (supabase as any).rpc('occupy_farming_spot', {
         spot_id: spot.id,
         character_id: character.id
       })
@@ -148,7 +148,7 @@ export default function LocationMap({ character, onUpdateCharacter, isLoading = 
     if (!character.current_spot_id) return
 
     try {
-      const { success, error } = await supabase.rpc('leave_farming_spot', {
+      const { success, error } = await (supabase as any).rpc('leave_farming_spot', {
         spot_id: character.current_spot_id,
         character_id: character.id
       })
@@ -163,7 +163,7 @@ export default function LocationMap({ character, onUpdateCharacter, isLoading = 
         toast.success('Спот покинут')
         // Update character location
         await onUpdateCharacter({
-          current_spot_id: null
+          current_spot_id: undefined
         })
         // Reload locations to update occupancy
         loadLocations()
@@ -321,7 +321,7 @@ export default function LocationMap({ character, onUpdateCharacter, isLoading = 
                         </div>
                         
                         <div className="text-xs text-gray-500">
-                          Мобы: {spot.mob_spawns.map(spawn => spawn.mob.name).join(', ')}
+                          Мобы: {spot.mob_spawns.map(spawn => (spawn as any).mob?.name || 'Неизвестный моб').join(', ')}
                         </div>
                       </div>
                       
