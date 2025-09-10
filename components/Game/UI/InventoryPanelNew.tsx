@@ -25,19 +25,38 @@ interface EquipmentSlot {
   item?: GameItem
 }
 
-const equipmentSlots = [
-  { key: 'main_weapon', name: 'Основное оружие', icon: '⚔️' },
-  { key: 'off_weapon', name: 'Доп. оружие', icon: '🛡️' },
-  { key: 'head', name: 'Голова', icon: '🪖' },
-  { key: 'earrings', name: 'Серьги', icon: '💎' },
-  { key: 'chest', name: 'Доспехи', icon: '🦺' },
-  { key: 'necklace', name: 'Ожерелье', icon: '📿' },
-  { key: 'belt', name: 'Пояс', icon: '🔗' },
-  { key: 'ring1', name: 'Кольцо 1', icon: '💍' },
-  { key: 'legs', name: 'Поножи', icon: '🦵' },
-  { key: 'ring2', name: 'Кольцо 2', icon: '💍' },
-  { key: 'feet', name: 'Ботинки', icon: '👢' },
-  { key: 'empty', name: '', icon: '' }, // Пустая ячейка для сетки 3x4
+// Новая раскладка слотов вокруг персонажа
+const equipmentLayout = {
+  top: [
+    { key: 'head', name: 'Голова', icon: '🪖', row: 0, col: 1 },
+  ],
+  left: [
+    { key: 'main_weapon', name: 'Основное оружие', icon: '⚔️', row: 1, col: 0 },
+    { key: 'chest', name: 'Доспехи', icon: '🦺', row: 2, col: 0 },
+    { key: 'legs', name: 'Поножи', icon: '🦵', row: 3, col: 0 },
+  ],
+  right: [
+    { key: 'off_weapon', name: 'Доп. оружие', icon: '🛡️', row: 1, col: 2 },
+    { key: 'belt', name: 'Пояс', icon: '🔗', row: 2, col: 2 },
+    { key: 'feet', name: 'Ботинки', icon: '👢', row: 3, col: 2 },
+  ],
+  bottom: [
+    { key: 'ring1', name: 'Кольцо 1', icon: '💍', row: 4, col: 0 },
+    { key: 'necklace', name: 'Ожерелье', icon: '📿', row: 4, col: 1 },
+    { key: 'ring2', name: 'Кольцо 2', icon: '💍', row: 4, col: 2 },
+  ],
+  accessories: [
+    { key: 'earrings', name: 'Серьги', icon: '💎', row: 0, col: 0 },
+    { key: 'gloves', name: 'Перчатки', icon: '🧤', row: 0, col: 2 },
+  ]
+}
+
+const allEquipmentSlots = [
+  ...equipmentLayout.top,
+  ...equipmentLayout.left,
+  ...equipmentLayout.right,
+  ...equipmentLayout.bottom,
+  ...equipmentLayout.accessories,
 ]
 
 export default function InventoryPanelNew({ character, onUpdateCharacter, isLoading }: InventoryPanelProps) {
@@ -237,60 +256,98 @@ export default function InventoryPanelNew({ character, onUpdateCharacter, isLoad
   }
 
   return (
-    <div className="flex-1 game-content p-4">
+    <div className="flex-1 game-content p-4 h-full overflow-hidden">
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 h-full">
         
         {/* 1. Экипировка */}
-        <div className="game-panel p-6">
+        <div className="game-panel p-6 overflow-hidden">
           <h2 className="text-lg font-bold text-white mb-4 flex items-center space-x-2">
             <Package className="w-5 h-5 text-purple-400" />
             <span>Экипировка</span>
           </h2>
 
-          {/* Equipment Grid 3x4 */}
-          <div className="grid grid-cols-3 gap-2">
-            {equipmentSlots.map((slot, index) => {
-              if (slot.key === 'empty') {
-                return <div key={`empty-${index}`} className="w-16 h-16"></div>
-              }
-
-              const equippedItem = equipment.find(eq => eq.slotType === slot.key)
-              const hasItem = !!equippedItem?.item
-              
-              return (
-                <div key={slot.key} className="relative">
-                  {hasItem && equippedItem?.item ? (
-                    <ItemTooltip
-                      item={equippedItem.item}
-                      onUnequip={() => handleUnequipItem(slot.key)}
-                      showActions={true}
-                      isEquipped={true}
-                    >
-                      <div className="w-16 h-16 rounded-lg flex flex-col items-center justify-center p-1 cursor-pointer bg-dark-200/50 border-2 border-solid border-gold-400/60">
-                        <div className="w-full h-full flex flex-col items-center justify-center">
-                          <div className="text-lg">{equippedItem.item.icon}</div>
-                          <div className="text-xs text-gray-400 mt-0.5">
-                            {equippedItem.item.level} ур.
+          {/* Equipment Layout - вокруг персонажа */}
+          <div className="flex-1 flex items-center justify-center">
+            <div className="relative">
+              {/* Создаем сетку 5x3 для размещения слотов */}
+              <div className="grid grid-cols-3 gap-4" style={{ gridTemplateRows: 'repeat(5, 60px)' }}>
+                {Array.from({ length: 15 }, (_, index) => {
+                  const row = Math.floor(index / 3)
+                  const col = index % 3
+                  const slot = allEquipmentSlots.find(s => s.row === row && s.col === col)
+                  
+                  if (!slot) {
+                    // Центральная ячейка (1,1) - персонаж
+                    if (row === 1 && col === 1) {
+                      return (
+                        <div key={`character-${index}`} className="w-16 h-16 flex items-center justify-center">
+                          <div className="w-12 h-12 bg-gradient-to-br from-primary-500/20 to-primary-600/20 border border-primary-400/30 rounded-full flex items-center justify-center">
+                            <span className="text-lg">👤</span>
                           </div>
                         </div>
-                      </div>
-                    </ItemTooltip>
-                  ) : (
-                    <div className="w-16 h-16 rounded-lg flex flex-col items-center justify-center p-1 cursor-pointer bg-dark-200/20 border-2 border-dashed border-dark-300/30">
-                      <div className="w-full h-full flex flex-col items-center justify-center text-gray-500 opacity-40">
-                        <div className="text-sm">{slot.icon}</div>
-                        <div className="text-xs text-center mt-0.5 leading-tight">{slot.name}</div>
-                      </div>
+                      )
+                    }
+                    // Другие центральные ячейки - заглушка для персонажа
+                    if (row === 2 && col === 1) {
+                      return (
+                        <div key={`character-body-${index}`} className="w-16 h-16 flex items-center justify-center">
+                          <div className="w-12 h-12 bg-gradient-to-br from-primary-500/10 to-primary-600/10 border border-primary-400/20 rounded flex items-center justify-center">
+                            <span className="text-sm text-primary-300">👕</span>
+                          </div>
+                        </div>
+                      )
+                    }
+                    if (row === 3 && col === 1) {
+                      return (
+                        <div key={`character-legs-${index}`} className="w-16 h-16 flex items-center justify-center">
+                          <div className="w-12 h-12 bg-gradient-to-br from-primary-500/10 to-primary-600/10 border border-primary-400/20 rounded flex items-center justify-center">
+                            <span className="text-sm text-primary-300">👖</span>
+                          </div>
+                        </div>
+                      )
+                    }
+                    return <div key={`empty-${index}`} className="w-16 h-16"></div>
+                  }
+
+                  const equippedItem = equipment.find(eq => eq.slotType === slot.key)
+                  const hasItem = !!equippedItem?.item
+                  
+                  return (
+                    <div key={slot.key} className="relative">
+                      {hasItem && equippedItem?.item ? (
+                        <ItemTooltip
+                          item={equippedItem.item}
+                          onUnequip={() => handleUnequipItem(slot.key)}
+                          showActions={true}
+                          isEquipped={true}
+                        >
+                          <div className="w-16 h-16 rounded-lg flex flex-col items-center justify-center p-1 cursor-pointer bg-dark-200/50 border-2 border-solid border-gold-400/60">
+                            <div className="w-full h-full flex flex-col items-center justify-center">
+                              <div className="text-lg">{equippedItem.item.icon}</div>
+                              <div className="text-xs text-gray-400 mt-0.5">
+                                {equippedItem.item.level} ур.
+                              </div>
+                            </div>
+                          </div>
+                        </ItemTooltip>
+                      ) : (
+                        <div className="w-16 h-16 rounded-lg flex flex-col items-center justify-center p-1 cursor-pointer bg-dark-200/20 border-2 border-dashed border-dark-300/30">
+                          <div className="w-full h-full flex flex-col items-center justify-center text-gray-500 opacity-40">
+                            <div className="text-sm">{slot.icon}</div>
+                            <div className="text-xs text-center mt-0.5 leading-tight">{slot.name}</div>
+                          </div>
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
-              )
-            })}
+                  )
+                })}
+              </div>
+            </div>
           </div>
         </div>
 
         {/* 2. Инвентарь */}
-        <div className="game-panel p-6">
+        <div className="game-panel p-6 flex flex-col overflow-hidden">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-bold text-white flex items-center space-x-2">
               <Package className="w-5 h-5 text-blue-400" />
@@ -313,7 +370,7 @@ export default function InventoryPanelNew({ character, onUpdateCharacter, isLoad
           </div>
 
           {/* Search and Filters */}
-          <div className="mb-4 space-y-3">
+          <div className="mb-4 space-y-3 flex-shrink-0">
             {/* Search */}
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -352,37 +409,39 @@ export default function InventoryPanelNew({ character, onUpdateCharacter, isLoad
             </div>
           </div>
 
-          {/* Inventory Grid */}
-          <div className="grid grid-cols-6 gap-2 h-full overflow-y-auto">
-            {Array.from({ length: 48 }, (_, index) => {
-              const invItem = filteredItems.find(item => item.slot_position === index + 1)
-              
-              return (
-                <div key={index} className="relative">
-                  {invItem ? (
-                    <ItemTooltip
-                      item={invItem.item}
-                      onEquip={() => handleEquipItem(invItem.item)}
-                      showActions={true}
-                      isEquipped={false}
-                    >
-                      <div className="w-12 h-12 bg-dark-200/30 border border-dark-300/50 rounded flex flex-col items-center justify-center p-1 cursor-pointer">
-                        <div className="text-sm">{invItem.item.icon}</div>
-                        {invItem.quantity > 1 && (
-                          <div className="absolute -bottom-1 -right-1 bg-primary-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
-                            {invItem.quantity}
-                          </div>
-                        )}
+          {/* Inventory Grid - с внутренним скроллом */}
+          <div className="flex-1 overflow-hidden">
+            <div className="grid grid-cols-6 gap-2 h-full overflow-y-auto pr-2">
+              {Array.from({ length: 48 }, (_, index) => {
+                const invItem = filteredItems.find(item => item.slot_position === index + 1)
+                
+                return (
+                  <div key={index} className="relative">
+                    {invItem ? (
+                      <ItemTooltip
+                        item={invItem.item}
+                        onEquip={() => handleEquipItem(invItem.item)}
+                        showActions={true}
+                        isEquipped={false}
+                      >
+                        <div className="w-12 h-12 bg-dark-200/30 border border-dark-300/50 rounded flex flex-col items-center justify-center p-1 cursor-pointer">
+                          <div className="text-sm">{invItem.item.icon}</div>
+                          {invItem.quantity > 1 && (
+                            <div className="absolute -bottom-1 -right-1 bg-primary-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                              {invItem.quantity}
+                            </div>
+                          )}
+                        </div>
+                      </ItemTooltip>
+                    ) : (
+                      <div className="w-12 h-12 bg-dark-200/10 border border-dashed border-dark-300/30 rounded flex items-center justify-center">
+                        <div className="text-dark-500 text-xs">+</div>
                       </div>
-                    </ItemTooltip>
-                  ) : (
-                    <div className="w-12 h-12 bg-dark-200/10 border border-dashed border-dark-300/30 rounded flex items-center justify-center">
-                      <div className="text-dark-500 text-xs">+</div>
-                    </div>
-                  )}
-                </div>
-              )
-            })}
+                    )}
+                  </div>
+                )
+              })}
+            </div>
           </div>
         </div>
       </div>
