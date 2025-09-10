@@ -26,8 +26,23 @@ type ActivePanel = 'character' | 'inventory' | 'skills' | 'location' | 'combat' 
 
 export default function GameInterface({ character: initialCharacter, user, onLogout }: GameInterfaceProps) {
   const [character, setCharacter] = useState<Character>(initialCharacter)
-  const [activePanel, setActivePanel] = useState<ActivePanel>('character')
+  const [activePanel, setActivePanel] = useState<ActivePanel>(() => {
+    // Восстанавливаем активную панель из localStorage при загрузке
+    if (typeof window !== 'undefined') {
+      const savedPanel = localStorage.getItem('gameActivePanel') as ActivePanel
+      return savedPanel || 'character'
+    }
+    return 'character'
+  })
   const [isLoading, setIsLoading] = useState(false)
+
+  // Функция для сохранения активной панели в localStorage
+  const handlePanelChange = (panel: ActivePanel) => {
+    setActivePanel(panel)
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('gameActivePanel', panel || '')
+    }
+  }
 
   useEffect(() => {
     // Subscribe to character updates
@@ -190,7 +205,7 @@ export default function GameInterface({ character: initialCharacter, user, onLog
         <GameSidebar 
           character={character}
           activePanel={activePanel}
-          onPanelChange={setActivePanel}
+          onPanelChange={handlePanelChange}
         />
 
         {/* Main Content */}
