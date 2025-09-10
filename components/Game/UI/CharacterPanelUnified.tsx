@@ -409,7 +409,7 @@ export default function CharacterPanelUnified({ character, onUpdateCharacter, is
               
               return (
                 <div key={slot.key} className="relative">
-                  {hasItem ? (
+                  {hasItem && equippedItem?.item ? (
                     <ItemTooltip
                       item={equippedItem.item}
                       onUnequip={() => unequipItem(slot.key)}
