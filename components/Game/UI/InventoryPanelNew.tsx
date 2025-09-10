@@ -121,7 +121,7 @@ export default function InventoryPanelNew({ character, onUpdateCharacter, isLoad
         const newPosition = i + 1
 
         if (item.slot_position !== newPosition) {
-          const { error: updateError } = await supabase
+          const { error: updateError } = await (supabase as any)
             .from('character_inventory')
             .update({ slot_position: newPosition })
             .eq('character_id', character.id)
