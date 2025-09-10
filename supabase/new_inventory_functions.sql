@@ -22,6 +22,9 @@ BEGIN
     END LOOP;
 END $$;
 
+-- Добавляем поле для связи с конкретной записью в инвентаре
+ALTER TABLE character_equipment ADD COLUMN IF NOT EXISTS inventory_item_id UUID;
+
 -- Обновляем constraint для character_equipment чтобы разрешить новые слоты
 ALTER TABLE character_equipment DROP CONSTRAINT IF EXISTS valid_slot_type;
 ALTER TABLE character_equipment ADD CONSTRAINT valid_slot_type CHECK (slot_type IN (
@@ -44,13 +47,15 @@ BEGIN
     
     SELECT json_agg(
         json_build_object(
+            'id', ci.id, -- Уникальный ID записи в инвентаре
             'slot_position', ci.slot_position,
             'stack_size', ci.stack_size,
             'quality', ci.quality,
             'actual_stats', ci.actual_stats,
             'value', ci.value,
             'item', json_build_object(
-                'id', i.id,
+                'id', ci.id, -- Используем уникальный ID записи в инвентаре
+                'item_type_id', i.id, -- ID типа предмета из items_new
                 'name', i.name,
                 'description', i.description,
                 'icon', i.icon,
@@ -83,7 +88,8 @@ BEGIN
             'value', ce.value,
             'equipped_at', ce.equipped_at,
             'item', json_build_object(
-                'id', i.id,
+                'id', ce.inventory_item_id, -- Используем уникальный ID записи в инвентаре
+                'item_type_id', i.id, -- ID типа предмета из items_new
                 'name', i.name,
                 'description', i.description,
                 'icon', i.icon,
@@ -252,7 +258,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 -- Функция для экипировки предмета
 CREATE OR REPLACE FUNCTION equip_item(
     p_character_id UUID,
-    p_item_id VARCHAR(50),
+    p_inventory_item_id UUID,
     p_slot_position INTEGER
 )
 RETURNS JSON AS $$
@@ -261,14 +267,13 @@ DECLARE
     v_item_data RECORD;
     v_equipment_slot TEXT;
 BEGIN
-    -- Получаем данные предмета из инвентаря
+    -- Получаем данные предмета из инвентаря по уникальному ID записи
     SELECT ci.*, i.equipment_slot
     INTO v_item_data
     FROM character_inventory ci
     JOIN items_new i ON ci.item_id = i.id
     WHERE ci.character_id = p_character_id 
-    AND ci.slot_position = p_slot_position
-    AND ci.item_id = p_item_id;
+    AND ci.id = p_inventory_item_id;
     
     IF NOT FOUND THEN
         RETURN json_build_object(
@@ -300,15 +305,16 @@ BEGIN
     END IF;
     
     -- Экипируем предмет
-    INSERT INTO character_equipment (character_id, item_id, slot_type, quality, actual_stats, value, equipped_at)
+    INSERT INTO character_equipment (character_id, item_id, slot_type, quality, actual_stats, value, equipped_at, inventory_item_id)
     VALUES (
         p_character_id, 
-        p_item_id, 
+        v_item_data.item_id, 
         v_equipment_slot, 
         v_item_data.quality, 
         v_item_data.actual_stats, 
         v_item_data.value, 
-        NOW()
+        NOW(),
+        p_inventory_item_id -- Связываем с конкретной записью в инвентаре
     );
     
     -- НЕ удаляем предмет из инвентаря - он остается там с флагом экипировки

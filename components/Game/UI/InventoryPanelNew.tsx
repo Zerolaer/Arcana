@@ -70,6 +70,7 @@ export default function InventoryPanelNew({ character, onUpdateCharacter, isLoad
       if (equipmentResponse.data) {
         equipmentResponse.data.forEach((item: any) => {
           if (item.item && item.item.id) {
+            // Используем уникальный ID записи в инвентаре
             equipmentMap[item.item.id] = item.slot_type
           }
         })
@@ -154,7 +155,7 @@ export default function InventoryPanelNew({ character, onUpdateCharacter, isLoad
       const { data, error } = await (supabase as any)
         .rpc('equip_item', {
           p_character_id: character.id,
-          p_item_id: item.id,
+          p_inventory_item_id: inventoryItem.id, // Используем уникальный ID записи в инвентаре
           p_slot_position: inventoryItem.slot_position
         })
 
@@ -170,7 +171,7 @@ export default function InventoryPanelNew({ character, onUpdateCharacter, isLoad
         // Обновляем состояние экипировки
         setEquipment(prev => ({
           ...prev,
-          [item.id]: data.slot_type // Добавляем новый экипированный предмет
+          [inventoryItem.id]: data.slot_type // Добавляем новый экипированный предмет по уникальному ID
         }))
         
         // Закрываем тултип
@@ -371,7 +372,7 @@ export default function InventoryPanelNew({ character, onUpdateCharacter, isLoad
                             </div>
                           )}
                           {/* Индикатор экипировки - показываем только если этот конкретный предмет экипирован */}
-                          {equipment[invItem.item.id] && (
+                          {equipment[invItem.id] && (
                             <div className="absolute top-0 right-0 bg-blue-600 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-white">
                               E
                             </div>
