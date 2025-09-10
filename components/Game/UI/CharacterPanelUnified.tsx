@@ -251,33 +251,22 @@ export default function CharacterPanelUnified({ character, onUpdateCharacter, is
   }
 
   return (
-    <div className="flex-1 game-content p-4 space-y-4">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <div>
-          <h1 className="text-xl font-bold text-white flex items-center space-x-2">
-            <Crown className="w-5 h-5 text-gold-400" />
-            <span>Персонаж</span>
-          </h1>
-          <p className="text-dark-400 text-sm">Развитие и характеристики вашего героя</p>
-        </div>
-
-        {/* Available Points */}
-        <div className="text-right">
-          <div className="text-xs text-dark-400">Доступно очков:</div>
-          <div className="text-xl font-bold text-primary-400">{remainingPoints}</div>
-        </div>
-      </div>
-
+    <div className="flex-1 game-content p-4">
       {/* Main Content - Three Sections */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 h-full">
         
         {/* 1. Характеристики */}
         <div className="game-panel p-6">
-          <h2 className="text-lg font-bold text-white mb-4 flex items-center space-x-2">
-            <TrendingUp className="w-5 h-5 text-blue-400" />
-            <span>Характеристики</span>
-          </h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-bold text-white flex items-center space-x-2">
+              <TrendingUp className="w-5 h-5 text-blue-400" />
+              <span>Характеристики</span>
+            </h2>
+            <div className="text-right">
+              <div className="text-xs text-dark-400">Доступно очков:</div>
+              <div className="text-lg font-bold text-primary-400">{remainingPoints}</div>
+            </div>
+          </div>
 
           <div className="space-y-3">
             {statInfo.map((stat) => {

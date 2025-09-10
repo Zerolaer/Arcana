@@ -254,30 +254,7 @@ export default function CombatPanel({ character, onUpdateCharacter, isLoading }:
   }
 
   return (
-    <div className="flex-1 game-content p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-white flex items-center space-x-2">
-            <Swords className="w-6 h-6 text-red-400" />
-            <span>Боевая система</span>
-          </h1>
-          <p className="text-dark-400 mt-1">
-            {character.is_in_combat ? 'Вы находитесь в бою!' : 'Выберите противника для сражения'}
-          </p>
-        </div>
-
-        {/* Health Status */}
-        <div className="text-right">
-          <div className="text-sm text-dark-400">Здоровье:</div>
-          <div className={`text-xl font-bold ${
-            character.health < character.max_health * 0.3 ? 'text-red-400' : 'text-green-400'
-          }`}>
-            {character.health} / {character.max_health}
-          </div>
-        </div>
-      </div>
-
+    <div className="flex-1 game-content p-4 space-y-4">
       {/* Combat Progress */}
       {inCombat && (
         <div className="game-panel p-4">

@@ -11,21 +11,11 @@ interface SkillsPanelProps {
 
 export default function SkillsPanel({ character, onUpdateCharacter, isLoading }: SkillsPanelProps) {
   return (
-    <div className="flex-1 game-content p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-white flex items-center space-x-2">
-            <Zap className="w-6 h-6 text-purple-400" />
-            <span>Навыки</span>
-          </h1>
-          <p className="text-dark-400 mt-1">Изучение и развитие способностей</p>
-        </div>
-
-        {/* Available Points */}
+    <div className="flex-1 game-content p-4 space-y-4">
+      <div className="flex items-center justify-end mb-4">
         <div className="text-right">
           <div className="text-sm text-dark-400">Очков навыков:</div>
-          <div className="text-2xl font-bold text-purple-400">{character.skill_points}</div>
+          <div className="text-xl font-bold text-purple-400">{character.skill_points}</div>
         </div>
       </div>
 

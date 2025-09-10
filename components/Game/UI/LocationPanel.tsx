@@ -132,21 +132,8 @@ export default function LocationPanel({ character, onUpdateCharacter, isLoading 
   }
 
   return (
-    <div className="flex-1 game-content p-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-white flex items-center space-x-2">
-            <Map className="w-6 h-6 text-yellow-400" />
-            <span>Карта мира</span>
-          </h1>
-          <p className="text-dark-400 mt-1">
-            {selectedLocation ? `Текущая локация: ${selectedLocation.name}` : 'Выберите локацию для путешествия'}
-          </p>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div className="flex-1 game-content p-4 space-y-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {/* Locations List */}
         <div className="game-panel p-6">
           <h2 className="text-lg font-bold text-white mb-4 flex items-center space-x-2">

@@ -482,16 +482,9 @@ export default function DatabaseInventoryPanel({ character, onUpdateCharacter, i
 
   return (
     <div className="game-content h-full flex flex-col">
-      {/* Header */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center space-x-3">
-          <Package className="w-6 h-6 text-primary-400" />
-          <div>
-            <h2 className="text-xl font-bold text-white">Инвентарь</h2>
-            <div className="text-sm text-gray-400">
-              {itemCount}/48 предметов • Ценность: {totalValue.toLocaleString()}🪙
-            </div>
-          </div>
+      <div className="flex items-center justify-between mb-4">
+        <div className="text-sm text-gray-400">
+          {itemCount}/48 предметов • Ценность: {totalValue.toLocaleString()}🪙
         </div>
         
         <div className="flex items-center space-x-2">
