@@ -38,33 +38,33 @@ export default function GameHeader({ character, user, onLogout }: GameHeaderProp
 
           {/* Resource Bars */}
           <div className="max-w-[240px]">
-            <div className="space-y-3">
+            <div className="space-y-2">
               {/* Health Bar */}
-              <div className="flex items-center space-x-3">
-                <span className="text-xs text-red-300 w-8">HP</span>
-                <div className="flex-1 stat-bar">
+              <div className="flex items-center space-x-2">
+                <span className="text-xs text-red-300 w-6">HP</span>
+                <div className="flex-1 h-2 bg-dark-300 rounded-full overflow-hidden">
                   <div 
-                    className="stat-bar-fill health-bar"
+                    className="h-full bg-gradient-to-r from-red-500 to-red-600 transition-all duration-300"
                     style={{ width: `${healthPercentage}%` }}
                   />
-                  <div className="absolute inset-0 flex items-center justify-center text-xs font-semibold text-white">
-                    {formatNumber(character.health)}/{formatNumber(character.max_health)}
-                  </div>
                 </div>
+                <span className="text-xs text-red-300 w-16 text-right">
+                  {formatNumber(character.health)}/{formatNumber(character.max_health)}
+                </span>
               </div>
 
               {/* Mana Bar */}
-              <div className="flex items-center space-x-3">
-                <span className="text-xs text-blue-300 w-8">MP</span>
-                <div className="flex-1 stat-bar">
+              <div className="flex items-center space-x-2">
+                <span className="text-xs text-blue-300 w-6">MP</span>
+                <div className="flex-1 h-2 bg-dark-300 rounded-full overflow-hidden">
                   <div 
-                    className="stat-bar-fill mana-bar"
+                    className="h-full bg-gradient-to-r from-blue-500 to-blue-600 transition-all duration-300"
                     style={{ width: `${manaPercentage}%` }}
                   />
-                  <div className="absolute inset-0 flex items-center justify-center text-xs font-semibold text-white">
-                    {formatNumber(character.mana)}/{formatNumber(character.max_mana)}
-                  </div>
                 </div>
+                <span className="text-xs text-blue-300 w-16 text-right">
+                  {formatNumber(character.mana)}/{formatNumber(character.max_mana)}
+                </span>
               </div>
             </div>
           </div>
