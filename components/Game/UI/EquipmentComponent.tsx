@@ -39,6 +39,35 @@ const equipmentSlots = [
   { key: 'empty', name: '', icon: '', position: 'right', index: 4 },
 ]
 
+// Маппинг классов по ID (временное решение)
+const CLASS_NAMES: Record<string, string> = {
+  // Из supabase/test_data.sql (основные классы)
+  'warrior': 'Воин',
+  'mage': 'Маг',
+  'rogue': 'Разбойник',
+  'priest': 'Жрец',
+  'paladin': 'Паладин',
+  'hunter': 'Охотник',
+  'warlock': 'Варлок',
+  'death_knight': 'Рыцарь Смерти',
+  'shaman': 'Шаман',
+  'monk': 'Монах',
+  'druid': 'Друид',
+  'bard': 'Бард',
+  'ranger': 'Следопыт',
+  'sorcerer': 'Чародей',
+  'barbarian': 'Варвар',
+  'fighter': 'Боец',
+  'cleric': 'Клирик',
+  'wizard': 'Волшебник',
+  'thief': 'Вор',
+  'knight': 'Рыцарь',
+  'archer': 'Лучник',
+  'assassin': 'Убийца',
+  'necromancer': 'Некромант',
+  'berserker': 'Берсерк'
+}
+
 export default function EquipmentComponent({ 
   character, 
   onUpdateCharacter, 
@@ -187,7 +216,7 @@ export default function EquipmentComponent({
           {/* Информация о персонаже */}
           <div className="text-center mb-4">
             <div className="text-white font-semibold">{character.name}</div>
-            <div className="text-sm text-gray-400">Lv {character.level} Warrior</div>
+            <div className="text-sm text-gray-400">Lv {character.level} {CLASS_NAMES[character.class_id] || 'Неизвестный класс'}</div>
           </div>
           
           {/* Большая фигура персонажа */}
