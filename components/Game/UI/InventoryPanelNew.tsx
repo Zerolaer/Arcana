@@ -121,7 +121,7 @@ export default function InventoryPanelNew({ character, onUpdateCharacter, isLoad
       const { data, error } = await (supabase as any)
         .rpc('equip_item', {
           p_character_id: character.id,
-          p_item_key: item.item_key,
+          p_item_id: item.id,
           p_slot_position: inventoryItem.slot_position
         })
 
