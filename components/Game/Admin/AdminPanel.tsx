@@ -57,7 +57,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, character, onC
 
     try {
       // Находим свободный слот
-      const { data: inventory } = await supabase
+      const { data: inventory } = await (supabase as any)
         .from('character_inventory')
         .select('slot_position')
         .eq('character_id', character.id)
@@ -70,7 +70,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, character, onC
       }
 
       // Добавляем предмет
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('character_inventory')
         .insert({
           character_id: character.id,
@@ -101,7 +101,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, character, onC
     try {
       const calculatedStats = calculateCharacterStats(character);
       
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('characters')
         .update({ 
           health: calculatedStats.max_health,
@@ -129,7 +129,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, character, onC
     setMessage('');
 
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('characters')
         .update({ gold: character.gold + amount })
         .eq('id', character.id);
@@ -153,7 +153,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, character, onC
     setMessage('');
 
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('characters')
         .update({ experience: character.experience + amount })
         .eq('id', character.id);
@@ -180,7 +180,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, character, onC
       const currentValue = character[statName] || 0;
       const newValue = Math.max(0, currentValue + amount);
 
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('characters')
         .update({ [statName]: newValue })
         .eq('id', character.id);
@@ -208,7 +208,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, character, onC
     setMessage('');
 
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('characters')
         .update({ level: newLevel })
         .eq('id', character.id);

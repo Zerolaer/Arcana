@@ -271,7 +271,7 @@ export class CombatSystem {
   static async getMobLoot(mobId: string): Promise<any[]> {
     try {
       // Получаем лут-таблицу моба и предметы с шансом дропа
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('mob_loot')
         .select(`
           drop_rate,
@@ -294,16 +294,16 @@ export class CombatSystem {
       // Фильтруем предметы по шансу дропа
       const lootedItems = []
       for (const loot of data || []) {
-        if (Math.random() * 100 < loot.drop_rate) {
-          const quantity = Math.floor(Math.random() * (loot.quantity_max - loot.quantity_min + 1)) + loot.quantity_min
+        if (Math.random() * 100 < (loot as any).drop_rate) {
+          const quantity = Math.floor(Math.random() * ((loot as any).quantity_max - (loot as any).quantity_min + 1)) + (loot as any).quantity_min
           
           // Генерируем случайное качество (50-100%)
           const quality = 50 + Math.random() * 50
           
           lootedItems.push({
-            item_id: loot.item.id,
-            item_name: loot.item.name,
-            item_icon: loot.item.icon,
+            item_id: (loot as any).item.id,
+            item_name: (loot as any).item.name,
+            item_icon: (loot as any).item.icon,
             quantity: quantity,
             quality: Math.round(quality * 100) / 100 // Округляем до 2 знаков
           })
@@ -323,7 +323,7 @@ export class CombatSystem {
   static async addItemsToInventory(characterId: string, items: any[]) {
     try {
       // Получаем текущий инвентарь
-      const { data: inventory, error: inventoryError } = await supabase
+      const { data: inventory, error: inventoryError } = await (supabase as any)
         .from('character_inventory')
         .select('slot_position')
         .eq('character_id', characterId)
@@ -345,7 +345,7 @@ export class CombatSystem {
       for (let i = 0; i < items.length && i < freeSlots.length; i++) {
         const item = items[i]
         
-        const { error: insertError } = await supabase
+        const { error: insertError } = await (supabase as any)
           .from('character_inventory')
           .insert({
             character_id: characterId,
