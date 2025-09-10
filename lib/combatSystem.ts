@@ -218,7 +218,7 @@ export class CombatSystem {
       }
       
       // Обновляем в базе данных
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('characters')
         .update(updates)
         .eq('id', character.id)
@@ -245,7 +245,7 @@ export class CombatSystem {
       // Игрок теряет 25% текущего здоровья, но не меньше 1 HP
       const newHealth = Math.max(1, Math.floor(character.health * 0.75))
       
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('characters')
         .update({ health: newHealth })
         .eq('id', character.id)
@@ -273,7 +273,7 @@ export class CombatSystem {
   static async addItemsToInventory(characterId: string, items: any[]) {
     try {
       // Получаем текущий инвентарь
-      const { data: inventory, error: inventoryError } = await supabase
+      const { data: inventory, error: inventoryError } = await (supabase as any)
         .from('character_inventory')
         .select('slot_position')
         .eq('character_id', characterId)
@@ -296,7 +296,7 @@ export class CombatSystem {
         const item = items[i]
         const quantity = Math.floor(Math.random() * (item.quantity_max - item.quantity_min + 1)) + item.quantity_min
         
-        const { error: insertError } = await supabase
+        const { error: insertError } = await (supabase as any)
           .from('character_inventory')
           .insert({
             character_id: characterId,
