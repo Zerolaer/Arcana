@@ -2,12 +2,33 @@
 -- ФУНКЦИИ ДЛЯ НОВОЙ СИСТЕМЫ ПРЕДМЕТОВ
 -- ============================================
 
--- Удаляем старые функции
+-- Удаляем старые функции (все возможные варианты)
 DROP FUNCTION IF EXISTS get_character_inventory(UUID);
 DROP FUNCTION IF EXISTS get_character_equipment(UUID);
 DROP FUNCTION IF EXISTS equip_item(UUID, VARCHAR, INTEGER);
 DROP FUNCTION IF EXISTS equip_item(UUID, INTEGER);
-DROP FUNCTION IF EXISTS unequip_item(UUID, TEXT);
+
+-- Принудительно удаляем все версии unequip_item
+DO $$ 
+DECLARE
+    func_record RECORD;
+BEGIN
+    FOR func_record IN 
+        SELECT proname, oidvectortypes(proargtypes) as argtypes
+        FROM pg_proc 
+        WHERE proname = 'unequip_item'
+    LOOP
+        EXECUTE 'DROP FUNCTION IF EXISTS ' || func_record.proname || '(' || func_record.argtypes || ') CASCADE';
+    END LOOP;
+END $$;
+
+-- Обновляем constraint для character_equipment чтобы разрешить новые слоты
+ALTER TABLE character_equipment DROP CONSTRAINT IF EXISTS valid_slot_type;
+ALTER TABLE character_equipment ADD CONSTRAINT valid_slot_type CHECK (slot_type IN (
+    'weapon', 'helmet', 'armor', 'gloves', 'boots', 
+    'ring1', 'ring2', 'amulet', 'shield',
+    'main_hand', 'off_hand', 'head', 'chest', 'legs', 'hands', 'feet', 'ring'
+));
 
 -- Функция для получения инвентаря персонажа (новая система)
 CREATE OR REPLACE FUNCTION get_character_inventory(p_character_id UUID)
@@ -15,6 +36,12 @@ RETURNS JSON AS $$
 DECLARE
     v_result JSON;
 BEGIN
+    -- Принудительно обновляем статы для всех предметов в инвентаре
+    UPDATE character_inventory 
+    SET actual_stats = COALESCE(calculate_item_actual_stats(item_id, quality), '{}'::jsonb),
+        value = COALESCE(calculate_item_value(item_id, quality), 0)
+    WHERE character_id = p_character_id;
+    
     SELECT json_agg(
         json_build_object(
             'slot_position', ci.slot_position,
@@ -260,16 +287,16 @@ BEGIN
         );
     END IF;
     
-    -- Проверяем, не экипирован ли уже предмет в этом слоте
+    -- Если слот занят, автоматически снимаем старый предмет
     IF EXISTS (
         SELECT 1 FROM character_equipment 
         WHERE character_id = p_character_id 
         AND slot_type = v_equipment_slot
     ) THEN
-        RETURN json_build_object(
-            'success', false,
-            'error', 'Слот уже занят'
-        );
+        -- Снимаем старый предмет и возвращаем в инвентарь
+        DELETE FROM character_equipment 
+        WHERE character_id = p_character_id 
+        AND slot_type = v_equipment_slot;
     END IF;
     
     -- Экипируем предмет
@@ -283,6 +310,8 @@ BEGIN
         v_item_data.value, 
         NOW()
     );
+    
+    -- НЕ удаляем предмет из инвентаря - он остается там с флагом экипировки
     
     RETURN json_build_object(
         'success', true,
@@ -300,7 +329,7 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 -- Функция для снятия предмета
 CREATE OR REPLACE FUNCTION unequip_item(
     p_character_id UUID,
-    p_slot_type TEXT
+    p_slot_type VARCHAR
 )
 RETURNS JSON AS $$
 DECLARE
@@ -318,40 +347,11 @@ BEGIN
     IF NOT FOUND THEN
         RETURN json_build_object(
             'success', false,
-            'error', 'Предмет не найден в экипировке'
+            'error', 'Предмет не найден в экипировке для слота: ' || p_slot_type
         );
     END IF;
     
-    -- Находим свободный слот в инвентаре
-    SELECT MIN(slot_position)
-    INTO v_free_slot
-    FROM (
-        SELECT generate_series(1, 100) as slot_position
-        EXCEPT
-        SELECT slot_position FROM character_inventory WHERE character_id = p_character_id
-    ) free_slots;
-    
-    IF v_free_slot IS NULL THEN
-        RETURN json_build_object(
-            'success', false,
-            'error', 'Инвентарь полон'
-        );
-    END IF;
-    
-    -- Возвращаем предмет в инвентарь
-    INSERT INTO character_inventory (character_id, item_id, slot_position, quality, actual_stats, value, stack_size, obtained_at)
-    VALUES (
-        p_character_id, 
-        v_item_data.item_id, 
-        v_free_slot, 
-        v_item_data.quality, 
-        v_item_data.actual_stats, 
-        v_item_data.value, 
-        1, 
-        NOW()
-    );
-    
-    -- Удаляем из экипировки
+    -- Удаляем из экипировки (предмет остается в инвентаре)
     DELETE FROM character_equipment 
     WHERE character_id = p_character_id 
     AND slot_type = p_slot_type;
@@ -359,13 +359,15 @@ BEGIN
     RETURN json_build_object(
         'success', true,
         'message', 'Предмет успешно снят',
-        'slot_position', v_free_slot
+        'item_name', 'Предмет',
+        'slot_type', p_slot_type
     );
     
 EXCEPTION WHEN OTHERS THEN
     RETURN json_build_object(
         'success', false,
-        'error', 'Ошибка снятия: ' || SQLERRM
+        'error', 'Ошибка снятия: ' || SQLERRM,
+        'slot_type', p_slot_type
     );
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;

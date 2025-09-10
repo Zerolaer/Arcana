@@ -33,6 +33,16 @@ export default function DatabaseInventoryPanel({ character, onUpdateCharacter, i
   const [draggedFromIndex, setDraggedFromIndex] = useState<number | undefined>()
   const [activeFilter, setActiveFilter] = useState<FilterType>('all')
   const [searchTerm, setSearchTerm] = useState('')
+  const [openTooltips, setOpenTooltips] = useState<Set<number>>(new Set())
+
+  // Функции для управления тултипами
+  const closeTooltip = useCallback((slotIndex: number) => {
+    setOpenTooltips(prev => {
+      const newSet = new Set(prev)
+      newSet.delete(slotIndex)
+      return newSet
+    })
+  }, [])
 
   // Загрузка инвентаря из базы данных
   const loadInventory = useCallback(async () => {
@@ -333,7 +343,19 @@ export default function DatabaseInventoryPanel({ character, onUpdateCharacter, i
 
         if (data?.success) {
           toast.success(`${data.item_name} экипирован в слот ${data.slot_type}`)
-          await loadInventory()
+          
+          // Обновляем локальное состояние вместо полной перезагрузки
+          setInventory(prev => {
+            const newInventory = [...prev]
+            newInventory[item.slot_position] = {
+              ...item,
+              isEquipped: true
+            }
+            return newInventory
+          })
+          
+          // Закрываем тултип
+          closeTooltip(item.slot_position)
         } else {
           console.error('Equip failed:', data)
           toast.error(data?.error || 'Ошибка экипировки предмета')
@@ -547,6 +569,7 @@ export default function DatabaseInventoryPanel({ character, onUpdateCharacter, i
                   onUse={() => handleSlotClick(index)}
                   onEquip={() => handleEquipItem(index)}
                   onUnequip={() => handleSlotClick(index)}
+                  onClose={() => closeTooltip(index)}
                   showActions={true}
                   isEquipped={item.isEquipped || false}
                 />

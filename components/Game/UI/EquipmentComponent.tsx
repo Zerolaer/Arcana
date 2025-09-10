@@ -94,7 +94,14 @@ export default function EquipmentComponent({
 
       if (data?.success) {
         toast.success('Предмет снят')
-        await loadEquipment()
+        
+        // Обновляем локальное состояние вместо полной перезагрузки
+        setEquipment(prev => {
+          const newEquipment = { ...prev }
+          delete newEquipment[slotType]
+          return newEquipment
+        })
+        
         // Уведомляем родительский компонент об изменении
         onEquipmentChange?.()
         // Обновляем характеристики персонажа если есть функция
@@ -144,6 +151,7 @@ export default function EquipmentComponent({
           <ItemTooltip
             item={equippedItem.item}
             onUnequip={() => handleUnequipItem(slot.key)}
+            onClose={() => {}} // Закрытие тултипа будет обработано в самом ItemTooltip
             showActions={true}
             isEquipped={true}
           >

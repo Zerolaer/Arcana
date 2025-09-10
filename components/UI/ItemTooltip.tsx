@@ -52,6 +52,7 @@ interface ItemTooltipProps {
   onUse?: () => void
   onEquip?: () => void
   onUnequip?: () => void
+  onClose?: () => void
   showActions?: boolean
   isEquipped?: boolean
 }
@@ -91,6 +92,7 @@ export default function ItemTooltip({
   onUse, 
   onEquip, 
   onUnequip, 
+  onClose,
   showActions = false,
   isEquipped = false
 }: ItemTooltipProps) {
@@ -259,6 +261,10 @@ export default function ItemTooltip({
                   if (onEquip) {
                     console.log('🚨🚨🚨 Calling onEquip function')
                     onEquip()
+                    // Закрываем тултип после экипировки
+                    if (onClose) {
+                      setTimeout(() => onClose(), 100)
+                    }
                   } else {
                     console.log('🚨🚨🚨 onEquip is null/undefined')
                   }
@@ -285,6 +291,10 @@ export default function ItemTooltip({
                   if (onUnequip) {
                     console.log('🚨🚨🚨 Calling onUnequip function')
                     onUnequip()
+                    // Закрываем тултип после снятия
+                    if (onClose) {
+                      setTimeout(() => onClose(), 100)
+                    }
                   } else {
                     console.log('🚨🚨🚨 onUnequip is null/undefined')
                   }
