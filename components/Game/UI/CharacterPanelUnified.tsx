@@ -225,6 +225,29 @@ export default function CharacterPanelUnified({ character, onUpdateCharacter, is
     return character[stat] + tempStats[stat]
   }
 
+  // Функция для снятия экипировки
+  const unequipItem = async (slotType: string) => {
+    try {
+      const { error } = await (supabase as any)
+        .rpc('unequip_item', { 
+          p_character_id: character.id, 
+          p_slot_type: slotType 
+        })
+
+      if (error) {
+        console.error('Error unequipping item:', error)
+        toast.error('Ошибка снятия предмета')
+        return
+      }
+
+      toast.success('Предмет снят')
+      loadEquipment() // Перезагружаем экипировку
+    } catch (error) {
+      console.error('Error unequipping item:', error)
+      toast.error('Ошибка снятия предмета')
+    }
+  }
+
   return (
     <div className="flex-1 game-content p-6 space-y-6">
       {/* Header */}
@@ -263,9 +286,21 @@ export default function CharacterPanelUnified({ character, onUpdateCharacter, is
               return (
                 <div key={stat.key} className="border border-dark-300/30 rounded-lg p-3">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
+                    <div className="flex items-center space-x-2 relative group">
                       {stat.icon}
-                      <span className="font-semibold text-white text-sm">{stat.name}</span>
+                      <span className="font-semibold text-white text-sm cursor-help">{stat.name}</span>
+                      
+                      {/* Tooltip for stat effects */}
+                      <div className="absolute left-0 top-full mt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50">
+                        <div className="bg-dark-100 border border-dark-300 rounded-lg p-3 text-xs text-white whitespace-nowrap shadow-xl">
+                          <div className="text-gray-300 mb-2 font-semibold">Эффекты:</div>
+                          {stat.effects.map((effect, index) => (
+                            <div key={index} className="text-white mb-1">
+                              • {effect}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
                     </div>
                     
                     <div className="flex items-center space-x-2">
@@ -383,8 +418,8 @@ export default function CharacterPanelUnified({ character, onUpdateCharacter, is
               const equippedItem = equipment.find(eq => eq.slotType === slot.key)
               
               return (
-                <div key={slot.key} className="relative">
-                  <div className="w-15 h-15 bg-dark-200/30 border-2 border-dashed border-dark-300/50 rounded-lg flex flex-col items-center justify-center p-1 hover:border-dark-300/70 transition-colors">
+                <div key={slot.key} className="relative group">
+                  <div className="w-15 h-15 bg-dark-200/30 border-2 border-dashed border-dark-300/50 rounded-lg flex flex-col items-center justify-center p-1 hover:border-dark-300/70 transition-colors relative">
                     {equippedItem?.item ? (
                       <div className="w-full h-full flex flex-col items-center justify-center">
                         <div className="text-lg mb-0.5">{equippedItem.item.icon}</div>
@@ -393,6 +428,17 @@ export default function CharacterPanelUnified({ character, onUpdateCharacter, is
                         </div>
                         <div className="text-xs text-gray-400">
                           {equippedItem.item.level} ур.
+                        </div>
+                        
+                        {/* Hover overlay with unequip button */}
+                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center justify-center rounded-lg">
+                          <button
+                            onClick={() => unequipItem(slot.key)}
+                            className="px-2 py-1 bg-red-500/80 hover:bg-red-500 text-white text-xs rounded transition-colors"
+                            title="Снять предмет"
+                          >
+                            Снять
+                          </button>
                         </div>
                       </div>
                     ) : (
