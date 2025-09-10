@@ -96,7 +96,6 @@ a {
 ::-webkit-scrollbar-thumb {
   background: rgba(113, 113, 122, 0.6);
   border-radius: 4px;
-  transition: background-color 0.3s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -149,13 +148,11 @@ a {
     0 8px 32px rgba(0, 0, 0, 0.4),
     inset 0 1px 0 rgba(255, 255, 255, 0.1),
     0 0 0 1px rgba(255, 255, 255, 0.05);
-  transition: all 0.3s ease;
 }
 
 .game-panel:hover {
   background: var(--bg-panel-hover);
   border-color: rgba(255, 255, 255, 0.15);
-  transform: translateY(-2px);
   box-shadow: 
     0 12px 40px rgba(0, 0, 0, 0.5),
     inset 0 1px 0 rgba(255, 255, 255, 0.15),
@@ -208,7 +205,6 @@ a {
 .game-content::-webkit-scrollbar-thumb {
   background: rgba(113, 113, 122, 0.4);
   border-radius: 3px;
-  transition: background-color 0.3s ease;
 }
 
 .game-content::-webkit-scrollbar-thumb:hover {
@@ -226,7 +222,6 @@ a {
   letter-spacing: 0.025em;
   padding: 12px 24px;
   text-transform: uppercase;
-  transition: all 0.3s ease;
   box-shadow: 
     0 4px 16px rgba(0, 0, 0, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.2);
@@ -235,7 +230,6 @@ a {
 }
 
 .game-button:hover {
-  transform: translateY(-2px);
   box-shadow: 
     0 6px 20px rgba(0, 0, 0, 0.4),
     inset 0 1px 0 rgba(255, 255, 255, 0.3);
@@ -243,7 +237,6 @@ a {
 }
 
 .game-button:active {
-  transform: translateY(0px);
   box-shadow: 
     0 2px 8px rgba(0, 0, 0, 0.3),
     inset 0 1px 0 rgba(255, 255, 255, 0.1);
@@ -252,7 +245,6 @@ a {
 .game-button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
-  transform: none;
 }
 
 /* Button Variants */
@@ -291,7 +283,6 @@ a {
   border: 2px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
   padding: 12px;
-  transition: all 0.3s ease;
   cursor: pointer;
   position: relative;
   overflow: hidden;
@@ -306,11 +297,9 @@ a {
   height: 2px;
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
   opacity: 0;
-  transition: opacity 0.3s ease;
 }
 
 .item-card:hover {
-  transform: translateY(-4px) scale(1.02);
   border-color: rgba(255, 255, 255, 0.2);
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6);
 }
@@ -386,7 +375,6 @@ a {
 
 .stat-bar-fill {
   height: 100%;
-  transition: width 0.3s ease;
   position: relative;
   border-radius: 1px;
 }
@@ -424,7 +412,7 @@ a {
 }
 
 .game-input {
-  @apply w-full px-4 py-2 bg-dark-200/50 border border-dark-300/50 rounded-md text-white placeholder-dark-500 focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50 transition-all duration-200;
+  @apply w-full px-4 py-2 bg-dark-200/50 border border-dark-300/50 rounded-md text-white placeholder-dark-500 focus:outline-none focus:ring-2 focus:ring-primary-500/50 focus:border-primary-500/50;
 }
 
 /* ARPG Dark Theme Complete - Diablo/PoE Style Applied */
@@ -462,11 +450,11 @@ a {
 @keyframes damageFloat {
   0% {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    opacity: 1;
   }
   100% {
     opacity: 0;
-    transform: translateY(-50px) scale(1.2);
+    opacity: 0;
   }
 }
 
@@ -494,8 +482,8 @@ a {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% { opacity: 1; }
+  100% { opacity: 1; }
 }
 
 /* Game grid layouts */
@@ -522,9 +510,9 @@ a {
 }
 
 @keyframes combatHit {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.05); }
-  100% { transform: scale(1); }
+  0% { opacity: 1; }
+  50% { opacity: 1; }
+  100% { opacity: 1; }
 }
 
 .critical-hit {
@@ -533,15 +521,15 @@ a {
 
 @keyframes criticalHit {
   0% { 
-    transform: scale(1) rotate(0deg); 
+    opacity: 1;
     filter: brightness(1);
   }
   50% { 
-    transform: scale(1.1) rotate(2deg); 
+    opacity: 1;
     filter: brightness(1.3);
   }
   100% { 
-    transform: scale(1) rotate(0deg); 
+    opacity: 1;
     filter: brightness(1);
   }
 }
@@ -582,30 +570,27 @@ a {
 @keyframes tooltipShow {
   0% {
     opacity: 0;
-    transform: translateY(10px) scale(0.95);
+    opacity: 0;
   }
   100% {
     opacity: 1;
-    transform: translateY(0) scale(1);
+    opacity: 1;
   }
 }
 
 /* Drag & Drop System */
 .draggable-item {
   cursor: grab;
-  transition: all 0.2s ease;
   user-select: none;
   position: relative;
 }
 
 .draggable-item:hover {
-  transform: scale(1.05);
   z-index: 10;
 }
 
 .draggable-item.dragging {
   cursor: grabbing;
-  transform: scale(1.1) rotate(5deg);
   opacity: 0.8;
   z-index: 1000;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
@@ -614,13 +599,11 @@ a {
 
 .drop-zone {
   position: relative;
-  transition: all 0.2s ease;
 }
 
 .drop-zone.drag-over {
   background: rgba(59, 130, 246, 0.2);
   border-color: #3b82f6 !important;
-  transform: scale(1.02);
 }
 
 .drop-zone.drag-over::before {
@@ -651,7 +634,6 @@ a {
   align-items: center;
   justify-content: center;
   position: relative;
-  transition: all 0.2s ease;
 }
 
 .inventory-slot.occupied {
