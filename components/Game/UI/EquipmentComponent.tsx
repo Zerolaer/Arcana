@@ -103,6 +103,29 @@ export default function EquipmentComponent({
 }: EquipmentComponentProps) {
   const [equipment, setEquipment] = useState<EquipmentSlot[]>([])
   const [loading, setLoading] = useState(true)
+  const [characterClass, setCharacterClass] = useState<{ name: string; icon: string } | null>(null)
+
+  // Загрузка информации о классе
+  const loadCharacterClass = useCallback(async () => {
+    try {
+      const { data, error } = await supabase
+        .from('character_classes')
+        .select('name, icon')
+        .eq('id', character.class_id)
+        .single()
+
+      if (error) {
+        console.error('Error loading character class:', error)
+        return
+      }
+
+      if (data) {
+        setCharacterClass(data)
+      }
+    } catch (error) {
+      console.error('Error loading character class:', error)
+    }
+  }, [character.class_id])
 
   // Загрузка экипировки
   const loadEquipment = useCallback(async () => {
@@ -132,7 +155,8 @@ export default function EquipmentComponent({
 
   useEffect(() => {
     loadEquipment()
-  }, [loadEquipment])
+    loadCharacterClass()
+  }, [loadEquipment, loadCharacterClass])
 
   // Снятие экипировки
   const handleUnequipItem = async (slotType: string) => {
@@ -244,7 +268,7 @@ export default function EquipmentComponent({
           {/* Информация о персонаже */}
           <div className="text-center mb-4">
             <div className="text-white font-semibold">{character.name}</div>
-            <div className="text-sm text-gray-400">Lv {character.level} {CLASS_NAMES[character.class_id] || 'Неизвестный класс'}</div>
+            <div className="text-sm text-gray-400">Lv {character.level} {characterClass?.name || 'Загрузка...'}</div>
           </div>
           
           {/* Большая фигура персонажа */}
@@ -257,27 +281,27 @@ export default function EquipmentComponent({
                 return (
                   <img 
                     src={avatarData.image} 
-                    alt={CLASS_NAMES[character.class_id] || 'Персонаж'}
+                    alt={characterClass?.name || 'Персонаж'}
                     className="w-full h-full object-cover opacity-90"
                     onError={(e) => {
-                      // Если изображение не загрузилось, показываем эмодзи
+                      // Если изображение не загрузилось, показываем эмодзи класса
                       const target = e.target as HTMLImageElement
                       target.style.display = 'none'
                       const parent = target.parentElement
                       if (parent) {
                         const emojiDiv = document.createElement('div')
                         emojiDiv.className = 'text-8xl opacity-80 absolute inset-0 flex items-center justify-center'
-                        emojiDiv.textContent = avatarData.emoji
+                        emojiDiv.textContent = characterClass?.icon || avatarData.emoji || '👤'
                         parent.appendChild(emojiDiv)
                       }
                     }}
                   />
                 )
               } else {
-                // Показываем эмодзи
+                // Показываем эмодзи класса из базы данных или fallback
                 return (
                   <div className="text-8xl opacity-80">
-                    {avatarData?.emoji || '👤'}
+                    {characterClass?.icon || avatarData?.emoji || '👤'}
                   </div>
                 )
               }
@@ -286,7 +310,7 @@ export default function EquipmentComponent({
             {/* Дополнительная информация о классе */}
             <div className="absolute bottom-2 left-2 right-2 text-center">
               <div className="text-xs text-gray-400 bg-dark-200/50 rounded px-2 py-1">
-                {CLASS_NAMES[character.class_id] || 'Неизвестный класс'}
+                {characterClass?.name || 'Загрузка...'}
               </div>
             </div>
           </div>
