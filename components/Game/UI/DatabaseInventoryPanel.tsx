@@ -265,23 +265,10 @@ export default function DatabaseInventoryPanel({ character, onUpdateCharacter, i
       })
       
       try {
-        // Нужно найти item_key по id предмета
-        const { data: itemData, error: itemError } = await (supabase as any)
-          .from('items')
-          .select('item_key')
-          .eq('id', item.id)
-          .single()
-
-        if (itemError || !itemData) {
-          console.error('Error finding item key:', itemError)
-          toast.error('Ошибка поиска предмета')
-          return
-        }
-
         const { data, error } = await (supabase as any)
           .rpc('equip_item', {
             p_character_id: character.id,
-            p_item_key: itemData.item_key,
+            p_item_id: item.id,
             p_slot_position: item.slot_position
           })
 
@@ -314,15 +301,6 @@ export default function DatabaseInventoryPanel({ character, onUpdateCharacter, i
       })
       
       try {
-        // Используем item_key напрямую из предмета
-        console.log('Using item_key directly:', item.item_key)
-        
-        if (!item.item_key) {
-          console.error('Item has no item_key:', item)
-          toast.error('Ошибка: предмет не найден')
-          return
-        }
-
         if (!item.equipment_slot) {
           console.error('Item has no equipment_slot:', item)
           toast.error('Предмет нельзя экипировать')
@@ -331,16 +309,15 @@ export default function DatabaseInventoryPanel({ character, onUpdateCharacter, i
 
         console.log('Calling equip_item with:', {
           character_id: character.id,
-          item_key: item.item_key,
-          slot_position: item.slot_position,
           item_id: item.id,
+          slot_position: item.slot_position,
           item_name: item.name
         })
 
         const { data, error } = await (supabase as any)
           .rpc('equip_item', {
             p_character_id: character.id,
-            p_item_key: item.item_key,
+            p_item_id: item.id,
             p_slot_position: item.slot_position
           })
 

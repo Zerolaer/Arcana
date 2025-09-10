@@ -117,7 +117,7 @@ export default function ItemTooltip({
   }
 
   const renderQuality = () => {
-    if (!item.quality) return null
+    if (item.quality === undefined || item.quality === null) return null
 
     const qualityColor = item.quality >= 80 ? 'text-green-400' : 
                         item.quality >= 60 ? 'text-blue-400' : 
