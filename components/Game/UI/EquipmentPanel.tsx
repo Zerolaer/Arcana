@@ -21,7 +21,7 @@ interface EquipmentPanelProps {
 interface EquipmentSlot {
   slotType: string
   item?: GameItem
-  currentDurability?: number
+  quality?: number
   upgradeLevel?: number
   equippedAt?: string
 }
@@ -79,7 +79,7 @@ export default function EquipmentPanel({ character, onUpdateCharacter, isLoading
               quality: equippedItem.quality || 50,
               setBonus: equippedItem.item.setBonus
             },
-            currentQuality: equippedItem.quality || 50,
+            quality: equippedItem.quality || 50,
             upgradeLevel: equippedItem.upgrade_level,
             equippedAt: equippedItem.equipped_at
           }
@@ -211,18 +211,18 @@ export default function EquipmentPanel({ character, onUpdateCharacter, isLoading
                         </div>
                         
                         {/* Индикатор качества */}
-                        {equippedItem.currentQuality && (
+                        {equippedItem.quality && (
                           <div className="absolute bottom-0 left-0 right-0">
                             <div className="w-full bg-gray-700 rounded-full h-1">
                               <div 
                                 className={`h-1 rounded-full transition-all duration-300 ${
-                                  equippedItem.currentQuality > 80 ? 'bg-green-500' :
-                                  equippedItem.currentQuality > 60 ? 'bg-blue-500' :
-                                  equippedItem.currentQuality > 40 ? 'bg-yellow-500' :
-                                  equippedItem.currentQuality > 20 ? 'bg-orange-500' : 'bg-red-500'
+                                  equippedItem.quality > 80 ? 'bg-green-500' :
+                                  equippedItem.quality > 60 ? 'bg-blue-500' :
+                                  equippedItem.quality > 40 ? 'bg-yellow-500' :
+                                  equippedItem.quality > 20 ? 'bg-orange-500' : 'bg-red-500'
                                 }`}
                                 style={{ 
-                                  width: `${Math.min(equippedItem.currentQuality, 100)}%` 
+                                  width: `${Math.min(equippedItem.quality, 100)}%` 
                                 }}
                               />
                             </div>

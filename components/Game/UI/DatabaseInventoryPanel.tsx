@@ -20,7 +20,7 @@ type FilterType = 'all' | 'weapon' | 'armor' | 'accessory' | 'consumable' | 'mat
 interface InventorySlot {
   slotPosition: number
   stackSize?: number
-  currentDurability?: number
+  quality?: number
   upgradeLevel?: number
   obtainedAt?: string
   item?: GameItem
