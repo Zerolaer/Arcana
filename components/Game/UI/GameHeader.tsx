@@ -42,10 +42,10 @@ export default function GameHeader({ character, user, onLogout }: GameHeaderProp
               {/* Health Bar */}
               <div className="flex items-center space-x-2">
                 <span className="text-xs text-red-300 w-6">HP</span>
-                <div className="flex-1 h-3 bg-gray-800 rounded-full overflow-hidden border border-gray-600">
+                <div className="flex-1 h-3 bg-gray-800 rounded-full overflow-hidden border border-gray-600 min-w-[120px]">
                   <div 
-                    className="h-full bg-red-500 transition-all duration-300"
-                    style={{ width: `${healthPercentage}%` }}
+                    className="h-full bg-red-500 transition-all duration-300 min-w-[2px]"
+                    style={{ width: `${Math.max(healthPercentage, 1)}%` }}
                   />
                 </div>
                 <span className="text-xs text-red-300 w-16 text-right">
@@ -56,10 +56,10 @@ export default function GameHeader({ character, user, onLogout }: GameHeaderProp
               {/* Mana Bar */}
               <div className="flex items-center space-x-2">
                 <span className="text-xs text-blue-300 w-6">MP</span>
-                <div className="flex-1 h-3 bg-gray-800 rounded-full overflow-hidden border border-gray-600">
+                <div className="flex-1 h-3 bg-gray-800 rounded-full overflow-hidden border border-gray-600 min-w-[120px]">
                   <div 
-                    className="h-full bg-blue-500 transition-all duration-300"
-                    style={{ width: `${manaPercentage}%` }}
+                    className="h-full bg-blue-500 transition-all duration-300 min-w-[2px]"
+                    style={{ width: `${Math.max(manaPercentage, 1)}%` }}
                   />
                 </div>
                 <span className="text-xs text-blue-300 w-16 text-right">
