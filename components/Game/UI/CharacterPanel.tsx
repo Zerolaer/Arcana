@@ -5,6 +5,10 @@ import { Character } from '@/types/game'
 import { toast } from 'react-hot-toast'
 import { Plus, Minus, RotateCcw, Sword, Zap, Eye, Shield, Star, Crown, TrendingUp, Package } from 'lucide-react'
 import EquipmentPanel from './EquipmentPanel'
+import CharacterInfo from './CharacterInfo'
+import StatsDisplay from './StatsDisplay'
+import LevelProgress from './LevelProgress'
+import ResourceBars from './ResourceBars'
 
 interface CharacterPanelProps {
   character: Character
