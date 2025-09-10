@@ -9,7 +9,7 @@ import { toast } from 'react-hot-toast'
 // Game UI Components
 import GameHeader from './UI/GameHeader'
 import GameSidebar from './UI/GameSidebar'
-import CharacterPanel from './UI/CharacterPanel'
+import CharacterPanelUnified from './UI/CharacterPanelUnified'
 import DatabaseInventoryPanel from './UI/DatabaseInventoryPanel'
 import LocationPanel from './UI/LocationPanel'
 import SkillsPanel from './UI/SkillsPanel'
@@ -130,7 +130,7 @@ export default function GameInterface({ character: initialCharacter, user, onLog
     switch (activePanel) {
       case 'character':
         return (
-          <CharacterPanel
+          <CharacterPanelUnified 
             character={character}
             onUpdateCharacter={updateCharacterData}
             isLoading={isLoading}
