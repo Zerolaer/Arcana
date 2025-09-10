@@ -5,8 +5,8 @@ import { Character } from '@/types/game'
 import { toast } from 'react-hot-toast'
 import { Plus, Minus, RotateCcw, Crown, TrendingUp, Sword, Shield, Star, Zap, Eye, Package } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
-import { GameItem } from './ItemTooltip'
-import ItemTooltip from './ItemTooltip'
+import { GameItem } from '../../UI/ItemTooltip'
+import ItemTooltip from '../../UI/ItemTooltip'
 
 interface CharacterPanelProps {
   character: Character
