@@ -8,12 +8,11 @@ import { toast } from 'react-hot-toast'
 
 // Game UI Components
 import GameHeader from './UI/GameHeader'
-import GameSidebar from './UI/GameSidebar'
+import GameSidebar, { ActivePanel } from './UI/GameSidebar'
 import CharacterPanelUnified from './UI/CharacterPanelUnified'
 import InventoryGrid from './UI/InventoryGrid'
 import SkillsTree from './UI/SkillsTree'
 import LocationMap from './UI/LocationMap'
-import CombatInterface from './UI/CombatInterface'
 
 interface GameInterfaceProps {
   character: Character
@@ -21,7 +20,6 @@ interface GameInterfaceProps {
   onLogout: () => void
 }
 
-type ActivePanel = 'character' | 'inventory' | 'skills' | 'location' | 'combat' | null
 
 export default function GameInterface({ character: initialCharacter, user, onLogout }: GameInterfaceProps) {
   const [character, setCharacter] = useState<Character>(initialCharacter)
@@ -234,14 +232,6 @@ export default function GameInterface({ character: initialCharacter, user, onLog
       case 'location':
         return (
           <LocationMap
-            character={character}
-            onUpdateCharacter={updateCharacterData}
-            isLoading={isLoading}
-          />
-        )
-      case 'combat':
-        return (
-          <CombatInterface
             character={character}
             onUpdateCharacter={updateCharacterData}
             isLoading={isLoading}

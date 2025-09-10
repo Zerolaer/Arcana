@@ -4,6 +4,7 @@ import { useEffect, useCallback, useRef } from 'react'
 import { Character } from '@/types/game'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'react-hot-toast'
+import { calculateCharacterStats } from '@/lib/characterStats'
 
 interface RegenerationSystemProps {
   character: Character
@@ -33,30 +34,22 @@ export default function RegenerationSystem({
         return
       }
 
+      // Используем рассчитанные характеристики
+      const calculatedStats = calculateCharacterStats(character)
+
       // Проверяем, нужно ли регенерировать
-      const needsHealthRegen = character.health < character.max_health
-      const needsManaRegen = character.mana < character.max_mana
-      const needsStaminaRegen = character.stamina < character.max_stamina
+      const needsHealthRegen = character.health < calculatedStats.max_health
+      const needsManaRegen = character.mana < calculatedStats.max_mana
+      const needsStaminaRegen = character.stamina < calculatedStats.max_stamina
 
       if (!needsHealthRegen && !needsManaRegen && !needsStaminaRegen) {
         return
       }
 
-      // Если регенерация не определена, устанавливаем базовые значения
-      if (!character.health_regen || !character.mana_regen || !character.stamina_regen) {
-        isUpdating.current = true
-        const baseHealthRegen = 1.0 + (character.vitality * 0.05) + (character.level * 0.02)
-        const baseManaRegen = 1.0 + (character.energy * 0.05) + (character.intelligence * 0.02) + (character.level * 0.01)
-        const baseStaminaRegen = 1.0 + (character.dexterity * 0.08) + (character.vitality * 0.03) + (character.level * 0.02)
-
-        await onUpdateCharacter({
-          health_regen: Math.round(baseHealthRegen * 100) / 100,
-          mana_regen: Math.round(baseManaRegen * 100) / 100,
-          stamina_regen: Math.round(baseStaminaRegen * 100) / 100
-        }, true) // Тихое обновление
-        isUpdating.current = false
-        return
-      }
+      // Используем рассчитанные значения регенерации
+      const healthRegen = calculatedStats.health_regen
+      const manaRegen = calculatedStats.mana_regen
+      const staminaRegen = calculatedStats.stamina_regen
 
       // Вызываем функцию регенерации из базы данных
       const { data, error } = await (supabase as any)

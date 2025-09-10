@@ -2,15 +2,19 @@
 
 import { Character } from '@/types/game'
 import { Heart, Zap, Star, Coins } from 'lucide-react'
+import { calculateCharacterStats } from '@/lib/characterStats'
 
 interface CharacterFooterProps {
   character: Character
 }
 
 export default function CharacterFooter({ character }: CharacterFooterProps) {
+  // Используем рассчитанные характеристики
+  const calculatedStats = calculateCharacterStats(character)
+  
   // Calculate percentages
-  const healthPercent = (character.health / character.max_health) * 100
-  const manaPercent = (character.mana / character.max_mana) * 100
+  const healthPercent = (character.health / calculatedStats.max_health) * 100
+  const manaPercent = (character.mana / calculatedStats.max_mana) * 100
   
   // Calculate experience to next level (simple calculation)
   const expForCurrentLevel = character.level * 100
@@ -64,10 +68,10 @@ export default function CharacterFooter({ character }: CharacterFooterProps) {
                 <div className="absolute inset-0 bg-gradient-to-r from-red-500/30 via-transparent to-transparent animate-pulse" />
               </div>
               <div className="text-xs text-gray-300 mt-1 flex items-center justify-between">
-                <span>{character.health} / {character.max_health}</span>
-                {character.health_regen && character.health < character.max_health && !character.is_in_combat && (
+                <span>{character.health} / {calculatedStats.max_health}</span>
+                {calculatedStats.health_regen && character.health < calculatedStats.max_health && !character.is_in_combat && (
                   <span className="text-green-400 text-xs">
-                    +{character.health_regen.toFixed(1)}/сек
+                    +{calculatedStats.health_regen.toFixed(1)}/сек
                   </span>
                 )}
               </div>
@@ -86,10 +90,10 @@ export default function CharacterFooter({ character }: CharacterFooterProps) {
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-500/30 via-transparent to-transparent animate-pulse" />
               </div>
               <div className="text-xs text-gray-300 mt-1 flex items-center justify-between">
-                <span>{character.mana} / {character.max_mana}</span>
-                {character.mana_regen && character.mana < character.max_mana && !character.is_in_combat && (
+                <span>{character.mana} / {calculatedStats.max_mana}</span>
+                {calculatedStats.mana_regen && character.mana < calculatedStats.max_mana && !character.is_in_combat && (
                   <span className="text-blue-400 text-xs">
-                    +{character.mana_regen.toFixed(1)}/сек
+                    +{calculatedStats.mana_regen.toFixed(1)}/сек
                   </span>
                 )}
               </div>

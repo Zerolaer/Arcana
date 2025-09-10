@@ -2,6 +2,7 @@
 
 import { Character } from '@/types/game'
 import { Sword, Zap, Eye, Shield, Star, Crown, Heart, Zap as ManaIcon, Activity } from 'lucide-react'
+import { calculateCharacterStats } from '@/lib/characterStats'
 
 interface StatsDisplayProps {
   character: Character
@@ -10,6 +11,8 @@ interface StatsDisplayProps {
 }
 
 export default function StatsDisplay({ character, showDerived = true, className = '' }: StatsDisplayProps) {
+  // Используем рассчитанные характеристики для консистентности
+  const calculatedStats = calculateCharacterStats(character)
   const baseStats = [
     {
       key: 'strength' as const,
@@ -60,7 +63,7 @@ export default function StatsDisplay({ character, showDerived = true, className 
       name: 'Здоровье',
       icon: <Heart className="w-4 h-4 text-red-500" />,
       current: character.health,
-      max: character.max_health,
+      max: calculatedStats.max_health,
       color: 'text-red-500',
       showBar: true
     },
@@ -68,7 +71,7 @@ export default function StatsDisplay({ character, showDerived = true, className 
       name: 'Мана',
       icon: <ManaIcon className="w-4 h-4 text-blue-500" />,
       current: character.mana,
-      max: character.max_mana,
+      max: calculatedStats.max_mana,
       color: 'text-blue-500',
       showBar: true
     },
@@ -76,50 +79,50 @@ export default function StatsDisplay({ character, showDerived = true, className 
       name: 'Выносливость',
       icon: <Activity className="w-4 h-4 text-green-500" />,
       current: character.stamina,
-      max: character.max_stamina,
+      max: calculatedStats.max_stamina,
       color: 'text-green-500',
       showBar: true
     },
     {
       name: 'Физический урон',
       icon: <Sword className="w-4 h-4 text-gray-400" />,
-      value: character.attack_damage,
+      value: calculatedStats.attack_damage,
       color: 'text-gray-400'
     },
     {
       name: 'Магический урон',
       icon: <Eye className="w-4 h-4 text-gray-400" />,
-      value: character.magic_damage,
+      value: calculatedStats.magic_damage,
       color: 'text-gray-400'
     },
     {
       name: 'Защита',
       icon: <Shield className="w-4 h-4 text-gray-400" />,
-      value: character.defense,
+      value: calculatedStats.defense,
       color: 'text-gray-400'
     },
     {
       name: 'Маг. защита',
       icon: <Star className="w-4 h-4 text-gray-400" />,
-      value: character.magic_resistance,
+      value: calculatedStats.magic_resistance,
       color: 'text-gray-400'
     },
     {
       name: 'Критический шанс',
       icon: <Crown className="w-4 h-4 text-gray-400" />,
-      value: `${character.critical_chance}%`,
+      value: `${calculatedStats.critical_chance}%`,
       color: 'text-gray-400'
     },
     {
       name: 'Критический урон',
       icon: <Zap className="w-4 h-4 text-gray-400" />,
-      value: `${character.critical_damage}%`,
+      value: `${calculatedStats.critical_damage}%`,
       color: 'text-gray-400'
     },
     {
       name: 'Скорость атаки',
       icon: <Activity className="w-4 h-4 text-gray-400" />,
-      value: `${character.attack_speed}%`,
+      value: `${calculatedStats.attack_speed}%`,
       color: 'text-gray-400'
     }
   ]

@@ -1,4 +1,5 @@
 import { Character } from '@/types/game'
+import { calculateCharacterStats } from './characterStats'
 
 /**
  * Расчет боевой мощи (Combat Power) на основе современных MMO подходов
@@ -18,12 +19,14 @@ export interface CombatStats {
  * Рассчитывает эффективное HP с учетом защиты и сопротивлений
  */
 function calculateEffectiveHP(character: Character): number {
-  const baseHP = character.max_health
+  // Используем рассчитанные характеристики для консистентности
+  const stats = calculateCharacterStats(character)
+  const baseHP = stats.max_health
   
   // Защита снижает входящий урон
   // Формула: damage_reduction = defense / (defense + 100)
-  const physicalDefense = character.defense
-  const magicDefense = character.magic_resistance
+  const physicalDefense = stats.defense
+  const magicDefense = stats.magic_resistance
   
   // Средняя защита для расчета эффективного HP
   const averageDefense = (physicalDefense + magicDefense) / 2
@@ -39,17 +42,20 @@ function calculateEffectiveHP(character: Character): number {
  * Рассчитывает эффективный DPS с учетом всех модификаторов
  */
 function calculateEffectiveDPS(character: Character): number {
+  // Используем рассчитанные характеристики для консистентности
+  const stats = calculateCharacterStats(character)
+  
   // Базовый урон (физический + магический)
-  const physicalDamage = character.attack_damage
-  const magicDamage = character.magic_damage
+  const physicalDamage = stats.attack_damage
+  const magicDamage = stats.magic_damage
   const totalDamage = physicalDamage + magicDamage
   
   // Скорость атаки влияет на DPS
-  const attackSpeed = character.attack_speed || 1.0
+  const attackSpeed = stats.attack_speed / 100 // Конвертируем из процентов
   
   // Критические удары увеличивают DPS
-  const critChance = character.critical_chance / 100
-  const critDamage = character.critical_damage / 100
+  const critChance = stats.critical_chance / 100
+  const critDamage = stats.critical_damage / 100
   
   // Средний урон с учетом критов
   const averageDamage = totalDamage * (1 + critChance * critDamage)
@@ -73,9 +79,10 @@ export function calculateCombatPower(character: Character): CombatStats {
   const combatPower = Math.floor(effectiveHP * effectiveDPS * levelModifier / 1000)
   
   // Дополнительные расчеты для отображения
-  const totalDamage = character.attack_damage + character.magic_damage
-  const totalDefense = character.defense + character.magic_resistance
-  const criticalMultiplier = 1 + (character.critical_chance / 100) * (character.critical_damage / 100)
+  const stats = calculateCharacterStats(character)
+  const totalDamage = stats.attack_damage + stats.magic_damage
+  const totalDefense = stats.defense + stats.magic_resistance
+  const criticalMultiplier = 1 + (stats.critical_chance / 100) * (stats.critical_damage / 100)
   
   return {
     combatPower,

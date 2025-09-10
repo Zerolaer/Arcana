@@ -1,9 +1,9 @@
 'use client'
 
 import { Character } from '@/types/game'
-import { User, Backpack, Zap, Map, Swords, Target, Users } from 'lucide-react'
+import { User, Backpack, Zap, Map } from 'lucide-react'
 
-type ActivePanel = 'character' | 'inventory' | 'skills' | 'location' | 'combat' | null
+export type ActivePanel = 'character' | 'inventory' | 'skills' | 'location' | null
 
 interface GameSidebarProps {
   character: Character
@@ -52,14 +52,6 @@ export default function GameSidebar({ character, activePanel, onPanelChange }: G
       description: 'Локации и путешествия',
       color: 'yellow'
     },
-    {
-      id: 'combat',
-      name: 'Бой',
-      icon: <Swords className="w-5 h-5" />,
-      description: 'Сражения и фарминг',
-      badge: character.is_in_combat ? '!' : undefined,
-      color: 'red'
-    }
   ]
 
   const getItemColor = (color: string, isActive: boolean) => {

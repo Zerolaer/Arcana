@@ -2,6 +2,7 @@
 
 import { Character } from '@/types/game'
 import { Heart, Zap, Activity } from 'lucide-react'
+import { calculateCharacterStats } from '@/lib/characterStats'
 
 interface ResourceBarsProps {
   character: Character
@@ -10,12 +11,15 @@ interface ResourceBarsProps {
 }
 
 export default function ResourceBars({ character, showLabels = true, className = '' }: ResourceBarsProps) {
+  // Используем рассчитанные характеристики
+  const calculatedStats = calculateCharacterStats(character)
+  
   const resources = [
     {
       name: 'Здоровье',
       icon: <Heart className="w-4 h-4 text-red-500" />,
       current: character.health,
-      max: character.max_health,
+      max: calculatedStats.max_health,
       color: 'from-red-500 to-red-600',
       bgColor: 'bg-red-500/20',
       textColor: 'text-red-400'
@@ -24,7 +28,7 @@ export default function ResourceBars({ character, showLabels = true, className =
       name: 'Мана',
       icon: <Zap className="w-4 h-4 text-blue-500" />,
       current: character.mana,
-      max: character.max_mana,
+      max: calculatedStats.max_mana,
       color: 'from-blue-500 to-blue-600',
       bgColor: 'bg-blue-500/20',
       textColor: 'text-blue-400'
@@ -33,7 +37,7 @@ export default function ResourceBars({ character, showLabels = true, className =
       name: 'Выносливость',
       icon: <Activity className="w-4 h-4 text-green-500" />,
       current: character.stamina,
-      max: character.max_stamina,
+      max: calculatedStats.max_stamina,
       color: 'from-green-500 to-green-600',
       bgColor: 'bg-green-500/20',
       textColor: 'text-green-400'

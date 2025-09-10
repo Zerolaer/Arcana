@@ -4,6 +4,7 @@ import { User } from '@supabase/supabase-js'
 import { Character } from '@/types/game'
 import { LogOut, Settings, Bell, Coins, MapPin } from 'lucide-react'
 import { calculateCombatPower, formatCombatPower, getCombatPowerColor } from '@/lib/combatPower'
+import { calculateCharacterStats } from '@/lib/characterStats'
 
 interface GameHeaderProps {
   character: Character
@@ -12,8 +13,11 @@ interface GameHeaderProps {
 }
 
 export default function GameHeader({ character, user, onLogout }: GameHeaderProps) {
-  const healthPercentage = (character.health / character.max_health) * 100
-  const manaPercentage = (character.mana / character.max_mana) * 100
+  // Используем рассчитанные характеристики для консистентности
+  const calculatedStats = calculateCharacterStats(character)
+  
+  const healthPercentage = (character.health / calculatedStats.max_health) * 100
+  const manaPercentage = (character.mana / calculatedStats.max_mana) * 100
   const expPercentage = character.experience_to_next > 0 ? (character.experience / character.experience_to_next) * 100 : 0
   
   // Расчет боевой мощи
@@ -49,7 +53,7 @@ export default function GameHeader({ character, user, onLogout }: GameHeaderProp
                   />
                 </div>
                 <span className="text-xs text-red-300 w-16 text-right">
-                  {formatNumber(character.health)}/{formatNumber(character.max_health)}
+                  {formatNumber(character.health)}/{formatNumber(calculatedStats.max_health)}
                 </span>
               </div>
 
@@ -63,7 +67,7 @@ export default function GameHeader({ character, user, onLogout }: GameHeaderProp
                   />
                 </div>
                 <span className="text-xs text-blue-300 w-16 text-right">
-                  {formatNumber(character.mana)}/{formatNumber(character.max_mana)}
+                  {formatNumber(character.mana)}/{formatNumber(calculatedStats.max_mana)}
                 </span>
               </div>
             </div>

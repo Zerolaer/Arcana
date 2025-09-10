@@ -5,6 +5,8 @@ import { Character } from '@/types/game'
 import { toast } from 'react-hot-toast'
 import { Plus, Minus, RotateCcw, Crown, TrendingUp, Sword, Shield, Star, Zap, Eye, Package } from 'lucide-react'
 import EquipmentComponent from './EquipmentComponent'
+import { calculateCharacterStats } from '@/lib/characterStats'
+import { syncCharacterStats } from '@/lib/characterSync'
 
 interface CharacterPanelProps {
   character: Character
@@ -24,6 +26,9 @@ export default function CharacterPanelUnified({ character, onUpdateCharacter, is
     luck: 0
   })
   const [equipmentKey, setEquipmentKey] = useState(0) // Для принудительного обновления EquipmentComponent
+  
+  // Рассчитываем актуальные характеристики
+  const calculatedStats = calculateCharacterStats(character)
 
   const totalAllocatedPoints = Object.values(tempStats).reduce((sum, val) => sum + val, 0)
   const remainingPoints = character.stat_points - totalAllocatedPoints
@@ -109,31 +114,22 @@ export default function CharacterPanelUnified({ character, onUpdateCharacter, is
       stat_points: remainingPoints
     }
 
-    // Recalculate derived stats
-    const maxHealth = Math.round(newStats.vitality * 10 + 100)
-    const maxMana = Math.round(newStats.energy * 5 + 50)
-    const maxStamina = Math.round(newStats.vitality * 5 + newStats.dexterity * 3 + 100)
-
+    // Recalculate derived stats using unified system
+    const tempCharacter = { ...character, ...newStats }
+    const calculatedStats = calculateCharacterStats(tempCharacter)
+    
     const updates = {
       ...newStats,
-      max_health: maxHealth,
-      max_mana: maxMana,
-      max_stamina: maxStamina,
-      health: Math.min(character.health, maxHealth),
-      mana: Math.min(character.mana, maxMana),
-      stamina: Math.min(character.stamina, maxStamina),
-      attack_damage: Math.round(newStats.strength * 2 + newStats.dexterity),
-      magic_damage: Math.round(newStats.intelligence * 2.5),
-      defense: Math.round(newStats.vitality * 1.5 + newStats.strength * 0.5),
-      magic_resistance: Math.round(newStats.energy + newStats.intelligence * 0.3),
-      critical_chance: Math.round(Math.min(newStats.luck * 0.1 + newStats.dexterity * 0.05, 50) * 100) / 100,
-      critical_damage: Math.round((150 + newStats.strength * 0.5) * 100) / 100,
-      attack_speed: Math.round((100 + newStats.dexterity * 0.8) * 100) / 100,
-      movement_speed: Math.round((100 + newStats.dexterity * 0.5) * 100) / 100
+      ...calculatedStats,
+      health: Math.min(character.health, calculatedStats.max_health),
+      mana: Math.min(character.mana, calculatedStats.max_mana),
+      stamina: Math.min(character.stamina, calculatedStats.max_stamina)
     }
 
     const success = await onUpdateCharacter(updates)
     if (success) {
+      // Синхронизируем характеристики в БД
+      await syncCharacterStats({ ...character, ...updates })
       resetTempStats()
       toast.success('Характеристики обновлены!')
     }
@@ -141,6 +137,79 @@ export default function CharacterPanelUnified({ character, onUpdateCharacter, is
 
   const getStatValue = (stat: keyof typeof tempStats) => {
     return character[stat] + tempStats[stat]
+  }
+
+  const getStatEffects = (stat: keyof typeof tempStats, additionalPoints: number = 0) => {
+    const tempCharacter = { 
+      ...character, 
+      [stat]: character[stat] + tempStats[stat] + additionalPoints 
+    }
+    const currentStats = calculateCharacterStats(character)
+    const newStats = calculateCharacterStats(tempCharacter)
+    
+    const effects = []
+    
+    switch (stat) {
+      case 'strength':
+        if (newStats.attack_damage !== currentStats.attack_damage) {
+          effects.push(`Физический урон: ${currentStats.attack_damage} → ${newStats.attack_damage}`)
+        }
+        if (newStats.max_health !== currentStats.max_health) {
+          effects.push(`Здоровье: ${currentStats.max_health} → ${newStats.max_health}`)
+        }
+        break
+      case 'dexterity':
+        if (newStats.attack_speed !== currentStats.attack_speed) {
+          effects.push(`Скорость атаки: ${currentStats.attack_speed}% → ${newStats.attack_speed}%`)
+        }
+        if (newStats.critical_chance !== currentStats.critical_chance) {
+          effects.push(`Критический шанс: ${currentStats.critical_chance}% → ${newStats.critical_chance}%`)
+        }
+        if (newStats.max_stamina !== currentStats.max_stamina) {
+          effects.push(`Выносливость: ${currentStats.max_stamina} → ${newStats.max_stamina}`)
+        }
+        break
+      case 'intelligence':
+        if (newStats.magic_damage !== currentStats.magic_damage) {
+          effects.push(`Магический урон: ${currentStats.magic_damage} → ${newStats.magic_damage}`)
+        }
+        if (newStats.max_mana !== currentStats.max_mana) {
+          effects.push(`Мана: ${currentStats.max_mana} → ${newStats.max_mana}`)
+        }
+        if (newStats.magic_resistance !== currentStats.magic_resistance) {
+          effects.push(`Маг. защита: ${currentStats.magic_resistance} → ${newStats.magic_resistance}`)
+        }
+        break
+      case 'vitality':
+        if (newStats.max_health !== currentStats.max_health) {
+          effects.push(`Здоровье: ${currentStats.max_health} → ${newStats.max_health}`)
+        }
+        if (newStats.defense !== currentStats.defense) {
+          effects.push(`Защита: ${currentStats.defense} → ${newStats.defense}`)
+        }
+        if (newStats.max_stamina !== currentStats.max_stamina) {
+          effects.push(`Выносливость: ${currentStats.max_stamina} → ${newStats.max_stamina}`)
+        }
+        break
+      case 'energy':
+        if (newStats.max_mana !== currentStats.max_mana) {
+          effects.push(`Мана: ${currentStats.max_mana} → ${newStats.max_mana}`)
+        }
+        if (newStats.magic_resistance !== currentStats.magic_resistance) {
+          effects.push(`Маг. защита: ${currentStats.magic_resistance} → ${newStats.magic_resistance}`)
+        }
+        break
+      case 'luck':
+        if (newStats.critical_chance !== currentStats.critical_chance) {
+          effects.push(`Критический шанс: ${currentStats.critical_chance}% → ${newStats.critical_chance}%`)
+        }
+        if (newStats.critical_damage !== currentStats.critical_damage) {
+          effects.push(`Критический урон: ${currentStats.critical_damage}% → ${newStats.critical_damage}%`)
+        }
+        break
+    }
+    
+    return effects
   }
 
 
@@ -220,12 +289,22 @@ export default function CharacterPanelUnified({ character, onUpdateCharacter, is
                           
                           {/* Tooltip */}
                           <div className="absolute right-full top-1/2 transform -translate-y-1/2 mr-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50">
-                            <div className="bg-dark-100 border border-dark-300 rounded-lg p-3 text-xs text-white whitespace-nowrap shadow-xl">
+                            <div className="bg-dark-100 border border-dark-300 rounded-lg p-3 text-xs text-white shadow-xl max-w-xs">
                               <div className="text-gray-300 mb-1">Текущее значение:</div>
                               <div className="text-white font-semibold mb-2">{currentValue}</div>
-                              <div className="text-green-400 font-semibold">
+                              <div className="text-green-400 font-semibold mb-2">
                                 +{tempValue + 1} → {totalValue + 1}
                               </div>
+                              {getStatEffects(stat.key, 1).length > 0 && (
+                                <div className="border-t border-dark-300 pt-2 mt-2">
+                                  <div className="text-gray-300 mb-1">Эффекты:</div>
+                                  {getStatEffects(stat.key, 1).map((effect, idx) => (
+                                    <div key={idx} className="text-green-300 text-xs">
+                                      {effect}
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
                             </div>
                           </div>
                         </button>
@@ -267,17 +346,17 @@ export default function CharacterPanelUnified({ character, onUpdateCharacter, is
 
           <div className="space-y-2">
             {[
-              { name: 'Физический урон', value: Math.floor(character.attack_damage), icon: '⚔️' },
-              { name: 'Магический урон', value: Math.floor(character.magic_damage), icon: '🔮' },
-              { name: 'Защита', value: Math.floor(character.defense), icon: '🛡️' },
-              { name: 'Магическая защита', value: Math.floor(character.magic_resistance), icon: '✨' },
-              { name: 'Критический шанс', value: `${character.critical_chance.toFixed(1)}%`, icon: '💥' },
-              { name: 'Критический урон', value: `${character.critical_damage.toFixed(0)}%`, icon: '⚡' },
-              { name: 'Скорость атаки', value: `${character.attack_speed.toFixed(0)}%`, icon: '🏃' },
-              { name: 'Скорость движения', value: `${character.movement_speed.toFixed(0)}%`, icon: '💨' },
-              { name: 'Регенерация HP', value: `${(character.health_regen || 1.0).toFixed(1)}/сек`, icon: '❤️', color: 'text-red-400' },
-              { name: 'Регенерация MP', value: `${(character.mana_regen || 1.0).toFixed(1)}/сек`, icon: '💙', color: 'text-blue-400' },
-              { name: 'Регенерация Stamina', value: `${(character.stamina_regen || 1.0).toFixed(1)}/сек`, icon: '💚', color: 'text-green-400' }
+              { name: 'Физический урон', value: Math.floor(calculatedStats.attack_damage), icon: '⚔️' },
+              { name: 'Магический урон', value: Math.floor(calculatedStats.magic_damage), icon: '🔮' },
+              { name: 'Защита', value: Math.floor(calculatedStats.defense), icon: '🛡️' },
+              { name: 'Магическая защита', value: Math.floor(calculatedStats.magic_resistance), icon: '✨' },
+              { name: 'Критический шанс', value: `${calculatedStats.critical_chance.toFixed(1)}%`, icon: '💥' },
+              { name: 'Критический урон', value: `${calculatedStats.critical_damage.toFixed(0)}%`, icon: '⚡' },
+              { name: 'Скорость атаки', value: `${calculatedStats.attack_speed.toFixed(0)}%`, icon: '🏃' },
+              { name: 'Скорость движения', value: `${calculatedStats.movement_speed.toFixed(0)}%`, icon: '💨' },
+              { name: 'Регенерация HP', value: `${calculatedStats.health_regen.toFixed(1)}/сек`, icon: '❤️', color: 'text-red-400' },
+              { name: 'Регенерация MP', value: `${calculatedStats.mana_regen.toFixed(1)}/сек`, icon: '💙', color: 'text-blue-400' },
+              { name: 'Регенерация Stamina', value: `${calculatedStats.stamina_regen.toFixed(1)}/сек`, icon: '💚', color: 'text-green-400' }
             ].map((stat) => (
               <div key={stat.name} className="flex items-center justify-between p-2 bg-dark-200/30 rounded border border-dark-300/30">
                 <div className="flex items-center space-x-2">

@@ -8,13 +8,12 @@ import { toast } from 'react-hot-toast'
 
 // Game UI Components
 import GameHeader from './UI/GameHeader'
-import GameSidebar from './UI/GameSidebar'
+import GameSidebar, { ActivePanel } from './UI/GameSidebar'
 import CharacterPanelUnified from './UI/CharacterPanelUnified'
 import InventoryPanelNew from './UI/InventoryPanelNew'
 import LocationPanel from './UI/LocationPanel'
 import WorldMapNew from './World/WorldMapNew'
 import SkillsPanel from './UI/SkillsPanel'
-import CombatPanel from './UI/CombatPanel'
 import RegenerationSystem from './UI/RegenerationSystem'
 
 interface GameInterfaceProps {
@@ -23,15 +22,22 @@ interface GameInterfaceProps {
   onLogout: () => void
 }
 
-type ActivePanel = 'character' | 'inventory' | 'skills' | 'location' | 'combat' | null
 
 export default function GameInterface({ character: initialCharacter, user, onLogout }: GameInterfaceProps) {
   const [character, setCharacter] = useState<Character>(initialCharacter)
   const [activePanel, setActivePanel] = useState<ActivePanel>(() => {
-    // Восстанавливаем активную панель из localStorage при загрузке
+    // Очищаем старое значение 'combat' из localStorage
     if (typeof window !== 'undefined') {
-      const savedPanel = localStorage.getItem('gameActivePanel') as ActivePanel
-      return savedPanel || 'character'
+      const savedPanel = localStorage.getItem('gameActivePanel')
+      if (savedPanel === 'combat') {
+        localStorage.removeItem('gameActivePanel')
+        return 'character'
+      }
+      // Проверяем, что сохраненная панель валидна
+      const validPanels = ['character', 'inventory', 'skills', 'location']
+      if (savedPanel && validPanels.includes(savedPanel)) {
+        return savedPanel as ActivePanel
+      }
     }
     return 'character'
   })
@@ -158,14 +164,6 @@ export default function GameInterface({ character: initialCharacter, user, onLog
           <WorldMapNew
             character={character}
             onUpdateCharacter={updateCharacterData}
-          />
-        )
-      case 'combat':
-        return (
-          <CombatPanel
-            character={character}
-            onUpdateCharacter={updateCharacterData}
-            isLoading={isLoading}
           />
         )
       default:
