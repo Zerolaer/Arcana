@@ -300,7 +300,7 @@ export default function InventoryPanelNew({ character, onUpdateCharacter, isLoad
                 const invItem = filteredItems.find(item => item.slot_position === index + 1)
                 
                 return (
-                  <div key={index} className="relative">
+                  <div key={index} className="relative w-full">
                     {invItem ? (
                       <ItemTooltip
                         item={invItem.item}
@@ -308,8 +308,8 @@ export default function InventoryPanelNew({ character, onUpdateCharacter, isLoad
                         showActions={true}
                         isEquipped={false}
                       >
-                        <div className="aspect-square bg-dark-200/30 border border-dark-300/50 rounded flex flex-col items-center justify-center p-1 cursor-pointer">
-                          <div className="text-sm">{invItem.item.icon}</div>
+                        <div className="w-full aspect-square bg-dark-200/30 border border-dark-300/50 rounded flex flex-col items-center justify-center p-1 cursor-pointer">
+                          <div className="text-lg">{invItem.item.icon}</div>
                           {invItem.quantity > 1 && (
                             <div className="absolute -bottom-1 -right-1 bg-primary-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
                               {invItem.quantity}
@@ -318,7 +318,7 @@ export default function InventoryPanelNew({ character, onUpdateCharacter, isLoad
                         </div>
                       </ItemTooltip>
                     ) : (
-                      <div className="aspect-square bg-dark-200/10 border border-dashed border-dark-300/30 rounded flex items-center justify-center">
+                      <div className="w-full aspect-square bg-dark-200/10 border border-dashed border-dark-300/30 rounded flex items-center justify-center">
                         <div className="text-dark-500 text-xs">+</div>
                       </div>
                     )}
