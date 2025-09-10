@@ -71,12 +71,12 @@ export default function InventoryPanelNew({ character, onUpdateCharacter, isLoad
       // Сортируем предметы по редкости, типу и уровню
       const sortedItems = (currentItems || []).sort((a: InventoryItem, b: InventoryItem) => {
         const rarityOrder = { mythic: 6, legendary: 5, epic: 4, rare: 3, uncommon: 2, common: 1 }
-        const aRarity = rarityOrder[a.item.rarity as keyof typeof rarityOrder] || 0
-        const bRarity = rarityOrder[b.item.rarity as keyof typeof rarityOrder] || 0
+        const aRarity = rarityOrder[(a.item.rarity || 'common') as keyof typeof rarityOrder] || 0
+        const bRarity = rarityOrder[(b.item.rarity || 'common') as keyof typeof rarityOrder] || 0
         
         if (aRarity !== bRarity) return bRarity - aRarity
-        if (a.item.type !== b.item.type) return a.item.type.localeCompare(b.item.type)
-        return b.item.level - a.item.level
+        if ((a.item.type || '') !== (b.item.type || '')) return (a.item.type || '').localeCompare(b.item.type || '')
+        return (b.item.level || 0) - (a.item.level || 0)
       })
 
       // Обновляем позиции предметов в базе данных по одному
@@ -179,7 +179,7 @@ export default function InventoryPanelNew({ character, onUpdateCharacter, isLoad
 
   // Фильтрация предметов
   const filteredItems = inventory.filter(invItem => {
-    const matchesSearch = invItem.item.name.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesSearch = (invItem.item.name || '').toLowerCase().includes(searchTerm.toLowerCase())
     const matchesFilter = activeFilter === 'all' || invItem.item.type === activeFilter
     return matchesSearch && matchesFilter
   })
@@ -194,7 +194,7 @@ export default function InventoryPanelNew({ character, onUpdateCharacter, isLoad
   ]
 
   const itemCount = inventory.length
-  const totalValue = inventory.reduce((sum, item) => sum + (item.item.value * item.quantity), 0)
+  const totalValue = inventory.reduce((sum, item) => sum + ((item.item.value || 0) * item.quantity), 0)
 
   if (loading && inventory.length === 0) {
     return (
@@ -309,7 +309,7 @@ export default function InventoryPanelNew({ character, onUpdateCharacter, isLoad
                         isEquipped={false}
                       >
                         <div className="w-full aspect-square bg-dark-200/30 border border-dark-300/50 rounded flex flex-col items-center justify-center p-1 cursor-pointer">
-                          <div className="text-lg">{invItem.item.icon}</div>
+                          <div className="text-lg">{invItem.item.icon || '❓'}</div>
                           {invItem.quantity > 1 && (
                             <div className="absolute -bottom-1 -right-1 bg-primary-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
                               {invItem.quantity}

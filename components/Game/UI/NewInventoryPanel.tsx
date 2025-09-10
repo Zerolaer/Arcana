@@ -192,13 +192,13 @@ export default function NewInventoryPanel({ character, onUpdateCharacter, isLoad
       // Sort by rarity, then by level, then by name
       const rarityOrder = ['common', 'uncommon', 'rare', 'epic', 'legendary', 'mythic']
       items.sort((a, b) => {
-        const rarityDiff = rarityOrder.indexOf(b.rarity) - rarityOrder.indexOf(a.rarity)
+        const rarityDiff = rarityOrder.indexOf(b.rarity || 'common') - rarityOrder.indexOf(a.rarity || 'common')
         if (rarityDiff !== 0) return rarityDiff
         
-        const levelDiff = b.level - a.level
+        const levelDiff = (b.level || 0) - (a.level || 0)
         if (levelDiff !== 0) return levelDiff
         
-        return a.name.localeCompare(b.name)
+        return (a.name || '').localeCompare(b.name || '')
       })
 
       const newInventory = new Array(48).fill(null)
@@ -219,7 +219,7 @@ export default function NewInventoryPanel({ character, onUpdateCharacter, isLoad
     }
     
     // Apply search
-    if (searchTerm && !item.name.toLowerCase().includes(searchTerm.toLowerCase())) {
+    if (searchTerm && !(item.name || '').toLowerCase().includes(searchTerm.toLowerCase())) {
       return { item: null, index }
     }
     
