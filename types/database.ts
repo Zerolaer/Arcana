@@ -1,5 +1,55 @@
 export interface Database {
   public: {
+    Functions: {
+      get_character_inventory: {
+        Args: {
+          p_character_id: string
+        }
+        Returns: any
+      }
+      get_character_equipment: {
+        Args: {
+          p_character_id: string
+        }
+        Returns: any
+      }
+      move_inventory_item: {
+        Args: {
+          p_character_id: string
+          p_from_slot: number
+          p_to_slot: number
+        }
+        Returns: { success: boolean; error?: string }
+      }
+      occupy_farming_spot: {
+        Args: {
+          spot_id: string
+          character_id: string
+        }
+        Returns: boolean
+      }
+      leave_farming_spot: {
+        Args: {
+          spot_id: string
+          character_id: string
+        }
+        Returns: boolean
+      }
+      initiate_combat: {
+        Args: {
+          character_id: string
+          mob_id: string
+        }
+        Returns: any
+      }
+      perform_attack: {
+        Args: {
+          character_id: string
+          skill_id?: string
+        }
+        Returns: any
+      }
+    }
     Tables: {
       players: {
         Row: {
@@ -566,36 +616,6 @@ export interface Database {
     }
     Views: {
       [_ in never]: never
-    }
-    Functions: {
-      occupy_farming_spot: {
-        Args: {
-          spot_id: string
-          character_id: string
-        }
-        Returns: boolean
-      }
-      leave_farming_spot: {
-        Args: {
-          spot_id: string
-          character_id: string
-        }
-        Returns: boolean
-      }
-      initiate_combat: {
-        Args: {
-          character_id: string
-          mob_id: string
-        }
-        Returns: any
-      }
-      perform_attack: {
-        Args: {
-          character_id: string
-          skill_id?: string
-        }
-        Returns: any
-      }
     }
     Enums: {
       [_ in never]: never
