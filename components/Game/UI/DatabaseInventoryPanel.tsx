@@ -27,7 +27,7 @@ interface InventorySlot {
 }
 
 export default function DatabaseInventoryPanel({ character, onUpdateCharacter, isLoading }: DatabaseInventoryPanelProps) {
-  const [inventory, setInventory] = useState<(GameItem | null)[]>(new Array(48).fill(null))
+  const [inventory, setInventory] = useState<(GameItem | null)[]>(new Array(100).fill(null))
   const [loading, setLoading] = useState(true)
   const [draggedItem, setDraggedItem] = useState<GameItem | null>(null)
   const [draggedFromIndex, setDraggedFromIndex] = useState<number | undefined>()
@@ -63,33 +63,52 @@ export default function DatabaseInventoryPanel({ character, onUpdateCharacter, i
 
       console.log('Equipped items IDs:', Array.from(equippedItems))
 
-      // Создаем массив из 48 слотов
-      const inventorySlots = new Array(48).fill(null)
+      // Создаем массив из 100 слотов (новая система)
+      const inventorySlots = new Array(100).fill(null)
       
       // Заполняем слоты данными из базы
       if (inventoryResponse.data && Array.isArray(inventoryResponse.data)) {
         inventoryResponse.data.forEach((inventoryItem: any) => {
-          if (inventoryItem.slot_position >= 0 && inventoryItem.slot_position < 48) {
+          if (inventoryItem.slot_position >= 1 && inventoryItem.slot_position <= 100) {
             const isEquipped = equippedItems.has(inventoryItem.item.id)
             
+            // Определяем тип предмета по equipment_slot
+            let itemType: 'weapon' | 'armor' | 'accessory' | 'consumable' | 'material' = 'material'
+            if (inventoryItem.item.equipment_slot) {
+              if (inventoryItem.item.equipment_slot.includes('weapon') || inventoryItem.item.equipment_slot.includes('sword') || inventoryItem.item.equipment_slot.includes('bow') || inventoryItem.item.equipment_slot.includes('staff')) {
+                itemType = 'weapon'
+              } else if (inventoryItem.item.equipment_slot.includes('armor') || inventoryItem.item.equipment_slot.includes('helmet') || inventoryItem.item.equipment_slot.includes('boots') || inventoryItem.item.equipment_slot.includes('chest') || inventoryItem.item.equipment_slot.includes('legs')) {
+                itemType = 'armor'
+              } else if (inventoryItem.item.equipment_slot.includes('ring') || inventoryItem.item.equipment_slot.includes('amulet') || inventoryItem.item.equipment_slot.includes('necklace')) {
+                itemType = 'accessory'
+              }
+            } else {
+              // Если нет equipment_slot, определяем по названию
+              if (inventoryItem.item.name.toLowerCase().includes('potion') || inventoryItem.item.name.toLowerCase().includes('зелье')) {
+                itemType = 'consumable'
+              } else if (inventoryItem.item.name.toLowerCase().includes('ore') || inventoryItem.item.name.toLowerCase().includes('cloth') || inventoryItem.item.name.toLowerCase().includes('руда') || inventoryItem.item.name.toLowerCase().includes('ткань')) {
+                itemType = 'material'
+              }
+            }
+
             const gameItem: GameItem = {
-              id: inventoryItem.item.id, // UUID из таблицы items
+              id: inventoryItem.item.id, // VARCHAR из items_new
               name: inventoryItem.item.name,
-              description: inventoryItem.item.description,
-              rarity: inventoryItem.item.rarity,
-              type: inventoryItem.item.type,
-              subType: inventoryItem.item.subType,
+              description: inventoryItem.item.description || '',
+              rarity: 'common', // Будет определяться по grade_id
+              type: itemType,
+              subType: '',
               icon: inventoryItem.item.icon,
-              level: inventoryItem.item.level,
-              stats: inventoryItem.item.stats,
-              value: inventoryItem.item.value,
-              stackable: inventoryItem.item.stackable,
-              stackSize: inventoryItem.stack_size,
+              level: 1,
+              stats: inventoryItem.actual_stats || {},
+              value: inventoryItem.value || 0,
+              stackable: true,
+              stackSize: inventoryItem.stack_size || 1,
               quality: inventoryItem.quality || 50, // новая система качества
-              setBonus: inventoryItem.item.setBonus,
+              setBonus: '',
               equipment_slot: inventoryItem.item.equipment_slot || null,
               slot_position: inventoryItem.slot_position,
-              item_key: inventoryItem.item.item_key, // Добавляем item_key
+              item_key: inventoryItem.item.id, // Используем id как item_key
               isEquipped: isEquipped // Проверяем экипировку по ID
             }
             
@@ -100,9 +119,10 @@ export default function DatabaseInventoryPanel({ character, onUpdateCharacter, i
               equipment_slot: gameItem.equipment_slot,
               isEquipped: gameItem.isEquipped,
               canEquip: !!gameItem.equipment_slot,
-              itemId: gameItem.id
+              itemId: gameItem.id,
+              quality: gameItem.quality
             })
-            inventorySlots[inventoryItem.slot_position] = gameItem
+            inventorySlots[inventoryItem.slot_position - 1] = gameItem // -1 потому что слоты начинаются с 1
           }
         })
       }

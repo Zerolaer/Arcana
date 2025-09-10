@@ -36,32 +36,55 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, character, onC
 
   const loadAvailableItems = async () => {
     try {
-      const { data, error } = await supabase
+      console.log('🔍 Загружаем доступные предметы...');
+      
+      const { data, error } = await (supabase as any)
         .from('items_new')
         .select('id, name, icon, grade_id, equipment_slot')
         .order('name');
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Ошибка загрузки предметов:', error);
+        throw error;
+      }
+
+      console.log('📦 Загружено предметов:', data?.length || 0, data);
       setAvailableItems(data || []);
     } catch (error) {
-      console.error('Ошибка загрузки предметов:', error);
+      console.error('❌ Ошибка загрузки предметов:', error);
       setMessage('Ошибка загрузки предметов');
     }
   };
 
   const addItemToInventory = async () => {
-    if (!selectedItem || !character) return;
+    if (!selectedItem || !character) {
+      console.log('❌ Нет выбранного предмета или персонажа:', { selectedItem, character: character?.id });
+      return;
+    }
 
     setIsLoading(true);
     setMessage('');
 
     try {
+      console.log('🔍 Начинаем добавление предмета:', { 
+        characterId: character.id, 
+        itemId: selectedItem, 
+        quality: itemQuality 
+      });
+
       // Находим свободный слот
-      const { data: inventory } = await (supabase as any)
+      const { data: inventory, error: inventoryError } = await (supabase as any)
         .from('character_inventory')
         .select('slot_position')
         .eq('character_id', character.id)
         .order('slot_position');
+
+      if (inventoryError) {
+        console.error('❌ Ошибка получения инвентаря:', inventoryError);
+        throw inventoryError;
+      }
+
+      console.log('📦 Текущий инвентарь:', inventory);
 
       const usedSlots = inventory?.map((item: any) => item.slot_position) || [];
       let freeSlot = 1;
@@ -69,24 +92,36 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, character, onC
         freeSlot++;
       }
 
-      // Добавляем предмет
-      const { error } = await (supabase as any)
-        .from('character_inventory')
-        .insert({
-          character_id: character.id,
-          item_id: selectedItem,
-          slot_position: freeSlot,
-          quality: itemQuality,
-          stack_size: 1
-        });
+      console.log('🎯 Свободный слот:', freeSlot);
 
-      if (error) throw error;
+      // Добавляем предмет
+      const insertData = {
+        character_id: character.id,
+        item_id: selectedItem,
+        slot_position: freeSlot,
+        quality: itemQuality,
+        stack_size: 1
+      };
+
+      console.log('💾 Данные для вставки:', insertData);
+
+      const { data: insertResult, error } = await (supabase as any)
+        .from('character_inventory')
+        .insert(insertData)
+        .select();
+
+      if (error) {
+        console.error('❌ Ошибка вставки предмета:', error);
+        throw error;
+      }
+
+      console.log('✅ Предмет успешно добавлен:', insertResult);
 
       setMessage(`✅ Предмет добавлен в слот ${freeSlot}`);
       onCharacterUpdate();
     } catch (error) {
-      console.error('Ошибка добавления предмета:', error);
-      setMessage('❌ Ошибка добавления предмета');
+      console.error('❌ Ошибка добавления предмета:', error);
+      setMessage(`❌ Ошибка: ${error instanceof Error ? error.message : 'Неизвестная ошибка'}`);
     } finally {
       setIsLoading(false);
     }
