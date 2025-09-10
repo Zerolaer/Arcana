@@ -61,7 +61,7 @@ export default function EquipmentComponent({
       console.log('Equipment data type:', typeof data, Array.isArray(data))
       if (data && data.length > 0) {
         console.log('First equipment item:', data[0])
-        console.log('Equipment slots found:', data.map(eq => eq.slot_type))
+        console.log('Equipment slots found:', data.map((eq: any) => eq.slot_type))
       }
       setEquipment(data || [])
     } catch (error) {
@@ -174,7 +174,7 @@ export default function EquipmentComponent({
             if (slot.key === 'armor') {
               console.log(`Checking slot ${slot.key}:`, {
                 equipmentLength: equipment.length,
-                equipmentSlots: equipment.map(eq => eq.slot_type),
+                equipmentSlots: equipment.map((eq: EquipmentSlot) => eq.slot_type),
                 foundItem: equippedItem,
                 hasItem
               })
