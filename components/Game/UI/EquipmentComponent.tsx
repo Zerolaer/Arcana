@@ -14,7 +14,7 @@ interface EquipmentComponentProps {
 }
 
 interface EquipmentSlot {
-  slotType: string
+  slot_type: string  // Исправлено: в БД используется slot_type
   item?: GameItem
   current_durability?: number
   upgrade_level?: number
@@ -58,6 +58,11 @@ export default function EquipmentComponent({
       }
 
       console.log('Equipment data from DB:', data) // Для отладки
+      console.log('Equipment data type:', typeof data, Array.isArray(data))
+      if (data && data.length > 0) {
+        console.log('First equipment item:', data[0])
+        console.log('Equipment slots found:', data.map(eq => eq.slot_type))
+      }
       setEquipment(data || [])
     } catch (error) {
       console.error('Error loading equipment:', error)
@@ -162,8 +167,18 @@ export default function EquipmentComponent({
             }
 
             // СЛОТЫ ЭКИПИРОВКИ
-            const equippedItem = equipment.find(eq => eq.slotType === slot.key)
+            const equippedItem = equipment.find(eq => eq.slot_type === slot.key)
             const hasItem = !!equippedItem?.item
+            
+            // Отладка
+            if (slot.key === 'armor') {
+              console.log(`Checking slot ${slot.key}:`, {
+                equipmentLength: equipment.length,
+                equipmentSlots: equipment.map(eq => eq.slot_type),
+                foundItem: equippedItem,
+                hasItem
+              })
+            }
             
             return (
               <div key={slot.key} className="relative">
