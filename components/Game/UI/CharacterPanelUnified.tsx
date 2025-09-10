@@ -384,11 +384,11 @@ export default function CharacterPanelUnified({ character, onUpdateCharacter, is
               
               return (
                 <div key={slot.key} className="relative">
-                  <div className="aspect-square bg-dark-200/30 border-2 border-dashed border-dark-300/50 rounded-lg flex flex-col items-center justify-center p-2 hover:border-dark-300/70 transition-colors">
+                  <div className="w-15 h-15 bg-dark-200/30 border-2 border-dashed border-dark-300/50 rounded-lg flex flex-col items-center justify-center p-1 hover:border-dark-300/70 transition-colors">
                     {equippedItem?.item ? (
                       <div className="w-full h-full flex flex-col items-center justify-center">
-                        <div className="text-2xl mb-1">{equippedItem.item.icon}</div>
-                        <div className="text-xs text-center text-white font-semibold truncate w-full">
+                        <div className="text-lg mb-0.5">{equippedItem.item.icon}</div>
+                        <div className="text-xs text-center text-white font-semibold truncate w-full leading-tight">
                           {equippedItem.item.name}
                         </div>
                         <div className="text-xs text-gray-400">
@@ -397,8 +397,8 @@ export default function CharacterPanelUnified({ character, onUpdateCharacter, is
                       </div>
                     ) : (
                       <div className="w-full h-full flex flex-col items-center justify-center text-gray-500">
-                        <div className="opacity-50">{slot.icon}</div>
-                        <div className="text-xs text-center mt-1">{slot.name}</div>
+                        <div className="opacity-50 text-sm">{slot.icon}</div>
+                        <div className="text-xs text-center mt-0.5 leading-tight">{slot.name}</div>
                       </div>
                     )}
                   </div>
