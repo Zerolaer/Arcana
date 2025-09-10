@@ -21,20 +21,22 @@ interface EquipmentSlot {
   equipped_at?: string
 }
 
-// ЕДИНЫЙ макет экипировки - персонаж в центре, слоты вокруг (5x3)
-const equipmentLayout = [
-  { key: 'amulet', name: 'Амулет', icon: '📿', row: 0, col: 0 },
-  { key: 'helmet', name: 'Голова', icon: '🪖', row: 0, col: 1 },
-  { key: 'gloves', name: 'Перчатки', icon: '🧤', row: 0, col: 2 },
-  { key: 'weapon', name: 'Основное оружие', icon: '⚔️', row: 1, col: 0 },
-  // row: 1, col: 1 - ПЕРСОНАЖ (заглушка)
-  { key: 'shield', name: 'Щит', icon: '🛡️', row: 1, col: 2 },
-  { key: 'armor', name: 'Доспехи', icon: '🦺', row: 2, col: 0 },
-  // row: 2, col: 1 - ПЕРСОНАЖ (продолжение)
-  { key: 'ring1', name: 'Кольцо 1', icon: '💍', row: 2, col: 2 },
-  { key: 'boots', name: 'Ботинки', icon: '👢', row: 3, col: 0 },
-  // row: 3, col: 1 - ПЕРСОНАЖ (продолжение)
-  { key: 'ring2', name: 'Кольцо 2', icon: '💍', row: 3, col: 2 },
+// Макет экипировки как на картинке - слоты вокруг большого персонажа
+const equipmentSlots = [
+  // Левая колонка
+  { key: 'amulet', name: 'Амулет', icon: '📿', position: 'left', index: 0 },
+  { key: 'weapon', name: 'Оружие', icon: '⚔️', position: 'left', index: 1 },
+  { key: 'armor', name: 'Доспехи', icon: '🦺', position: 'left', index: 2 },
+  { key: 'gloves', name: 'Перчатки', icon: '🧤', position: 'left', index: 3 },
+  { key: 'boots', name: 'Ботинки', icon: '👢', position: 'left', index: 4 },
+  
+  // Правая колонка
+  { key: 'helmet', name: 'Шлем', icon: '🪖', position: 'right', index: 0 },
+  { key: 'shield', name: 'Щит', icon: '🛡️', position: 'right', index: 1 },
+  { key: 'ring1', name: 'Кольцо 1', icon: '💍', position: 'right', index: 2 },
+  { key: 'ring2', name: 'Кольцо 2', icon: '💍', position: 'right', index: 3 },
+  // Пустой слот для симметрии
+  { key: 'empty', name: '', icon: '', position: 'right', index: 4 },
 ]
 
 export default function EquipmentComponent({ 
@@ -117,96 +119,111 @@ export default function EquipmentComponent({
     )
   }
 
+  // Функция для рендера слота экипировки
+  const renderEquipmentSlot = (slot: typeof equipmentSlots[0]) => {
+    if (slot.key === 'empty') {
+      return <div className="w-16 h-16"></div>
+    }
+
+    const equippedItem = equipment.find(eq => eq.slot_type === slot.key)
+    const hasItem = !!equippedItem?.item
+    
+    // Отладка для armor слота
+    if (slot.key === 'armor') {
+      console.log(`Checking slot ${slot.key}:`, {
+        equipmentLength: equipment.length,
+        equipmentSlots: equipment.map((eq: EquipmentSlot) => eq.slot_type),
+        foundItem: equippedItem,
+        hasItem
+      })
+    }
+    
+    return (
+      <div key={slot.key} className="relative mb-2">
+        {hasItem && equippedItem?.item ? (
+          <ItemTooltip
+            item={equippedItem.item}
+            onUnequip={() => handleUnequipItem(slot.key)}
+            showActions={true}
+            isEquipped={true}
+          >
+            <div className="w-16 h-16 rounded-lg flex flex-col items-center justify-center p-1 cursor-pointer bg-dark-200/50 border-2 border-solid border-gold-400/60 transition-colors">
+              <div className="text-lg">{equippedItem.item.icon}</div>
+            </div>
+          </ItemTooltip>
+        ) : (
+          <div className="w-16 h-16 bg-dark-200/30 border border-dark-300/50 rounded-lg flex flex-col items-center justify-center p-1 opacity-40">
+            <div className="text-sm">{slot.icon}</div>
+          </div>
+        )}
+      </div>
+    )
+  }
+
   return (
-    <div className="flex-1 flex items-center justify-center">
-      <div className="relative">
-        {/* ЕДИНАЯ СЕТКА 5x3 - персонаж в центре, слоты вокруг */}
-        <div 
-          className="grid grid-cols-3 gap-2"
-          style={{ gridTemplateRows: 'repeat(5, 60px)' }}
-        >
-          {Array.from({ length: 15 }, (_, index) => {
-            const row = Math.floor(index / 3)
-            const col = index % 3
-            const slot = equipmentLayout.find(s => s.row === row && s.col === col)
-            
-            // ЗАГЛУШКА ПЕРСОНАЖА В ЦЕНТРЕ (позиции 1,1 - 2,1 - 3,1)
-            if ((row === 1 || row === 2 || row === 3) && col === 1) {
-              if (row === 1) {
-                return (
-                  <div key={`character-head-${index}`} className="w-16 h-16 flex items-center justify-center">
-                    <div className="w-14 h-14 bg-gradient-to-br from-primary-500/20 to-primary-600/20 border border-primary-400/30 rounded-full flex items-center justify-center">
-                      <span className="text-2xl">👤</span>
-                    </div>
-                  </div>
-                )
-              }
-              if (row === 2) {
-                return (
-                  <div key={`character-body-${index}`} className="w-16 h-16 flex items-center justify-center">
-                    <div className="w-14 h-14 bg-gradient-to-br from-primary-500/10 to-primary-600/10 border border-primary-400/20 rounded flex items-center justify-center">
-                      <span className="text-xl text-primary-300">👕</span>
-                    </div>
-                  </div>
-                )
-              }
-              if (row === 3) {
-                return (
-                  <div key={`character-legs-${index}`} className="w-16 h-16 flex items-center justify-center">
-                    <div className="w-14 h-14 bg-gradient-to-br from-primary-500/10 to-primary-600/10 border border-primary-400/20 rounded flex items-center justify-center">
-                      <span className="text-lg text-primary-300">👖</span>
-                    </div>
-                  </div>
-                )
-              }
-            }
-
-            // Если нет слота - пустая ячейка
-            if (!slot) {
-              return <div key={`empty-${index}`} className="w-16 h-16"></div>
-            }
-
-            // СЛОТЫ ЭКИПИРОВКИ
-            const equippedItem = equipment.find(eq => eq.slot_type === slot.key)
-            const hasItem = !!equippedItem?.item
-            
-            // Отладка
-            if (slot.key === 'armor') {
-              console.log(`Checking slot ${slot.key}:`, {
-                equipmentLength: equipment.length,
-                equipmentSlots: equipment.map((eq: EquipmentSlot) => eq.slot_type),
-                foundItem: equippedItem,
-                hasItem
-              })
-            }
-            
-            return (
-              <div key={slot.key} className="relative">
-                {hasItem && equippedItem?.item ? (
-                  <ItemTooltip
-                    item={equippedItem.item}
-                    onUnequip={() => handleUnequipItem(slot.key)}
-                    showActions={true}
-                    isEquipped={true}
-                  >
-                    <div className="w-16 h-16 rounded-lg flex flex-col items-center justify-center p-1 cursor-pointer bg-dark-200/50 border-2 border-solid border-gold-400/60">
-                      <div className="w-full h-full flex flex-col items-center justify-center">
-                        <div className="text-lg">{equippedItem.item.icon}</div>
-                      </div>
-                    </div>
-                  </ItemTooltip>
-                ) : (
-                  <div className="w-16 h-16 bg-dark-200/30 border border-dark-300/50 rounded-lg flex flex-col items-center justify-center p-1 opacity-40">
-                    <div className="text-lg">{slot.icon}</div>
-                    <div className="text-xs text-gray-500 mt-0.5 text-center leading-tight">
-                      {slot.name.split(' ')[0]}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )
-          })}
+    <div className="flex-1 flex items-center justify-center p-4">
+      <div className="flex items-center justify-center gap-8">
+        
+        {/* ЛЕВАЯ КОЛОНКА СЛОТОВ */}
+        <div className="flex flex-col items-center justify-center">
+          {equipmentSlots
+            .filter(slot => slot.position === 'left')
+            .sort((a, b) => a.index - b.index)
+            .map(slot => renderEquipmentSlot(slot))
+          }
         </div>
+
+        {/* ЦЕНТРАЛЬНЫЙ ПЕРСОНАЖ */}
+        <div className="flex flex-col items-center justify-center">
+          {/* Информация о персонаже */}
+          <div className="text-center mb-4">
+            <div className="text-white font-semibold">{character.name}</div>
+            <div className="text-sm text-gray-400">Lv {character.level} {character.character_class}</div>
+          </div>
+          
+          {/* Большая фигура персонажа */}
+          <div className="relative w-48 h-64 bg-gradient-to-b from-dark-100/20 to-dark-200/40 border border-dark-300/30 rounded-lg flex items-center justify-center">
+            <div className="text-8xl opacity-50">👤</div>
+            
+            {/* Заглушка для будущей картинки персонажа */}
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="text-center text-gray-500">
+                <div className="text-sm">Character</div>
+                <div className="text-sm">Portrait</div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Базовые характеристики под персонажем */}
+          <div className="mt-4 grid grid-cols-2 gap-4 text-xs">
+            <div className="text-center">
+              <div className="text-green-400 font-semibold">{character.current_health}</div>
+              <div className="text-gray-400">Health Points</div>
+            </div>
+            <div className="text-center">
+              <div className="text-blue-400 font-semibold">{character.current_mana}</div>
+              <div className="text-gray-400">Magic Power</div>
+            </div>
+            <div className="text-center">
+              <div className="text-red-400 font-semibold">{character.strength + character.dexterity}</div>
+              <div className="text-gray-400">Attack</div>
+            </div>
+            <div className="text-center">
+              <div className="text-purple-400 font-semibold">{character.intelligence}</div>
+              <div className="text-gray-400">Intelligence</div>
+            </div>
+          </div>
+        </div>
+
+        {/* ПРАВАЯ КОЛОНКА СЛОТОВ */}
+        <div className="flex flex-col items-center justify-center">
+          {equipmentSlots
+            .filter(slot => slot.position === 'right')
+            .sort((a, b) => a.index - b.index)
+            .map(slot => renderEquipmentSlot(slot))
+          }
+        </div>
+        
       </div>
     </div>
   )
