@@ -130,7 +130,7 @@ export class CombatSystem {
     console.log(`🏆 Игрок победил!`)
     
     // Расчет наград
-    const rewards = this.calculateRewards(character, mob)
+    const rewards = await this.calculateRewards(character, mob)
     
     // Обновляем игрока в базе данных
     await this.updatePlayerAfterVictory(character, rewards, playerHealth)
@@ -139,7 +139,7 @@ export class CombatSystem {
   }
 
   // Расчет наград за победу
-  static calculateRewards(character: Character, mob: Mob): CombatRewards {
+  static async calculateRewards(character: Character, mob: Mob): Promise<CombatRewards> {
     const levelDiff = mob.level - character.level
     const difficultyMultiplier = Math.max(0.5, 1 + (levelDiff * 0.1)) // Больше наград за сложных мобов
     
@@ -163,10 +163,8 @@ export class CombatSystem {
     const experienceToNext = character.experience_to_next
     const levelUp = newExperience >= experienceToNext
     
-    // Добыча предметов
-    const lootedItems = mob.loot_table.filter(loot => {
-      return Math.random() * 100 < loot.drop_rate
-    })
+    // Получаем добычу предметов из базы данных
+    const lootedItems = await this.getMobLoot(mob.id)
     
     console.log(`🎁 Награды: ${experience} опыта, ${gold} золота, ${lootedItems.length} предметов`)
     if (levelUp) console.log(`🎉 ПОВЫШЕНИЕ УРОВНЯ!`)
@@ -269,11 +267,63 @@ export class CombatSystem {
     return Math.floor(100 * Math.pow(1.2, level - 1))
   }
 
+  // Получение лута моба из базы данных
+  static async getMobLoot(mobId: string): Promise<any[]> {
+    try {
+      // Получаем лут-таблицу моба и предметы с шансом дропа
+      const { data, error } = await supabase
+        .from('mob_loot')
+        .select(`
+          drop_rate,
+          quantity_min,
+          quantity_max,
+          item:items_new (
+            id,
+            name,
+            icon,
+            grade_id
+          )
+        `)
+        .eq('mob_id', mobId)
+      
+      if (error) {
+        console.error('Error fetching mob loot:', error)
+        return []
+      }
+      
+      // Фильтруем предметы по шансу дропа
+      const lootedItems = []
+      for (const loot of data || []) {
+        if (Math.random() * 100 < loot.drop_rate) {
+          const quantity = Math.floor(Math.random() * (loot.quantity_max - loot.quantity_min + 1)) + loot.quantity_min
+          
+          // Генерируем случайное качество (50-100%)
+          const quality = 50 + Math.random() * 50
+          
+          lootedItems.push({
+            item_id: loot.item.id,
+            item_name: loot.item.name,
+            item_icon: loot.item.icon,
+            quantity: quantity,
+            quality: Math.round(quality * 100) / 100 // Округляем до 2 знаков
+          })
+        }
+      }
+      
+      console.log(`🎲 Выпало ${lootedItems.length} предметов из ${data?.length || 0} возможных`)
+      return lootedItems
+      
+    } catch (error) {
+      console.error('Error in getMobLoot:', error)
+      return []
+    }
+  }
+
   // Добавление предметов в инвентарь
   static async addItemsToInventory(characterId: string, items: any[]) {
     try {
       // Получаем текущий инвентарь
-      const { data: inventory, error: inventoryError } = await (supabase as any)
+      const { data: inventory, error: inventoryError } = await supabase
         .from('character_inventory')
         .select('slot_position')
         .eq('character_id', characterId)
@@ -294,22 +344,26 @@ export class CombatSystem {
       // Добавляем предметы в свободные слоты
       for (let i = 0; i < items.length && i < freeSlots.length; i++) {
         const item = items[i]
-        const quantity = Math.floor(Math.random() * (item.quantity_max - item.quantity_min + 1)) + item.quantity_min
         
-        const { error: insertError } = await (supabase as any)
+        const { error: insertError } = await supabase
           .from('character_inventory')
           .insert({
             character_id: characterId,
             item_id: item.item_id,
             slot_position: freeSlots[i],
-            stack_size: quantity
+            stack_size: item.quantity,
+            quality: item.quality
           })
         
         if (insertError) {
           console.error('Error adding item to inventory:', insertError)
         } else {
-          console.log(`📦 Добавлен предмет: ${item.item_id} x${quantity}`)
+          console.log(`📦 Добавлен предмет: ${item.item_name} (${item.item_icon}) x${item.quantity} [Качество: ${item.quality}%]`)
         }
+      }
+      
+      if (items.length > freeSlots.length) {
+        console.warn(`⚠️ Не хватило места для ${items.length - freeSlots.length} предметов`)
       }
       
     } catch (error) {
