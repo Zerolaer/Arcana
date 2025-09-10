@@ -11,6 +11,12 @@ interface InventorySlotProps {
   className?: string
   draggedItem?: GameItem | null
   draggedFromIndex?: number
+  onDragStart?: (item: GameItem) => void
+  onDragEnd?: () => void
+  onUse?: (item: GameItem) => void
+  onDropItem?: (item: GameItem) => void
+  isDraggedOver?: boolean
+  isEmpty?: boolean
 }
 
 export default function InventorySlot({ 
@@ -20,7 +26,13 @@ export default function InventorySlot({
   onSlotClick,
   className = '',
   draggedItem,
-  draggedFromIndex
+  draggedFromIndex,
+  onDragStart,
+  onDragEnd,
+  onUse,
+  onDropItem,
+  isDraggedOver = false,
+  isEmpty = false
 }: InventorySlotProps) {
   const [isDragOver, setIsDragOver] = useState(false)
 
