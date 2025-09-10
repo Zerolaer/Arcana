@@ -12,6 +12,7 @@ import GameSidebar from './UI/GameSidebar'
 import CharacterPanelUnified from './UI/CharacterPanelUnified'
 import InventoryPanelNew from './UI/InventoryPanelNew'
 import LocationPanel from './UI/LocationPanel'
+import WorldMapNew from './World/WorldMapNew'
 import SkillsPanel from './UI/SkillsPanel'
 import CombatPanel from './UI/CombatPanel'
 import RegenerationSystem from './UI/RegenerationSystem'
@@ -154,10 +155,9 @@ export default function GameInterface({ character: initialCharacter, user, onLog
         )
       case 'location':
         return (
-          <LocationPanel
+          <WorldMapNew
             character={character}
             onUpdateCharacter={updateCharacterData}
-            isLoading={isLoading}
           />
         )
       case 'combat':
