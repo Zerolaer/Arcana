@@ -178,7 +178,7 @@ export default function EquipmentComponent({
           {/* Информация о персонаже */}
           <div className="text-center mb-4">
             <div className="text-white font-semibold">{character.name}</div>
-            <div className="text-sm text-gray-400">Lv {character.level} {character.class_id}</div>
+            <div className="text-sm text-gray-400">Lv {character.level} Warrior</div>
           </div>
           
           {/* Большая фигура персонажа */}
@@ -211,6 +211,27 @@ export default function EquipmentComponent({
             <div className="text-center">
               <div className="text-purple-400 font-semibold">{character.intelligence}</div>
               <div className="text-gray-400">Intelligence</div>
+            </div>
+          </div>
+
+          {/* Две пустые линии ячеек под персонажем */}
+          <div className="mt-6 space-y-2">
+            {/* Первая линия */}
+            <div className="flex justify-center gap-2">
+              {Array.from({ length: 6 }, (_, index) => (
+                <div key={`line1-${index}`} className="w-12 h-12 bg-dark-200/20 border border-dashed border-dark-300/30 rounded-lg flex items-center justify-center opacity-40">
+                  <div className="text-dark-500 text-xs">+</div>
+                </div>
+              ))}
+            </div>
+            
+            {/* Вторая линия */}
+            <div className="flex justify-center gap-2">
+              {Array.from({ length: 6 }, (_, index) => (
+                <div key={`line2-${index}`} className="w-12 h-12 bg-dark-200/20 border border-dashed border-dark-300/30 rounded-lg flex items-center justify-center opacity-40">
+                  <div className="text-dark-500 text-xs">+</div>
+                </div>
+              ))}
             </div>
           </div>
         </div>

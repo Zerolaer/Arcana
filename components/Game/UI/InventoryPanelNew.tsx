@@ -238,19 +238,10 @@ export default function InventoryPanelNew({ character, onUpdateCharacter, isLoad
               <span>Инвентарь</span>
             </h2>
             
-            <div className="flex items-center space-x-2">
-              <button
-                onClick={handleSortInventory}
-                disabled={loading}
-                className="px-2 py-1 bg-dark-300/20 text-dark-400 rounded text-sm"
-              >
-                <ArrowUpDown className="w-4 h-4" />
-              </button>
-            </div>
           </div>
 
           <div className="text-xs text-gray-400 mb-4">
-            {itemCount}/48 предметов • Ценность: {totalValue.toLocaleString()}🪙
+            {itemCount}/200 предметов • Ценность: {totalValue.toLocaleString()}🪙
           </div>
 
           {/* Search and Filters */}
@@ -293,18 +284,17 @@ export default function InventoryPanelNew({ character, onUpdateCharacter, isLoad
             </div>
           </div>
 
-          {/* Inventory Grid - автоматическая сетка с фиксированными отступами 4px */}
+          {/* Inventory Grid - сетка с равномерным заполнением ширины */}
           <div className="flex-1 overflow-hidden">
-            <div className="h-full overflow-y-auto pr-2 p-1">
+            <div className="h-full overflow-y-auto pr-2">
               <div 
-                className="grid auto-rows-min"
+                className="flex flex-wrap justify-center content-start"
                 style={{ 
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(52px, 52px))',
                   gap: '4px',
-                  justifyContent: 'start'
+                  padding: '4px'
                 }}
               >
-              {Array.from({ length: 48 }, (_, index) => {
+              {Array.from({ length: 200 }, (_, index) => {
                 const invItem = filteredItems.find(item => item.slot_position === index + 1)
                 
                 return (
@@ -316,7 +306,7 @@ export default function InventoryPanelNew({ character, onUpdateCharacter, isLoad
                         showActions={true}
                         isEquipped={false}
                       >
-                        <div className="w-12 h-12 bg-dark-200/30 border border-dark-300/50 rounded flex flex-col items-center justify-center p-1 cursor-pointer aspect-square">
+                        <div className="w-12 h-12 bg-dark-200/30 border border-dark-300/50 rounded flex flex-col items-center justify-center p-1 cursor-pointer flex-shrink-0">
                           <div className="text-sm">{invItem.item.icon}</div>
                           {invItem.quantity > 1 && (
                             <div className="absolute -bottom-1 -right-1 bg-primary-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
@@ -326,7 +316,7 @@ export default function InventoryPanelNew({ character, onUpdateCharacter, isLoad
                         </div>
                       </ItemTooltip>
                     ) : (
-                      <div className="w-12 h-12 bg-dark-200/10 border border-dashed border-dark-300/30 rounded flex items-center justify-center aspect-square">
+                      <div className="w-12 h-12 bg-dark-200/10 border border-dashed border-dark-300/30 rounded flex items-center justify-center flex-shrink-0">
                         <div className="text-dark-500 text-xs">+</div>
                       </div>
                     )}
