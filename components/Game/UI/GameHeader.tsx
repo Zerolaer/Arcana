@@ -42,9 +42,9 @@ export default function GameHeader({ character, user, onLogout }: GameHeaderProp
               {/* Health Bar */}
               <div className="flex items-center space-x-2">
                 <span className="text-xs text-red-300 w-6">HP</span>
-                <div className="flex-1 h-2 bg-dark-300 rounded-full overflow-hidden">
+                <div className="flex-1 h-3 bg-gray-800 rounded-full overflow-hidden border border-gray-600">
                   <div 
-                    className="h-full bg-gradient-to-r from-red-500 to-red-600 transition-all duration-300"
+                    className="h-full bg-red-500 transition-all duration-300"
                     style={{ width: `${healthPercentage}%` }}
                   />
                 </div>
@@ -56,9 +56,9 @@ export default function GameHeader({ character, user, onLogout }: GameHeaderProp
               {/* Mana Bar */}
               <div className="flex items-center space-x-2">
                 <span className="text-xs text-blue-300 w-6">MP</span>
-                <div className="flex-1 h-2 bg-dark-300 rounded-full overflow-hidden">
+                <div className="flex-1 h-3 bg-gray-800 rounded-full overflow-hidden border border-gray-600">
                   <div 
-                    className="h-full bg-gradient-to-r from-blue-500 to-blue-600 transition-all duration-300"
+                    className="h-full bg-blue-500 transition-all duration-300"
                     style={{ width: `${manaPercentage}%` }}
                   />
                 </div>
