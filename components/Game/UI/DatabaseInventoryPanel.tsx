@@ -345,17 +345,19 @@ export default function DatabaseInventoryPanel({ character, onUpdateCharacter, i
           toast.success(`${data.item_name} экипирован в слот ${data.slot_type}`)
           
           // Обновляем локальное состояние вместо полной перезагрузки
-          setInventory(prev => {
-            const newInventory = [...prev]
-            newInventory[item.slot_position] = {
-              ...item,
-              isEquipped: true
-            }
-            return newInventory
-          })
-          
-          // Закрываем тултип
-          closeTooltip(item.slot_position)
+          if (item.slot_position !== undefined) {
+            setInventory(prev => {
+              const newInventory = [...prev]
+              newInventory[item.slot_position!] = {
+                ...item,
+                isEquipped: true
+              }
+              return newInventory
+            })
+            
+            // Закрываем тултип
+            closeTooltip(item.slot_position)
+          }
         } else {
           console.error('Equip failed:', data)
           toast.error(data?.error || 'Ошибка экипировки предмета')

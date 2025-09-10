@@ -98,7 +98,7 @@ export default function EquipmentComponent({
         // Обновляем локальное состояние вместо полной перезагрузки
         setEquipment(prev => {
           const newEquipment = { ...prev }
-          delete newEquipment[slotType]
+          delete (newEquipment as any)[slotType]
           return newEquipment
         })
         
