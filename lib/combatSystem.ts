@@ -282,7 +282,7 @@ export class CombatSystem {
       if (inventoryError) throw inventoryError
       
       // Находим свободные слоты
-      const occupiedSlots = new Set(inventory?.map(item => item.slot_position) || [])
+      const occupiedSlots = new Set(inventory?.map((item: any) => item.slot_position) || [])
       const freeSlots = []
       
       for (let i = 1; i <= 100; i++) { // 100 слотов инвентаря
