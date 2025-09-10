@@ -204,16 +204,18 @@ export default function DraggableItem({
           </div>
         )}
 
-        {/* Durability Indicator */}
-        {item.durability && (
+        {/* Quality Indicator */}
+        {item.quality && (
           <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-700 rounded-b overflow-hidden">
             <div
               className={`h-full transition-all duration-300 ${
-                (item.durability.current / item.durability.max) > 0.5 ? 'bg-green-400' :
-                (item.durability.current / item.durability.max) > 0.25 ? 'bg-yellow-400' : 'bg-red-400'
+                item.quality > 80 ? 'bg-green-400' :
+                item.quality > 60 ? 'bg-blue-400' :
+                item.quality > 40 ? 'bg-yellow-400' :
+                item.quality > 20 ? 'bg-orange-400' : 'bg-red-400'
               }`}
               style={{
-                width: `${Math.min((item.durability.current / item.durability.max) * 100, 100)}%`
+                width: `${Math.min(item.quality, 100)}%`
               }}
             />
           </div>

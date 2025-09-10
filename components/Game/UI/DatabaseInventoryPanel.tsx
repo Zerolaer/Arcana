@@ -85,9 +85,8 @@ export default function DatabaseInventoryPanel({ character, onUpdateCharacter, i
               value: inventoryItem.item.value,
               stackable: inventoryItem.item.stackable,
               stackSize: inventoryItem.stack_size,
-              durability: inventoryItem.item.durability,
+              quality: inventoryItem.quality || 50, // новая система качества
               setBonus: inventoryItem.item.setBonus,
-              requirements: inventoryItem.item.requirements,
               equipment_slot: inventoryItem.item.equipment_slot || null,
               slot_position: inventoryItem.slot_position,
               item_key: inventoryItem.item.item_key, // Добавляем item_key

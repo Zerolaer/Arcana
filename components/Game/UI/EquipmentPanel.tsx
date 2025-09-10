@@ -76,11 +76,10 @@ export default function EquipmentPanel({ character, onUpdateCharacter, isLoading
               value: equippedItem.item.value,
               stackable: false,
               stackSize: 1,
-              durability: equippedItem.item.durability,
-              setBonus: equippedItem.item.setBonus,
-              requirements: equippedItem.item.requirements
+              quality: equippedItem.quality || 50,
+              setBonus: equippedItem.item.setBonus
             },
-            currentDurability: equippedItem.current_durability,
+            currentQuality: equippedItem.quality || 50,
             upgradeLevel: equippedItem.upgrade_level,
             equippedAt: equippedItem.equipped_at
           }
@@ -211,14 +210,19 @@ export default function EquipmentPanel({ character, onUpdateCharacter, isLoading
                           {equippedItem.item.rarity}
                         </div>
                         
-                        {/* Индикатор прочности */}
-                        {equippedItem.currentDurability && equippedItem.item.durability && (
+                        {/* Индикатор качества */}
+                        {equippedItem.currentQuality && (
                           <div className="absolute bottom-0 left-0 right-0">
                             <div className="w-full bg-gray-700 rounded-full h-1">
                               <div 
-                                className="bg-green-500 h-1 rounded-full transition-all duration-300"
+                                className={`h-1 rounded-full transition-all duration-300 ${
+                                  equippedItem.currentQuality > 80 ? 'bg-green-500' :
+                                  equippedItem.currentQuality > 60 ? 'bg-blue-500' :
+                                  equippedItem.currentQuality > 40 ? 'bg-yellow-500' :
+                                  equippedItem.currentQuality > 20 ? 'bg-orange-500' : 'bg-red-500'
+                                }`}
                                 style={{ 
-                                  width: `${(equippedItem.currentDurability / equippedItem.item.durability.max) * 100}%` 
+                                  width: `${Math.min(equippedItem.currentQuality, 100)}%` 
                                 }}
                               />
                             </div>

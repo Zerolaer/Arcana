@@ -29,14 +29,7 @@ const sampleItems: GameItem[] = [
       critChance: 5
     },
     value: 150,
-    durability: {
-      current: 85,
-      max: 100
-    },
-    requirements: {
-      level: 3,
-      class: 'Воин'
-    }
+    quality: 85
   },
   {
     id: 'magic_potion_1',
@@ -69,14 +62,7 @@ const sampleItems: GameItem[] = [
     },
     value: 5000,
     setBonus: 'Комплект Драконьей стражи: +25% сопротивление огню',
-    durability: {
-      current: 98,
-      max: 150
-    },
-    requirements: {
-      level: 20,
-      stats: { defense: 50 }
-    }
+    quality: 98
   },
   {
     id: 'mystic_ring_1',

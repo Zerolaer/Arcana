@@ -16,7 +16,7 @@ interface EquipmentComponentProps {
 interface EquipmentSlot {
   slot_type: string  // Исправлено: в БД используется slot_type
   item?: GameItem
-  current_durability?: number
+  quality?: number
   upgrade_level?: number
   equipped_at?: string
 }
