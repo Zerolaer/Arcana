@@ -47,8 +47,6 @@ export default function CharacterPanelUnified({ character, onUpdateCharacter, is
   })
   const [equipment, setEquipment] = useState<EquipmentSlot[]>([])
   const [equipmentLoading, setEquipmentLoading] = useState(true)
-  const [selectedItem, setSelectedItem] = useState<{ item: GameItem, slotType: string } | null>(null)
-  const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 })
 
   const totalAllocatedPoints = Object.values(tempStats).reduce((sum, val) => sum + val, 0)
   const remainingPoints = character.stat_points - totalAllocatedPoints
@@ -403,46 +401,42 @@ export default function CharacterPanelUnified({ character, onUpdateCharacter, is
             <span>Экипировка</span>
           </h2>
 
-          {/* Equipment Grid 2x6 */}
-          <div className="grid grid-cols-2 gap-2">
+          {/* Equipment Grid 3x4 */}
+          <div className="grid grid-cols-3 gap-2">
             {equipmentSlots.map((slot) => {
               const equippedItem = equipment.find(eq => eq.slotType === slot.key)
+              const hasItem = !!equippedItem?.item
               
               return (
                 <div key={slot.key} className="relative">
-                  <div 
-                    className="w-16 h-16 bg-dark-200/30 border-2 border-dashed border-dark-300/50 rounded-lg flex flex-col items-center justify-center p-1 cursor-pointer hover:border-dark-300/70 transition-colors"
-                    onClick={(e) => {
-                      if (equippedItem?.item) {
-                        const rect = e.currentTarget.getBoundingClientRect()
-                        setTooltipPosition({
-                          x: rect.right + 10,
-                          y: rect.top
-                        })
-                        setSelectedItem({
-                          item: equippedItem.item,
-                          slotType: slot.key
-                        })
-                      }
-                    }}
-                  >
-                    {equippedItem?.item ? (
-                      <div className="w-full h-full flex flex-col items-center justify-center">
-                        <div className="text-lg mb-0.5">{equippedItem.item.icon}</div>
-                        <div className="text-xs text-center text-white font-semibold truncate w-full leading-tight">
-                          {equippedItem.item.name}
-                        </div>
-                        <div className="text-xs text-gray-400">
-                          {equippedItem.item.level} ур.
+                  {hasItem ? (
+                    <ItemTooltip
+                      item={equippedItem.item}
+                      onUnequip={() => unequipItem(slot.key)}
+                      showActions={true}
+                      isEquipped={true}
+                    >
+                      <div 
+                        className="w-16 h-16 rounded-lg flex flex-col items-center justify-center p-1 cursor-pointer transition-all duration-200 bg-dark-200/50 border-2 border-solid border-gold-400/60 hover:border-gold-400/80"
+                      >
+                        <div className="w-full h-full flex flex-col items-center justify-center">
+                          <div className="text-lg">{equippedItem.item.icon}</div>
+                          <div className="text-xs text-gray-400 mt-0.5">
+                            {equippedItem.item.level} ур.
+                          </div>
                         </div>
                       </div>
-                    ) : (
-                      <div className="w-full h-full flex flex-col items-center justify-center text-gray-500">
-                        <div className="opacity-50 text-sm">{slot.icon}</div>
+                    </ItemTooltip>
+                  ) : (
+                    <div 
+                      className="w-16 h-16 rounded-lg flex flex-col items-center justify-center p-1 cursor-pointer transition-all duration-200 bg-dark-200/20 border-2 border-dashed border-dark-300/30 hover:border-dark-300/50"
+                    >
+                      <div className="w-full h-full flex flex-col items-center justify-center text-gray-500 opacity-40">
+                        <div className="text-sm">{slot.icon}</div>
                         <div className="text-xs text-center mt-0.5 leading-tight">{slot.name}</div>
                       </div>
-                    )}
-                  </div>
+                    </div>
+                  )}
                 </div>
               )
             })}
@@ -450,58 +444,6 @@ export default function CharacterPanelUnified({ character, onUpdateCharacter, is
         </div>
       </div>
 
-      {/* Equipment Item Tooltip */}
-      {selectedItem && (
-        <div
-          className="fixed z-50 pointer-events-none"
-          style={{
-            left: `${tooltipPosition.x}px`,
-            top: `${tooltipPosition.y}px`,
-          }}
-        >
-          <div className="bg-dark-100 border border-dark-300 rounded-lg p-4 shadow-xl max-w-xs">
-            <div className="flex items-center space-x-2 mb-2">
-              <div className="text-lg">{selectedItem.item.icon}</div>
-              <div>
-                <div className="text-white font-semibold text-sm">{selectedItem.item.name}</div>
-                <div className="text-gray-400 text-xs">Уровень {selectedItem.item.level}</div>
-              </div>
-            </div>
-            
-            <div className="text-xs text-gray-300 mb-3">
-              {selectedItem.item.description}
-            </div>
-
-            {selectedItem.item.stats && Object.keys(selectedItem.item.stats).length > 0 && (
-              <div className="space-y-1 mb-3">
-                {Object.entries(selectedItem.item.stats).map(([key, value]) => (
-                  <div key={key} className="text-xs text-green-400">
-                    +{value} {key}
-                  </div>
-                ))}
-              </div>
-            )}
-
-            <button
-              onClick={() => {
-                unequipItem(selectedItem.slotType)
-                setSelectedItem(null)
-              }}
-              className="w-full px-3 py-1 bg-red-500/80 hover:bg-red-500 text-white text-xs rounded transition-colors pointer-events-auto"
-            >
-              Снять предмет
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Click outside to close tooltip */}
-      {selectedItem && (
-        <div
-          className="fixed inset-0 z-40"
-          onClick={() => setSelectedItem(null)}
-        />
-      )}
     </div>
   )
 }
