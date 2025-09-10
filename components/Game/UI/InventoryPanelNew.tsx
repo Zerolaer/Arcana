@@ -24,6 +24,7 @@ interface InventoryItem {
 
 export default function InventoryPanelNew({ character, onUpdateCharacter, isLoading }: InventoryPanelProps) {
   const [inventory, setInventory] = useState<InventoryItem[]>([])
+  const [equipment, setEquipment] = useState<Record<string, string>>({}) // Для отслеживания экипированных предметов
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
   const [activeFilter, setActiveFilter] = useState<string>('all')
@@ -39,20 +40,42 @@ export default function InventoryPanelNew({ character, onUpdateCharacter, isLoad
     })
   }, [])
 
-  // Загрузка инвентаря
+  // Загрузка инвентаря и экипировки
   const loadInventory = useCallback(async () => {
     try {
       setLoading(true)
-      const { data, error } = await (supabase as any)
-        .rpc('get_character_inventory', { p_character_id: character.id })
+      
+      // Загружаем инвентарь и экипировку параллельно
+      const [inventoryResponse, equipmentResponse] = await Promise.all([
+        (supabase as any).rpc('get_character_inventory', { p_character_id: character.id }),
+        (supabase as any).rpc('get_character_equipment', { p_character_id: character.id })
+      ])
 
-      if (error) {
-        console.error('Error loading inventory:', error)
+      if (inventoryResponse.error) {
+        console.error('Error loading inventory:', inventoryResponse.error)
         toast.error('Ошибка загрузки инвентаря')
         return
       }
 
-      setInventory(data || [])
+      if (equipmentResponse.error) {
+        console.error('Error loading equipment:', equipmentResponse.error)
+        toast.error('Ошибка загрузки экипировки')
+        return
+      }
+
+      setInventory(inventoryResponse.data || [])
+      
+      // Преобразуем экипировку в объект для быстрого поиска
+      const equipmentMap: any = {}
+      if (equipmentResponse.data) {
+        equipmentResponse.data.forEach((item: any) => {
+          if (item.item && item.item.id) {
+            equipmentMap[item.item.id] = item.slot_type
+          }
+        })
+      }
+      setEquipment(equipmentMap)
+      
     } catch (error) {
       console.error('Error loading inventory:', error)
       toast.error('Ошибка загрузки инвентаря')
@@ -144,12 +167,11 @@ export default function InventoryPanelNew({ character, onUpdateCharacter, isLoad
       if (data?.success) {
         toast.success(`${item.name} экипирован`)
         
-        // Обновляем локальное состояние вместо полной перезагрузки
-        setInventory(prev => prev.map(invItem => 
-          invItem.item.id === item.id 
-            ? { ...invItem, item: { ...invItem.item, isEquipped: true } }
-            : invItem
-        ))
+        // Обновляем состояние экипировки
+        setEquipment(prev => ({
+          ...prev,
+          [item.id]: data.slot_type // Добавляем новый экипированный предмет
+        }))
         
         // Закрываем тултип
         closeTooltip(inventoryItem.slot_position)
@@ -242,9 +264,21 @@ export default function InventoryPanelNew({ character, onUpdateCharacter, isLoad
             key={equipmentKey}
             character={character}
             onUpdateCharacter={onUpdateCharacter}
-            onEquipmentChange={() => {
+            onEquipmentChange={async () => {
               setEquipmentKey(prev => prev + 1)
-              loadInventory()
+              // Обновляем состояние экипировки
+              const { data: equipmentData } = await (supabase as any)
+                .rpc('get_character_equipment', { p_character_id: character.id })
+              
+              if (equipmentData) {
+                const equipmentMap: any = {}
+                equipmentData.forEach((item: any) => {
+                  if (item.item && item.item.id) {
+                    equipmentMap[item.item.id] = item.slot_type
+                  }
+                })
+                setEquipment(equipmentMap)
+              }
             }}
             layout="inventory"
           />
@@ -336,8 +370,8 @@ export default function InventoryPanelNew({ character, onUpdateCharacter, isLoad
                               {invItem.quantity}
                             </div>
                           )}
-                          {/* Индикатор экипировки */}
-                          {invItem.item.isEquipped && (
+                          {/* Индикатор экипировки - показываем только если этот конкретный предмет экипирован */}
+                          {equipment[invItem.item.id] && (
                             <div className="absolute top-0 right-0 bg-blue-600 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-white">
                               E
                             </div>
