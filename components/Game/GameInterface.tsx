@@ -15,6 +15,7 @@ import LocationPanel from './UI/LocationPanel'
 import WorldMapNew from './World/WorldMapNew'
 import SkillsPanel from './UI/SkillsPanel'
 import RegenerationSystem from './UI/RegenerationSystem'
+import AdminPanel from './Admin/AdminPanel'
 
 interface GameInterfaceProps {
   character: Character
@@ -42,6 +43,7 @@ export default function GameInterface({ character: initialCharacter, user, onLog
     return 'character'
   })
   const [isLoading, setIsLoading] = useState(false)
+  const [isAdminPanelOpen, setIsAdminPanelOpen] = useState(false)
 
   // Функция для сохранения активной панели в localStorage
   const handlePanelChange = (panel: ActivePanel) => {
@@ -78,6 +80,20 @@ export default function GameInterface({ character: initialCharacter, user, onLog
       supabase.removeChannel(channel)
     }
   }, [character.id])
+
+  // Хоткей для админ панели
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Ctrl+Shift+A для открытия админ панели
+      if (event.ctrlKey && event.shiftKey && event.key === 'A') {
+        event.preventDefault()
+        setIsAdminPanelOpen(prev => !prev)
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [])
 
   const updateLastActivity = async () => {
     try {
@@ -130,6 +146,24 @@ export default function GameInterface({ character: initialCharacter, user, onLog
       if (!silent) {
         setIsLoading(false)
       }
+    }
+  }
+
+  const handleCharacterUpdate = async () => {
+    // Обновляем данные персонажа из базы
+    try {
+      const { data, error } = await supabase
+        .from('characters')
+        .select('*')
+        .eq('id', character.id)
+        .single()
+
+      if (error) throw error
+      if (data) {
+        setCharacter(data)
+      }
+    } catch (error) {
+      console.error('Error refreshing character:', error)
     }
   }
 
@@ -228,6 +262,14 @@ export default function GameInterface({ character: initialCharacter, user, onLog
           </div>
         </div>
       )}
+
+      {/* Admin Panel */}
+      <AdminPanel
+        isOpen={isAdminPanelOpen}
+        onClose={() => setIsAdminPanelOpen(false)}
+        character={character}
+        onCharacterUpdate={handleCharacterUpdate}
+      />
     </div>
   )
 }
