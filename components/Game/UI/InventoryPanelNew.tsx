@@ -28,6 +28,16 @@ export default function InventoryPanelNew({ character, onUpdateCharacter, isLoad
   const [searchTerm, setSearchTerm] = useState('')
   const [activeFilter, setActiveFilter] = useState<string>('all')
   const [equipmentKey, setEquipmentKey] = useState(0) // Для принудительного обновления EquipmentComponent
+  const [openTooltips, setOpenTooltips] = useState<Set<number>>(new Set())
+
+  // Функция для закрытия тултипа
+  const closeTooltip = useCallback((slotIndex: number) => {
+    setOpenTooltips(prev => {
+      const newSet = new Set(prev)
+      newSet.delete(slotIndex)
+      return newSet
+    })
+  }, [])
 
   // Загрузка инвентаря
   const loadInventory = useCallback(async () => {
@@ -133,7 +143,17 @@ export default function InventoryPanelNew({ character, onUpdateCharacter, isLoad
 
       if (data?.success) {
         toast.success(`${item.name} экипирован`)
-        await loadInventory()
+        
+        // Обновляем локальное состояние вместо полной перезагрузки
+        setInventory(prev => prev.map(invItem => 
+          invItem.item.id === item.id 
+            ? { ...invItem, item: { ...invItem.item, isEquipped: true } }
+            : invItem
+        ))
+        
+        // Закрываем тултип
+        closeTooltip(inventoryItem.slot_position)
+        
         setEquipmentKey(prev => prev + 1) // Принудительно обновляем EquipmentComponent
         // Обновляем характеристики персонажа
         const updatedChar = { ...character }
@@ -305,14 +325,21 @@ export default function InventoryPanelNew({ character, onUpdateCharacter, isLoad
                       <ItemTooltip
                         item={invItem.item}
                         onEquip={() => handleEquipItem(invItem.item)}
+                        onClose={() => closeTooltip(invItem.slot_position)}
                         showActions={true}
                         isEquipped={false}
                       >
-                        <div className="w-full aspect-square bg-dark-200/30 border border-dark-300/50 rounded flex flex-col items-center justify-center p-1 cursor-pointer">
+                        <div className="w-full aspect-square bg-dark-200/30 border border-dark-300/50 rounded flex flex-col items-center justify-center p-1 cursor-pointer relative">
                           <div className="text-lg">{invItem.item.icon || '❓'}</div>
                           {invItem.quantity > 1 && (
                             <div className="absolute -bottom-1 -right-1 bg-primary-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
                               {invItem.quantity}
+                            </div>
+                          )}
+                          {/* Индикатор экипировки */}
+                          {invItem.item.isEquipped && (
+                            <div className="absolute top-0 right-0 bg-blue-600 text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center border-2 border-white">
+                              E
                             </div>
                           )}
                         </div>
