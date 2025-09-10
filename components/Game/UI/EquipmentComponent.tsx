@@ -21,33 +21,28 @@ interface EquipmentSlot {
 const equipmentLayout = {
   // Макет для страницы персонажа (3x4)
   character: [
-    { key: 'main_weapon', name: 'Основное оружие', icon: '⚔️', row: 0, col: 0 },
-    { key: 'off_weapon', name: 'Доп. оружие', icon: '🛡️', row: 0, col: 1 },
-    { key: 'head', name: 'Голова', icon: '🪖', row: 1, col: 0 },
-    { key: 'earrings', name: 'Серьги', icon: '💎', row: 1, col: 1 },
-    { key: 'chest', name: 'Доспехи', icon: '🦺', row: 2, col: 0 },
-    { key: 'necklace', name: 'Ожерелье', icon: '📿', row: 2, col: 1 },
-    { key: 'belt', name: 'Пояс', icon: '🔗', row: 3, col: 0 },
-    { key: 'ring1', name: 'Кольцо 1', icon: '💍', row: 3, col: 1 },
-    { key: 'legs', name: 'Поножи', icon: '🦵', row: 4, col: 0 },
-    { key: 'ring2', name: 'Кольцо 2', icon: '💍', row: 4, col: 1 },
-    { key: 'feet', name: 'Ботинки', icon: '👢', row: 5, col: 0 },
-    { key: 'empty', name: '', icon: '', row: 5, col: 1 }, // Пустая ячейка
+    { key: 'weapon', name: 'Основное оружие', icon: '⚔️', row: 0, col: 0 },
+    { key: 'shield', name: 'Щит', icon: '🛡️', row: 0, col: 1 },
+    { key: 'helmet', name: 'Голова', icon: '🪖', row: 1, col: 0 },
+    { key: 'amulet', name: 'Амулет', icon: '📿', row: 1, col: 1 },
+    { key: 'armor', name: 'Доспехи', icon: '🦺', row: 2, col: 0 },
+    { key: 'ring1', name: 'Кольцо 1', icon: '💍', row: 2, col: 1 },
+    { key: 'gloves', name: 'Перчатки', icon: '🧤', row: 3, col: 0 },
+    { key: 'ring2', name: 'Кольцо 2', icon: '💍', row: 3, col: 1 },
+    { key: 'boots', name: 'Ботинки', icon: '👢', row: 4, col: 0 },
+    { key: 'empty', name: '', icon: '', row: 4, col: 1 }, // Пустая ячейка
   ],
   // Макет для страницы инвентаря (5x3 с персонажем в центре)
   inventory: [
-    { key: 'earrings', name: 'Серьги', icon: '💎', row: 0, col: 0 },
-    { key: 'head', name: 'Голова', icon: '🪖', row: 0, col: 1 },
+    { key: 'amulet', name: 'Амулет', icon: '📿', row: 0, col: 0 },
+    { key: 'helmet', name: 'Голова', icon: '🪖', row: 0, col: 1 },
     { key: 'gloves', name: 'Перчатки', icon: '🧤', row: 0, col: 2 },
-    { key: 'main_weapon', name: 'Основное оружие', icon: '⚔️', row: 1, col: 0 },
-    { key: 'off_weapon', name: 'Доп. оружие', icon: '🛡️', row: 1, col: 2 },
-    { key: 'chest', name: 'Доспехи', icon: '🦺', row: 2, col: 0 },
-    { key: 'belt', name: 'Пояс', icon: '🔗', row: 2, col: 2 },
-    { key: 'legs', name: 'Поножи', icon: '🦵', row: 3, col: 0 },
-    { key: 'feet', name: 'Ботинки', icon: '👢', row: 3, col: 2 },
-    { key: 'ring1', name: 'Кольцо 1', icon: '💍', row: 4, col: 0 },
-    { key: 'necklace', name: 'Ожерелье', icon: '📿', row: 4, col: 1 },
-    { key: 'ring2', name: 'Кольцо 2', icon: '💍', row: 4, col: 2 },
+    { key: 'weapon', name: 'Основное оружие', icon: '⚔️', row: 1, col: 0 },
+    { key: 'shield', name: 'Щит', icon: '🛡️', row: 1, col: 2 },
+    { key: 'armor', name: 'Доспехи', icon: '🦺', row: 2, col: 0 },
+    { key: 'ring1', name: 'Кольцо 1', icon: '💍', row: 2, col: 2 },
+    { key: 'boots', name: 'Ботинки', icon: '👢', row: 3, col: 0 },
+    { key: 'ring2', name: 'Кольцо 2', icon: '💍', row: 3, col: 2 },
   ]
 }
 
@@ -116,8 +111,8 @@ export default function EquipmentComponent({
   }
 
   const currentLayout = equipmentLayout[layout]
-  const gridCols = layout === 'character' ? 3 : 3
-  const gridRows = layout === 'character' ? 6 : 5
+  const gridCols = layout === 'character' ? 2 : 3
+  const gridRows = layout === 'character' ? 5 : 4
 
   if (loading) {
     return (

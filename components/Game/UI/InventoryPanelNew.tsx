@@ -110,10 +110,18 @@ export default function InventoryPanelNew({ character, onUpdateCharacter, isLoad
   // Экипировка предмета
   const handleEquipItem = async (item: GameItem) => {
     try {
+      // Найдем позицию предмета в инвентаре
+      const inventoryItem = inventory.find(invItem => invItem.item.id === item.id)
+      if (!inventoryItem) {
+        toast.error('Предмет не найден в инвентаре')
+        return
+      }
+
       const { data, error } = await (supabase as any)
         .rpc('equip_item', {
           p_character_id: character.id,
-          p_item_key: item.item_key
+          p_item_key: item.item_key,
+          p_slot_position: inventoryItem.slot_position
         })
 
       if (error) {
