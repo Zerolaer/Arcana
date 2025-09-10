@@ -309,10 +309,10 @@ CREATE TABLE IF NOT EXISTS characters (
     attack_speed DECIMAL(5,2) DEFAULT 100.0,
     movement_speed DECIMAL(5,2) DEFAULT 100.0,
     
-    -- Regeneration stats (per second)
+    -- Regeneration stats (per second) - base 1.0 + bonuses
     health_regen DECIMAL(5,2) DEFAULT 1.0,
-    mana_regen DECIMAL(5,2) DEFAULT 0.5,
-    stamina_regen DECIMAL(5,2) DEFAULT 2.0,
+    mana_regen DECIMAL(5,2) DEFAULT 1.0,
+    stamina_regen DECIMAL(5,2) DEFAULT 1.0,
     
     -- Economy
     gold BIGINT DEFAULT 100,

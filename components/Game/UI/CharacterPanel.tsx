@@ -121,10 +121,10 @@ export default function CharacterPanel({ character, onUpdateCharacter, isLoading
     const maxMana = Math.round(newStats.energy * 5 + 50)
     const maxStamina = Math.round(newStats.vitality * 5 + newStats.dexterity * 3 + 100)
 
-    // Calculate regeneration stats
-    const healthRegen = Math.round((1.0 + newStats.vitality * 0.1 + character.level * 0.05) * 100) / 100
-    const manaRegen = Math.round((0.5 + newStats.energy * 0.08 + newStats.intelligence * 0.03 + character.level * 0.02) * 100) / 100
-    const staminaRegen = Math.round((2.0 + newStats.dexterity * 0.15 + newStats.vitality * 0.05 + character.level * 0.03) * 100) / 100
+    // Calculate regeneration stats (base 1.0 per second + bonuses from stats and equipment)
+    const healthRegen = Math.round((1.0 + newStats.vitality * 0.05 + character.level * 0.02) * 100) / 100
+    const manaRegen = Math.round((1.0 + newStats.energy * 0.05 + newStats.intelligence * 0.02 + character.level * 0.01) * 100) / 100
+    const staminaRegen = Math.round((1.0 + newStats.dexterity * 0.08 + newStats.vitality * 0.03 + character.level * 0.02) * 100) / 100
 
     const updates = {
       ...newStats,
