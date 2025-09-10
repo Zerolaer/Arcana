@@ -10,7 +10,7 @@ interface EquipmentComponentProps {
   character: Character
   onUpdateCharacter?: (updates: Partial<Character>) => Promise<boolean>
   onEquipmentChange?: () => void // Callback для уведомления об изменениях экипировки
-  layout?: 'character' | 'inventory' // Тип макета
+  layout?: 'character' | 'inventory' // Тип макета (не используется, всегда один макет)
 }
 
 interface EquipmentSlot {
@@ -21,40 +21,26 @@ interface EquipmentSlot {
   equipped_at?: string
 }
 
-// Единая раскладка слотов для обоих вариантов
-const equipmentLayout = {
-  // Макет для страницы персонажа (3x4)
-  character: [
-    { key: 'weapon', name: 'Основное оружие', icon: '⚔️', row: 0, col: 0 },
-    { key: 'shield', name: 'Щит', icon: '🛡️', row: 0, col: 1 },
-    { key: 'helmet', name: 'Голова', icon: '🪖', row: 1, col: 0 },
-    { key: 'amulet', name: 'Амулет', icon: '📿', row: 1, col: 1 },
-    { key: 'armor', name: 'Доспехи', icon: '🦺', row: 2, col: 0 },
-    { key: 'ring1', name: 'Кольцо 1', icon: '💍', row: 2, col: 1 },
-    { key: 'gloves', name: 'Перчатки', icon: '🧤', row: 3, col: 0 },
-    { key: 'ring2', name: 'Кольцо 2', icon: '💍', row: 3, col: 1 },
-    { key: 'boots', name: 'Ботинки', icon: '👢', row: 4, col: 0 },
-    { key: 'empty', name: '', icon: '', row: 4, col: 1 }, // Пустая ячейка
-  ],
-  // Макет для страницы инвентаря (5x3 с персонажем в центре)
-  inventory: [
-    { key: 'amulet', name: 'Амулет', icon: '📿', row: 0, col: 0 },
-    { key: 'helmet', name: 'Голова', icon: '🪖', row: 0, col: 1 },
-    { key: 'gloves', name: 'Перчатки', icon: '🧤', row: 0, col: 2 },
-    { key: 'weapon', name: 'Основное оружие', icon: '⚔️', row: 1, col: 0 },
-    { key: 'shield', name: 'Щит', icon: '🛡️', row: 1, col: 2 },
-    { key: 'armor', name: 'Доспехи', icon: '🦺', row: 2, col: 0 },
-    { key: 'ring1', name: 'Кольцо 1', icon: '💍', row: 2, col: 2 },
-    { key: 'boots', name: 'Ботинки', icon: '👢', row: 3, col: 0 },
-    { key: 'ring2', name: 'Кольцо 2', icon: '💍', row: 3, col: 2 },
-  ]
-}
+// ЕДИНЫЙ макет экипировки - персонаж в центре, слоты вокруг (5x3)
+const equipmentLayout = [
+  { key: 'amulet', name: 'Амулет', icon: '📿', row: 0, col: 0 },
+  { key: 'helmet', name: 'Голова', icon: '🪖', row: 0, col: 1 },
+  { key: 'gloves', name: 'Перчатки', icon: '🧤', row: 0, col: 2 },
+  { key: 'weapon', name: 'Основное оружие', icon: '⚔️', row: 1, col: 0 },
+  // row: 1, col: 1 - ПЕРСОНАЖ (заглушка)
+  { key: 'shield', name: 'Щит', icon: '🛡️', row: 1, col: 2 },
+  { key: 'armor', name: 'Доспехи', icon: '🦺', row: 2, col: 0 },
+  // row: 2, col: 1 - ПЕРСОНАЖ (продолжение)
+  { key: 'ring1', name: 'Кольцо 1', icon: '💍', row: 2, col: 2 },
+  { key: 'boots', name: 'Ботинки', icon: '👢', row: 3, col: 0 },
+  // row: 3, col: 1 - ПЕРСОНАЖ (продолжение)
+  { key: 'ring2', name: 'Кольцо 2', icon: '💍', row: 3, col: 2 },
+]
 
 export default function EquipmentComponent({ 
   character, 
   onUpdateCharacter, 
-  onEquipmentChange,
-  layout = 'character' 
+  onEquipmentChange
 }: EquipmentComponentProps) {
   const [equipment, setEquipment] = useState<EquipmentSlot[]>([])
   const [loading, setLoading] = useState(true)
@@ -118,10 +104,6 @@ export default function EquipmentComponent({
     }
   }
 
-  const currentLayout = equipmentLayout[layout]
-  const gridCols = layout === 'character' ? 2 : 3
-  const gridRows = layout === 'character' ? 5 : 4
-
   if (loading) {
     return (
       <div className="flex items-center justify-center h-32">
@@ -133,54 +115,53 @@ export default function EquipmentComponent({
   return (
     <div className="flex-1 flex items-center justify-center">
       <div className="relative">
+        {/* ЕДИНАЯ СЕТКА 5x3 - персонаж в центре, слоты вокруг */}
         <div 
-          className={`grid grid-cols-${gridCols} gap-2`}
-          style={{ gridTemplateRows: `repeat(${gridRows}, 60px)` }}
+          className="grid grid-cols-3 gap-2"
+          style={{ gridTemplateRows: 'repeat(5, 60px)' }}
         >
-          {Array.from({ length: gridCols * gridRows }, (_, index) => {
-            const row = Math.floor(index / gridCols)
-            const col = index % gridCols
-            const slot = currentLayout.find(s => s.row === row && s.col === col)
+          {Array.from({ length: 15 }, (_, index) => {
+            const row = Math.floor(index / 3)
+            const col = index % 3
+            const slot = equipmentLayout.find(s => s.row === row && s.col === col)
             
-            if (!slot) {
-              // Для инвентарного макета - заглушка персонажа в центре
-              if (layout === 'inventory') {
-                if (row === 1 && col === 1) {
-                  return (
-                    <div key={`character-${index}`} className="w-16 h-16 flex items-center justify-center">
-                      <div className="w-12 h-12 bg-gradient-to-br from-primary-500/20 to-primary-600/20 border border-primary-400/30 rounded-full flex items-center justify-center">
-                        <span className="text-lg">👤</span>
-                      </div>
+            // ЗАГЛУШКА ПЕРСОНАЖА В ЦЕНТРЕ (позиции 1,1 - 2,1 - 3,1)
+            if ((row === 1 || row === 2 || row === 3) && col === 1) {
+              if (row === 1) {
+                return (
+                  <div key={`character-head-${index}`} className="w-16 h-16 flex items-center justify-center">
+                    <div className="w-14 h-14 bg-gradient-to-br from-primary-500/20 to-primary-600/20 border border-primary-400/30 rounded-full flex items-center justify-center">
+                      <span className="text-2xl">👤</span>
                     </div>
-                  )
-                }
-                if (row === 2 && col === 1) {
-                  return (
-                    <div key={`character-body-${index}`} className="w-16 h-16 flex items-center justify-center">
-                      <div className="w-12 h-12 bg-gradient-to-br from-primary-500/10 to-primary-600/10 border border-primary-400/20 rounded flex items-center justify-center">
-                        <span className="text-sm text-primary-300">👕</span>
-                      </div>
-                    </div>
-                  )
-                }
-                if (row === 3 && col === 1) {
-                  return (
-                    <div key={`character-legs-${index}`} className="w-16 h-16 flex items-center justify-center">
-                      <div className="w-12 h-12 bg-gradient-to-br from-primary-500/10 to-primary-600/10 border border-primary-400/20 rounded flex items-center justify-center">
-                        <span className="text-sm text-primary-300">👖</span>
-                      </div>
-                    </div>
-                  )
-                }
+                  </div>
+                )
               }
+              if (row === 2) {
+                return (
+                  <div key={`character-body-${index}`} className="w-16 h-16 flex items-center justify-center">
+                    <div className="w-14 h-14 bg-gradient-to-br from-primary-500/10 to-primary-600/10 border border-primary-400/20 rounded flex items-center justify-center">
+                      <span className="text-xl text-primary-300">👕</span>
+                    </div>
+                  </div>
+                )
+              }
+              if (row === 3) {
+                return (
+                  <div key={`character-legs-${index}`} className="w-16 h-16 flex items-center justify-center">
+                    <div className="w-14 h-14 bg-gradient-to-br from-primary-500/10 to-primary-600/10 border border-primary-400/20 rounded flex items-center justify-center">
+                      <span className="text-lg text-primary-300">👖</span>
+                    </div>
+                  </div>
+                )
+              }
+            }
+
+            // Если нет слота - пустая ячейка
+            if (!slot) {
               return <div key={`empty-${index}`} className="w-16 h-16"></div>
             }
 
-            // Пустая ячейка
-            if (slot.key === 'empty') {
-              return <div key={`empty-${index}`} className="w-16 h-16"></div>
-            }
-
+            // СЛОТЫ ЭКИПИРОВКИ
             const equippedItem = equipment.find(eq => eq.slotType === slot.key)
             const hasItem = !!equippedItem?.item
             
@@ -196,17 +177,14 @@ export default function EquipmentComponent({
                     <div className="w-16 h-16 rounded-lg flex flex-col items-center justify-center p-1 cursor-pointer bg-dark-200/50 border-2 border-solid border-gold-400/60">
                       <div className="w-full h-full flex flex-col items-center justify-center">
                         <div className="text-lg">{equippedItem.item.icon}</div>
-                        <div className="text-xs text-gray-400 mt-0.5">
-                          {equippedItem.item.level} ур.
-                        </div>
                       </div>
                     </div>
                   </ItemTooltip>
                 ) : (
-                  <div className="w-16 h-16 rounded-lg flex flex-col items-center justify-center p-1 cursor-pointer bg-dark-200/20 border-2 border-dashed border-dark-300/30">
-                    <div className="w-full h-full flex flex-col items-center justify-center text-gray-500 opacity-40">
-                      <div className="text-sm">{slot.icon}</div>
-                      <div className="text-xs text-center mt-0.5 leading-tight">{slot.name}</div>
+                  <div className="w-16 h-16 bg-dark-200/30 border border-dark-300/50 rounded-lg flex flex-col items-center justify-center p-1 opacity-40">
+                    <div className="text-lg">{slot.icon}</div>
+                    <div className="text-xs text-gray-500 mt-0.5 text-center leading-tight">
+                      {slot.name.split(' ')[0]}
                     </div>
                   </div>
                 )}
