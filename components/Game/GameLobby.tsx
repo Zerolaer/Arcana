@@ -111,6 +111,11 @@ export default function GameLobby({ user, onCharacterCreated, onLogout }: GameLo
       const maxMana = startingStats.energy * 5 + 50
       const maxStamina = startingStats.vitality * 5 + startingStats.dexterity * 3 + 100
 
+      // Calculate regeneration stats (base 1.0 + bonuses)
+      const healthRegen = 1.0 + (startingStats.vitality * 0.05) + (1 * 0.02) // level 1
+      const manaRegen = 1.0 + (startingStats.energy * 0.05) + (startingStats.intelligence * 0.02) + (1 * 0.01)
+      const staminaRegen = 1.0 + (startingStats.dexterity * 0.08) + (startingStats.vitality * 0.03) + (1 * 0.02)
+
       const characterData = {
         player_id: user.id,
         name: characterName.trim(),
@@ -135,6 +140,9 @@ export default function GameLobby({ user, onCharacterCreated, onLogout }: GameLo
         critical_damage: Math.round((150 + startingStats.strength * 0.5) * 100) / 100,
         attack_speed: Math.round((100 + startingStats.dexterity * 0.8) * 100) / 100,
         movement_speed: Math.round((100 + startingStats.dexterity * 0.5) * 100) / 100,
+        health_regen: Math.round(healthRegen * 100) / 100,
+        mana_regen: Math.round(manaRegen * 100) / 100,
+        stamina_regen: Math.round(staminaRegen * 100) / 100,
         gold: 100,
         current_location_id: firstLocation.id,
         is_online: true,

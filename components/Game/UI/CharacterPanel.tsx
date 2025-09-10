@@ -315,9 +315,9 @@ export default function CharacterPanel({ character, onUpdateCharacter, isLoading
                 { name: 'Критический урон', value: `${character.critical_damage.toFixed(0)}%`, icon: '⚡' },
                 { name: 'Скорость атаки', value: `${character.attack_speed.toFixed(0)}%`, icon: '🏃' },
                 { name: 'Скорость движения', value: `${character.movement_speed.toFixed(0)}%`, icon: '💨' },
-                { name: 'Регенерация HP', value: `${character.health_regen?.toFixed(1) || '0.0'}/сек`, icon: '❤️', color: 'text-red-400' },
-                { name: 'Регенерация MP', value: `${character.mana_regen?.toFixed(1) || '0.0'}/сек`, icon: '💙', color: 'text-blue-400' },
-                { name: 'Регенерация Stamina', value: `${character.stamina_regen?.toFixed(1) || '0.0'}/сек`, icon: '💚', color: 'text-green-400' }
+                { name: 'Регенерация HP', value: `${(character.health_regen || 1.0).toFixed(1)}/сек`, icon: '❤️', color: 'text-red-400' },
+                { name: 'Регенерация MP', value: `${(character.mana_regen || 1.0).toFixed(1)}/сек`, icon: '💙', color: 'text-blue-400' },
+                { name: 'Регенерация Stamina', value: `${(character.stamina_regen || 1.0).toFixed(1)}/сек`, icon: '💚', color: 'text-green-400' }
               ].map((stat) => (
                 <div key={stat.name} className="flex items-center justify-between p-3 bg-dark-200/30 rounded border border-dark-300/30">
                   <div className="flex items-center space-x-2">

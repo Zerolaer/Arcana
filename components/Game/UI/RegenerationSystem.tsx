@@ -36,6 +36,20 @@ export default function RegenerationSystem({
         return
       }
 
+      // Если регенерация не определена, устанавливаем базовые значения
+      if (!character.health_regen || !character.mana_regen || !character.stamina_regen) {
+        const baseHealthRegen = 1.0 + (character.vitality * 0.05) + (character.level * 0.02)
+        const baseManaRegen = 1.0 + (character.energy * 0.05) + (character.intelligence * 0.02) + (character.level * 0.01)
+        const baseStaminaRegen = 1.0 + (character.dexterity * 0.08) + (character.vitality * 0.03) + (character.level * 0.02)
+
+        await onUpdateCharacter({
+          health_regen: Math.round(baseHealthRegen * 100) / 100,
+          mana_regen: Math.round(baseManaRegen * 100) / 100,
+          stamina_regen: Math.round(baseStaminaRegen * 100) / 100
+        })
+        return
+      }
+
       // Вызываем функцию регенерации из базы данных
       const { data, error } = await (supabase as any)
         .rpc('apply_regeneration', { p_character_id: character.id })
