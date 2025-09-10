@@ -238,74 +238,60 @@ export default function ItemTooltip({
               </button>
             )}
             
-            {/* Кнопка "Надеть" - только для неэкипированных предметов */}
+            {/* Динамическая кнопка Надеть/Снять */}
             {(() => {
-              console.log('🔍 RENDERING EQUIP BUTTON FOR:', item.name, {
-                isEquipped,
+              const isItemEquipped = isEquipped || item.isEquipped
+              const canEquip = (item.equipment_slot || item.type === 'weapon' || item.type === 'armor' || item.type === 'accessory') && item.type !== 'consumable' && item.type !== 'material'
+              
+              console.log('🔍 RENDERING BUTTON FOR:', item.name, {
+                isItemEquipped,
+                canEquip,
                 equipment_slot: item.equipment_slot,
                 type: item.type,
-                onEquip: !!onEquip
+                onEquip: !!onEquip,
+                onUnequip: !!onUnequip
               })
-              return !(isEquipped || item.isEquipped) && (item.equipment_slot || item.type === 'weapon' || item.type === 'armor' || item.type === 'accessory') && item.type !== 'consumable' && item.type !== 'material' && onEquip
+              
+              return canEquip && (onEquip || onUnequip)
             })() && (
               <button
                 onMouseDown={(e) => {
-                  console.log('🚨🚨🚨 EQUIP BUTTON MOUSE DOWN!', item.name)
+                  console.log('🚨🚨🚨 BUTTON MOUSE DOWN!', item.name, 'isEquipped:', isItemEquipped)
                   e.stopPropagation()
                 }}
                 onClick={(e) => {
-                  console.log('🚨🚨🚨 EQUIP BUTTON CLICKED!', item.name, 'type:', item.type, 'equipment_slot:', item.equipment_slot)
-                  console.log('🚨🚨🚨 onEquip function:', onEquip)
+                  console.log('🚨🚨🚨 BUTTON CLICKED!', item.name, 'isEquipped:', isItemEquipped)
                   e.stopPropagation()
                   e.preventDefault()
-                  if (onEquip) {
-                    console.log('🚨🚨🚨 Calling onEquip function')
-                    onEquip()
-                    // Закрываем тултип после экипировки
-                    if (onClose) {
-                      setTimeout(() => onClose(), 100)
+                  
+                  if (isItemEquipped) {
+                    // Снимаем предмет
+                    if (onUnequip) {
+                      console.log('🚨🚨🚨 Calling onUnequip function')
+                      onUnequip()
+                      if (onClose) onClose()
                     }
                   } else {
-                    console.log('🚨🚨🚨 onEquip is null/undefined')
+                    // Надеваем предмет
+                    if (onEquip) {
+                      console.log('🚨🚨🚨 Calling onEquip function')
+                      onEquip()
+                      if (onClose) onClose()
+                    }
                   }
                 }}
-                className="w-full px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-md transition-colors flex items-center justify-center space-x-2"
+                className={`w-full px-3 py-2 text-white text-sm rounded-md transition-colors flex items-center justify-center space-x-2 ${
+                  isItemEquipped 
+                    ? 'bg-red-600 hover:bg-red-700' 
+                    : 'bg-blue-600 hover:bg-blue-700'
+                }`}
                 style={{ pointerEvents: 'auto', zIndex: 10000 }}
               >
-                <span>⚔️</span>
-                <span>Надеть</span>
+                <span>{isItemEquipped ? '👕' : '⚔️'}</span>
+                <span>{isItemEquipped ? 'Снять' : 'Надеть'}</span>
               </button>
             )}
             
-            {/* Кнопка "Снять" - ЖЕЛЕЗОБЕТОННЫЙ ВАРИАНТ */}
-            {(isEquipped || item.isEquipped) && (
-              <button
-                onMouseDown={(e) => {
-                  console.log('🚨🚨🚨 UNEQUIP BUTTON MOUSE DOWN!', item.name)
-                  e.stopPropagation()
-                }}
-                onClick={(e) => {
-                  console.log('🚨🚨🚨 UNEQUIP BUTTON CLICKED!', item.name)
-                  e.stopPropagation()
-                  e.preventDefault()
-                  if (onUnequip) {
-                    console.log('🚨🚨🚨 Calling onUnequip function')
-                    onUnequip()
-                    // Закрываем тултип после снятия
-                    if (onClose) {
-                      setTimeout(() => onClose(), 100)
-                    }
-                  } else {
-                    console.log('🚨🚨🚨 onUnequip is null/undefined')
-                  }
-                }}
-                className="w-full px-3 py-2 bg-red-600 hover:bg-red-700 text-white text-sm rounded-md transition-colors flex items-center justify-center space-x-2"
-                style={{ pointerEvents: 'auto', zIndex: 10000 }}
-              >
-                <span>👕</span>
-                <span>Снять</span>
-              </button>
-            )}
           </div>
         </div>
       )}

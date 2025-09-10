@@ -7,16 +7,28 @@ DROP FUNCTION IF EXISTS get_character_inventory(UUID);
 DROP FUNCTION IF EXISTS get_character_equipment(UUID);
 DROP FUNCTION IF EXISTS equip_item(UUID, VARCHAR, INTEGER);
 DROP FUNCTION IF EXISTS equip_item(UUID, INTEGER);
+DROP FUNCTION IF EXISTS equip_item(UUID, VARCHAR, VARCHAR);
+DROP FUNCTION IF EXISTS equip_item(UUID, UUID, INTEGER);
 
--- Принудительно удаляем все версии unequip_item
+-- Принудительно удаляем все версии unequip_item и equip_item
 DO $$ 
 DECLARE
     func_record RECORD;
 BEGIN
+    -- Удаляем все версии unequip_item
     FOR func_record IN 
         SELECT proname, oidvectortypes(proargtypes) as argtypes
         FROM pg_proc 
         WHERE proname = 'unequip_item'
+    LOOP
+        EXECUTE 'DROP FUNCTION IF EXISTS ' || func_record.proname || '(' || func_record.argtypes || ') CASCADE';
+    END LOOP;
+    
+    -- Удаляем все версии equip_item
+    FOR func_record IN 
+        SELECT proname, oidvectortypes(proargtypes) as argtypes
+        FROM pg_proc 
+        WHERE proname = 'equip_item'
     LOOP
         EXECUTE 'DROP FUNCTION IF EXISTS ' || func_record.proname || '(' || func_record.argtypes || ') CASCADE';
     END LOOP;
@@ -268,7 +280,7 @@ DECLARE
     v_equipment_slot TEXT;
 BEGIN
     -- Получаем данные предмета из инвентаря по уникальному ID записи
-    SELECT ci.*, i.equipment_slot
+    SELECT ci.*, i.equipment_slot, i.name
     INTO v_item_data
     FROM character_inventory ci
     JOIN items_new i ON ci.item_id = i.id
@@ -293,16 +305,32 @@ BEGIN
     END IF;
     
     -- Если слот занят, автоматически снимаем старый предмет
-    IF EXISTS (
-        SELECT 1 FROM character_equipment 
+    DECLARE
+        v_old_item_id UUID;
+    BEGIN
+        -- Получаем ID старого предмета перед удалением
+        SELECT inventory_item_id INTO v_old_item_id
+        FROM character_equipment 
         WHERE character_id = p_character_id 
-        AND slot_type = v_equipment_slot
-    ) THEN
-        -- Снимаем старый предмет и возвращаем в инвентарь
+        AND slot_type = v_equipment_slot;
+        
+        -- Снимаем старый предмет
         DELETE FROM character_equipment 
         WHERE character_id = p_character_id 
         AND slot_type = v_equipment_slot;
-    END IF;
+        
+        -- Если был старый предмет, возвращаем его ID
+        IF v_old_item_id IS NOT NULL THEN
+            -- Возвращаем информацию о снятом предмете
+            RETURN json_build_object(
+                'success', true,
+                'message', 'Предмет заменен',
+                'slot_type', v_equipment_slot,
+                'item_name', v_item_data.name,
+                'replaced_item_id', v_old_item_id
+            );
+        END IF;
+    END;
     
     -- Экипируем предмет
     INSERT INTO character_equipment (character_id, item_id, slot_type, quality, actual_stats, value, equipped_at, inventory_item_id)
@@ -321,7 +349,9 @@ BEGIN
     
     RETURN json_build_object(
         'success', true,
-        'message', 'Предмет успешно экипирован'
+        'message', 'Предмет успешно экипирован',
+        'slot_type', v_equipment_slot,
+        'item_name', v_item_data.name
     );
     
 EXCEPTION WHEN OTHERS THEN
@@ -425,7 +455,8 @@ BEGIN
             unequip_result JSON;
         BEGIN
             -- Тест equip_item (может вернуть ошибку, но функция должна существовать)
-            SELECT equip_item(test_char_id, 'test_item', 1) INTO equip_result;
+            -- Используем gen_random_uuid() для создания валидного UUID
+            SELECT equip_item(test_char_id, gen_random_uuid(), 1) INTO equip_result;
             IF equip_result IS NOT NULL THEN
                 RAISE NOTICE '✅ Функция equip_item работает';
             ELSE

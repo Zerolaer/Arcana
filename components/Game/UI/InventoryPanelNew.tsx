@@ -142,6 +142,61 @@ export default function InventoryPanelNew({ character, onUpdateCharacter, isLoad
     }
   }
 
+  // Снятие предмета
+  const handleUnequipItem = async (item: GameItem) => {
+    try {
+      // Найдем позицию предмета в инвентаре
+      const inventoryItem = inventory.find(invItem => invItem.item.id === item.id)
+      if (!inventoryItem) {
+        toast.error('Предмет не найден в инвентаре')
+        return
+      }
+
+      // Найдем слот, в котором экипирован предмет
+      const equippedSlot = equipment[inventoryItem.id]
+      if (!equippedSlot) {
+        toast.error('Предмет не экипирован')
+        return
+      }
+
+      const { data, error } = await (supabase as any)
+        .rpc('unequip_item', {
+          p_character_id: character.id,
+          p_slot_type: equippedSlot
+        })
+
+      if (error) {
+        console.error('Error unequipping item:', error)
+        toast.error('Ошибка снятия предмета')
+        return
+      }
+
+      if (data?.success) {
+        toast.success(`${item.name} снят`)
+        
+        // Обновляем состояние экипировки - убираем предмет
+        setEquipment(prev => {
+          const newEquipment = { ...prev }
+          delete newEquipment[inventoryItem.id]
+          return newEquipment
+        })
+        
+        // Закрываем тултип
+        closeTooltip(inventoryItem.slot_position)
+        
+        setEquipmentKey(prev => prev + 1) // Принудительно обновляем EquipmentComponent
+        // Обновляем характеристики персонажа
+        const updatedChar = { ...character }
+        await onUpdateCharacter(updatedChar)
+      } else {
+        toast.error(data?.error || 'Ошибка снятия предмета')
+      }
+    } catch (error) {
+      console.error('Error unequipping item:', error)
+      toast.error('Ошибка снятия предмета')
+    }
+  }
+
   // Экипировка предмета
   const handleEquipItem = async (item: GameItem) => {
     try {
@@ -169,10 +224,19 @@ export default function InventoryPanelNew({ character, onUpdateCharacter, isLoad
         toast.success(`${item.name} экипирован`)
         
         // Обновляем состояние экипировки
-        setEquipment(prev => ({
-          ...prev,
-          [inventoryItem.id]: data.slot_type // Добавляем новый экипированный предмет по уникальному ID
-        }))
+        setEquipment(prev => {
+          const newEquipment = { ...prev }
+          
+          // Убираем старый предмет если он был заменен
+          if (data.replaced_item_id) {
+            delete newEquipment[data.replaced_item_id]
+          }
+          
+          // Добавляем новый экипированный предмет
+          newEquipment[inventoryItem.id] = data.slot_type
+          
+          return newEquipment
+        })
         
         // Закрываем тултип
         closeTooltip(inventoryItem.slot_position)
@@ -190,35 +254,6 @@ export default function InventoryPanelNew({ character, onUpdateCharacter, isLoad
     }
   }
 
-  // Снятие экипировки
-  const handleUnequipItem = async (slotType: string) => {
-    try {
-      const { data, error } = await (supabase as any)
-        .rpc('unequip_item', {
-          p_character_id: character.id,
-          p_slot_type: slotType
-        })
-
-      if (error) {
-        console.error('Error unequipping item:', error)
-        toast.error('Ошибка снятия предмета')
-        return
-      }
-
-      if (data?.success) {
-        toast.success('Предмет снят')
-        await loadInventory()
-        // Обновляем характеристики персонажа
-        const updatedChar = { ...character }
-        await onUpdateCharacter(updatedChar)
-      } else {
-        toast.error(data?.error || 'Ошибка снятия предмета')
-      }
-    } catch (error) {
-      console.error('Error unequipping item:', error)
-      toast.error('Ошибка снятия предмета')
-    }
-  }
 
   // Фильтрация предметов
   const filteredItems = inventory.filter(invItem => {
@@ -360,9 +395,10 @@ export default function InventoryPanelNew({ character, onUpdateCharacter, isLoad
                       <ItemTooltip
                         item={invItem.item}
                         onEquip={() => handleEquipItem(invItem.item)}
+                        onUnequip={() => handleUnequipItem(invItem.item)}
                         onClose={() => closeTooltip(invItem.slot_position)}
                         showActions={true}
-                        isEquipped={false}
+                        isEquipped={!!equipment[invItem.id]}
                       >
                         <div className="w-full aspect-square bg-dark-200/30 border border-dark-300/50 rounded flex flex-col items-center justify-center p-1 cursor-pointer relative">
                           <div className="text-lg">{invItem.item.icon || '❓'}</div>
