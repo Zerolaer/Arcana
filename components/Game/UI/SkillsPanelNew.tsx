@@ -72,8 +72,6 @@ export default function SkillsPanelNew({ character, onUpdateCharacter, isLoading
           console.error('Ошибка при загрузке класса:', error)
         }
         
-        // TODO: Позже вернуть загрузку из БД
-        /*
         // Загружаем пассивные навыки из базы данных
         const { data: passiveSkillsData, error: passiveError } = await (supabase as any)
           .rpc('get_character_passive_skills', { p_character_id: character.id })
@@ -84,14 +82,15 @@ export default function SkillsPanelNew({ character, onUpdateCharacter, isLoading
           const passiveSkills = getAvailablePassiveSkills(character.level)
           setAvailablePassiveSkills(passiveSkills)
         } else {
+          console.log('Пассивные навыки из БД:', passiveSkillsData)
           // Преобразуем данные из БД в формат компонента
           const formattedPassiveSkills = passiveSkillsData.map((skill: any) => ({
             id: skill.skill_key,
             name: skill.name,
             description: skill.description,
             level_requirement: skill.level_requirement,
-            icon: skill.icon,
-            stat_bonuses: skill.stat_bonuses,
+            icon: '⭐',
+            stat_bonuses: {},
             is_learned: skill.is_learned
           }))
           setAvailablePassiveSkills(formattedPassiveSkills)
