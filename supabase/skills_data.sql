@@ -69,7 +69,7 @@ INSERT INTO character_active_skills (character_id, skill_id, is_learned)
 SELECT c.id, a_skills.id, true
 FROM characters c
 JOIN character_classes cc ON c.class_id = cc.id
-JOIN active_skills a_skills ON a_skills.class_requirements @> ARRAY[cc.name]
+JOIN active_skills a_skills ON cc.name = ANY(a_skills.class_requirements)
 WHERE a_skills.level_requirement = 1
 AND NOT EXISTS (
     SELECT 1 FROM character_active_skills cas 

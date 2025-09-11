@@ -1,6 +1,10 @@
 -- СИСТЕМА НАВЫКОВ - SQL СХЕМА
 -- Создаем таблицы для пассивных и активных навыков
 
+-- Удаляем существующие триггеры если есть
+DROP TRIGGER IF EXISTS update_passive_skills_updated_at ON passive_skills;
+DROP TRIGGER IF EXISTS update_active_skills_updated_at ON active_skills;
+
 -- 1. Таблица пассивных навыков
 CREATE TABLE IF NOT EXISTS passive_skills (
     id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
@@ -23,7 +27,7 @@ CREATE TABLE IF NOT EXISTS passive_skills (
     stealth_bonus INTEGER DEFAULT 0,
     
     -- Метаданные
-    class_requirements VARCHAR(50)[], -- Для будущего развития
+    class_requirements TEXT[], -- Для будущего развития
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -47,7 +51,7 @@ CREATE TABLE IF NOT EXISTS active_skills (
     scaling_ratio DECIMAL(5,2) DEFAULT 1.0,
     
     -- Требования и стоимость
-    class_requirements VARCHAR(50)[] NOT NULL,
+    class_requirements TEXT[] NOT NULL,
     cost_to_learn INTEGER DEFAULT 0,
     
     -- Метаданные

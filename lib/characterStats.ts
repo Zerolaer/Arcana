@@ -1,4 +1,5 @@
 import { Character } from '@/types/game'
+import { calculatePassiveSkillBonuses } from '@/lib/passiveSkills'
 
 /**
  * Единая система расчета характеристик персонажа
@@ -114,17 +115,20 @@ export function calculateCharacterStats(character: Character, equipmentBonuses: 
     strength, endurance, armor, stealth 
   } = character
   
-  // Добавляем бонусы от экипировки к базовым характеристикам
-  const totalAgility = agility + equipmentBonuses.agility
-  const totalPrecision = precision + equipmentBonuses.precision
-  const totalEvasion = evasion + equipmentBonuses.evasion
-  const totalIntelligence = intelligence + equipmentBonuses.intelligence
-  const totalSpellPower = spell_power + equipmentBonuses.spell_power
-  const totalResistance = resistance + equipmentBonuses.resistance
-  const totalStrength = strength + equipmentBonuses.strength
-  const totalEndurance = endurance + equipmentBonuses.endurance
-  const totalArmor = armor + equipmentBonuses.armor
-  const totalStealth = stealth + equipmentBonuses.stealth
+  // Получаем бонусы от пассивных навыков
+  const passiveSkillBonuses = calculatePassiveSkillBonuses(character.level)
+  
+  // Добавляем бонусы от экипировки и пассивных навыков к базовым характеристикам
+  const totalAgility = agility + equipmentBonuses.agility + (passiveSkillBonuses.agility || 0)
+  const totalPrecision = precision + equipmentBonuses.precision + (passiveSkillBonuses.precision || 0)
+  const totalEvasion = evasion + equipmentBonuses.evasion + (passiveSkillBonuses.evasion || 0)
+  const totalIntelligence = intelligence + equipmentBonuses.intelligence + (passiveSkillBonuses.intelligence || 0)
+  const totalSpellPower = spell_power + equipmentBonuses.spell_power + (passiveSkillBonuses.spell_power || 0)
+  const totalResistance = resistance + equipmentBonuses.resistance + (passiveSkillBonuses.resistance || 0)
+  const totalStrength = strength + equipmentBonuses.strength + (passiveSkillBonuses.strength || 0)
+  const totalEndurance = endurance + equipmentBonuses.endurance + (passiveSkillBonuses.endurance || 0)
+  const totalArmor = armor + equipmentBonuses.armor + (passiveSkillBonuses.armor || 0)
+  const totalStealth = stealth + equipmentBonuses.stealth + (passiveSkillBonuses.stealth || 0)
   
   // Ресурсы
   const max_health = Math.round(

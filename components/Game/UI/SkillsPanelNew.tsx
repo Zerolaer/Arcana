@@ -34,7 +34,17 @@ export default function SkillsPanelNew({ character, onUpdateCharacter, isLoading
           const passiveSkills = getAvailablePassiveSkills(character.level)
           setAvailablePassiveSkills(passiveSkills)
         } else {
-          setAvailablePassiveSkills(passiveSkillsData || [])
+          // Преобразуем данные из БД в формат компонента
+          const formattedPassiveSkills = passiveSkillsData.map((skill: any) => ({
+            id: skill.skill_key,
+            name: skill.name,
+            description: skill.description,
+            level_requirement: skill.level_requirement,
+            icon: skill.icon,
+            stat_bonuses: skill.stat_bonuses,
+            is_learned: skill.is_learned
+          }))
+          setAvailablePassiveSkills(formattedPassiveSkills)
         }
 
         // Загружаем активные навыки из базы данных
@@ -66,7 +76,26 @@ export default function SkillsPanelNew({ character, onUpdateCharacter, isLoading
             }
           }
         } else {
-          setAvailableActiveSkills(activeSkillsData || [])
+          // Преобразуем данные из БД в формат компонента
+          const formattedActiveSkills = activeSkillsData.map((skill: any) => ({
+            id: skill.skill_key,
+            name: skill.name,
+            description: skill.description,
+            level_requirement: skill.level_requirement,
+            icon: skill.icon,
+            skill_type: skill.skill_type,
+            damage_type: skill.damage_type,
+            base_damage: skill.base_damage,
+            mana_cost: skill.mana_cost,
+            cooldown: skill.cooldown,
+            scaling_stat: skill.scaling_stat,
+            scaling_ratio: skill.scaling_ratio,
+            class_requirements: [className], // Упрощенно
+            cost_to_learn: skill.cost_to_learn,
+            is_learned: skill.is_learned,
+            nodes: []
+          }))
+          setAvailableActiveSkills(formattedActiveSkills)
         }
       } catch (error) {
         console.error('Ошибка загрузки навыков:', error)
@@ -180,8 +209,8 @@ export default function SkillsPanelNew({ character, onUpdateCharacter, isLoading
                   
                   {/* Бонусы статов */}
                   <div className="mt-2 text-xs">
-                    {Object.entries(skill.stat_bonuses).map(([stat, value]) => (
-                      value ? (
+                    {skill.stat_bonuses && Object.entries(skill.stat_bonuses).map(([stat, value]) => (
+                      value && value > 0 ? (
                         <span key={stat} className="mr-2 text-green-400">
                           +{value} {stat}
                         </span>
