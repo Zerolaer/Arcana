@@ -1,0 +1,341 @@
+[1mdiff --git a/app/globals.css b/app/globals.css[m
+[1mindex a707a7b..92ae8f0 100644[m
+[1m--- a/app/globals.css[m
+[1m+++ b/app/globals.css[m
+[36m@@ -674,3 +674,46 @@[m [ma {[m
+   width: 100% !important;[m
+   height: 100% !important;[m
+ }[m
+[32m+[m
+[32m+[m[32m/* Skill Cards */[m
+[32m+[m[32m.skill-card {[m
+[32m+[m[32m  background: rgba(39, 39, 42, 0.8);[m
+[32m+[m[32m  border: 1px solid rgba(255, 255, 255, 0.1);[m
+[32m+[m[32m  border-radius: 12px;[m
+[32m+[m[32m  padding: 12px 16px;[m
+[32m+[m[32m  transition: all 0.3s ease;[m
+[32m+[m[32m  cursor: pointer;[m
+[32m+[m[32m  position: relative;[m
+[32m+[m[32m  overflow: hidden;[m
+[32m+[m[32m  display: flex;[m
+[32m+[m[32m  align-items: center;[m
+[32m+[m[32m  gap: 12px;[m
+[32m+[m[32m  min-height: 80px;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m.skill-card:hover {[m
+[32m+[m[32m  border-color: rgba(255, 255, 255, 0.3);[m
+[32m+[m[32m  transform: translateY(-1px);[m
+[32m+[m[32m  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m.skill-card--learned {[m
+[32m+[m[32m  background: rgba(34, 197, 94, 0.1);[m
+[32m+[m[32m  border-color: rgba(34, 197, 94, 0.3);[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m.skill-card--learned:hover {[m
+[32m+[m[32m  border-color: rgba(34, 197, 94, 0.5);[m
+[32m+[m[32m  box-shadow: 0 6px 20px rgba(34, 197, 94, 0.2);[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m.skill-card--locked {[m
+[32m+[m[32m  background: rgba(63, 63, 70, 0.5);[m
+[32m+[m[32m  border-color: rgba(107, 114, 128, 0.3);[m
+[32m+[m[32m  opacity: 0.7;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m.skill-card--locked:hover {[m
+[32m+[m[32m  border-color: rgba(107, 114, 128, 0.5);[m
+[32m+[m[32m  opacity: 0.9;[m
+[32m+[m[32m}[m
+\ No newline at end of file[m
+[1mdiff --git a/components/Game/UI/SkillsPanelNew.tsx b/components/Game/UI/SkillsPanelNew.tsx[m
+[1mindex 748e3af..1767d14 100644[m
+[1m--- a/components/Game/UI/SkillsPanelNew.tsx[m
+[1m+++ b/components/Game/UI/SkillsPanelNew.tsx[m
+[36m@@ -10,7 +10,7 @@[m [mimport { BookOpen, Sword, Sparkles, Zap, Coins } from 'lucide-react'[m
+ [m
+ interface SkillsPanelNewProps {[m
+   character: Character[m
+[31m-  onUpdateCharacter: (updates: Partial<Character>) => Promise<boolean>[m
+[32m+[m[32m  onUpdateCharacter: (updates: Partial<Character>, silent?: boolean) => Promise<boolean>[m
+   isLoading: boolean[m
+ }[m
+ [m
+[36m@@ -24,6 +24,56 @@[m [mexport default function SkillsPanelNew({ character, onUpdateCharacter, isLoading[m
+   useEffect(() => {[m
+     const loadSkills = async () => {[m
+       try {[m
+[32m+[m[32m        console.log('Загружаем навыки для персонажа:', character.id, 'уровень:', character.level, 'класс:', character.class_id)[m
+[32m+[m[41m        [m
+[32m+[m[32m        // Временно используем только статические данные для отладки[m
+[32m+[m[32m        console.log('Используем статические данные навыков')[m
+[32m+[m[41m        [m
+[32m+[m[32m        // Пассивные навыки[m
+[32m+[m[32m        const passiveSkills = getAvailablePassiveSkills(character.level)[m
+[32m+[m[32m        console.log('Пассивные навыки:', passiveSkills)[m
+[32m+[m[32m        setAvailablePassiveSkills(passiveSkills)[m
+[32m+[m[41m        [m
+[32m+[m[32m        // Активные навыки - загружаем название класса по UUID[m
+[32m+[m[32m        try {[m
+[32m+[m[32m          const { data: classData, error: classError } = await (supabase as any)[m
+[32m+[m[32m            .from('character_classes')[m
+[32m+[m[32m            .select('name')[m
+[32m+[m[32m            .eq('id', character.class_id)[m
+[32m+[m[32m            .single()[m
+[32m+[m[41m          [m
+[32m+[m[32m          if (classError) {[m
+[32m+[m[32m            console.error('Ошибка загрузки класса:', classError)[m
+[32m+[m[32m          } else if (classData) {[m
+[32m+[m[32m            console.log('Название класса:', classData.name)[m
+[32m+[m[41m            [m
+[32m+[m[32m            const classMapping = {[m
+[32m+[m[32m              'Лучник': 'archer',[m
+[32m+[m[32m              'Маг': 'mage',[m[41m [m
+[32m+[m[32m              'Берсерк': 'berserker',[m
+[32m+[m[32m              'Ассасин': 'assassin'[m
+[32m+[m[32m            }[m
+[32m+[m[41m            [m
+[32m+[m[32m            const classNameKey = classMapping[classData.name as keyof typeof classMapping] as keyof typeof getAvailableSkills[m
+[32m+[m[32m            console.log('Ключ класса:', classNameKey)[m
+[32m+[m[41m            [m
+[32m+[m[32m            if (classNameKey) {[m
+[32m+[m[32m              setClassName(classNameKey)[m
+[32m+[m[32m              const activeSkills = getAvailableSkills(classNameKey, character.level)[m
+[32m+[m[32m              console.log('Активные навыки:', activeSkills)[m
+[32m+[m[32m              console.log('Количество активных навыков:', activeSkills.length)[m
+[32m+[m[32m              setAvailableActiveSkills(activeSkills)[m
+[32m+[m[32m            } else {[m
+[32m+[m[32m              console.error('Не найден ключ класса для:', classData.name)[m
+[32m+[m[32m              console.log('Доступные ключи:', Object.keys(classMapping))[m
+[32m+[m[32m            }[m
+[32m+[m[32m          }[m
+[32m+[m[32m        } catch (error) {[m
+[32m+[m[32m          console.error('Ошибка при загрузке класса:', error)[m
+[32m+[m[32m        }[m
+[32m+[m[41m        [m
+[32m+[m[32m        // TODO: Позже вернуть загрузку из БД[m
+[32m+[m[32m        /*[m
+         // Загружаем пассивные навыки из базы данных[m
+         const { data: passiveSkillsData, error: passiveError } = await (supabase as any)[m
+           .rpc('get_character_passive_skills', { p_character_id: character.id })[m
+[36m@@ -89,6 +139,7 @@[m [mexport default function SkillsPanelNew({ character, onUpdateCharacter, isLoading[m
+           }))[m
+           setAvailableActiveSkills(formattedActiveSkills)[m
+         }[m
+[32m+[m[32m        */[m
+       } catch (error) {[m
+         console.error('Ошибка загрузки навыков:', error)[m
+       }[m
+[36m@@ -105,6 +156,25 @@[m [mexport default function SkillsPanelNew({ character, onUpdateCharacter, isLoading[m
+     }[m
+ [m
+     try {[m
+[32m+[m[32m      // Обновляем золото персонажа (тихо, без показа "Обновление")[m
+[32m+[m[32m      await onUpdateCharacter({[m[41m [m
+[32m+[m[32m        gold: character.gold - skill.cost_to_learn[m[41m [m
+[32m+[m[32m      }, true) // silent = true[m
+[32m+[m[41m      [m
+[32m+[m[32m      // Обновляем локальное состояние навыков[m
+[32m+[m[32m      setAvailableActiveSkills(prevSkills =>[m[41m [m
+[32m+[m[32m        prevSkills.map(s =>[m[41m [m
+[32m+[m[32m          s.id === skill.id[m[41m [m
+[32m+[m[32m            ? { ...s, is_learned: true }[m
+[32m+[m[32m            : s[m
+[32m+[m[32m        )[m
+[32m+[m[32m      )[m
+[32m+[m[41m      [m
+[32m+[m[32m      setShowPurchaseModal(false)[m
+[32m+[m[32m      alert(`Навык "${skill.name}" изучен!`)[m
+[32m+[m[41m      [m
+[32m+[m[32m      // TODO: Позже добавить сохранение в БД[m
+[32m+[m[32m      /*[m
+       const { data, error } = await (supabase as any)[m
+         .rpc('learn_active_skill', { [m
+           p_character_id: character.id, [m
+[36m@@ -119,7 +189,7 @@[m [mexport default function SkillsPanelNew({ character, onUpdateCharacter, isLoading[m
+         // Обновляем золото персонажа[m
+         await onUpdateCharacter({ [m
+           gold: character.gold - data.gold_spent [m
+[31m-        })[m
+[32m+[m[32m        }, true) // silent = true[m
+         [m
+         // Перезагружаем навыки[m
+         const loadSkills = async () => {[m
+[36m@@ -155,6 +225,7 @@[m [mexport default function SkillsPanelNew({ character, onUpdateCharacter, isLoading[m
+       } else {[m
+         alert(data.error || 'Ошибка при изучении навыка')[m
+       }[m
+[32m+[m[32m      */[m
+     } catch (error) {[m
+       console.error('Ошибка при покупке навыка:', error)[m
+       alert('Ошибка при изучении навыка')[m
+[36m@@ -174,31 +245,12 @@[m [mexport default function SkillsPanelNew({ character, onUpdateCharacter, isLoading[m
+   }[m
+ [m
+   return ([m
+[31m-    <div className="flex-1 game-content p-6 space-y-6">[m
+[31m-      {/* Header */}[m
+[31m-      <div className="flex items-center justify-between">[m
+[31m-        <div>[m
+[31m-          <h1 className="text-2xl font-bold text-white flex items-center space-x-2">[m
+[31m-            <BookOpen className="w-6 h-6 text-blue-400" />[m
+[31m-            <span>Навыки</span>[m
+[31m-          </h1>[m
+[31m-          <p className="text-gray-400 mt-1">Развитие способностей и боевых техник</p>[m
+[31m-        </div>[m
+[31m-        [m
+[31m-        {/* Skills Stats */}[m
+[31m-        <div className="text-right">[m
+[31m-          <div className="text-sm text-gray-400">Изучено навыков:</div>[m
+[31m-          <div className="text-xl font-bold text-white">[m
+[31m-            {availablePassiveSkills.filter(s => s.is_learned).length + availableActiveSkills.filter(s => s.is_learned).length}[m
+[31m-          </div>[m
+[31m-        </div>[m
+[31m-      </div>[m
+[31m-[m
+[32m+[m[32m    <div className="flex-1 game-content p-4 space-y-4">[m
+       {/* Skills Grid */}[m
+[31m-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[calc(100vh-200px)]">[m
+[32m+[m[32m      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 h-[calc(100vh-180px)]">[m
+         [m
+         {/* Пассивные навыки */}[m
+[31m-        <div className="game-panel p-6">[m
+[32m+[m[32m        <div className="game-panel p-4">[m
+           <div className="mb-4">[m
+             <h2 className="text-xl font-bold text-white flex items-center space-x-2">[m
+               <Sparkles className="w-5 h-5 text-blue-400" />[m
+[36m@@ -207,26 +259,31 @@[m [mexport default function SkillsPanelNew({ character, onUpdateCharacter, isLoading[m
+             <p className="text-gray-400 text-sm">Автоматически изучаются по достижению уровня</p>[m
+           </div>[m
+           [m
+[31m-          <div className="h-[calc(100%-80px)] overflow-y-auto">[m
+[31m-            <div className="grid grid-cols-2 gap-3">[m
+[32m+[m[32m          <div className="h-[calc(100%-70px)] overflow-y-auto">[m
+[32m+[m[32m            <div className="flex flex-col gap-3 pt-2 pb-2">[m
+               {availablePassiveSkills.map((skill) => ([m
+                 <div [m
+                   key={skill.id}[m
+                   className={`skill-card ${skill.is_learned ? 'skill-card--learned' : 'skill-card--locked'}`}[m
+                 >[m
+[31m-                  <div className="text-center">[m
+[31m-                    <div className="text-2xl mb-2">📦</div>[m
+[31m-                    <div className="text-sm font-semibold text-white mb-1">[m
+[31m-                      {skill.name}[m
+[31m-                    </div>[m
+[31m-                    <div className="text-xs text-gray-400 mb-2">[m
+[31m-                      Уровень {skill.level_requirement}[m
+[32m+[m[32m                  {/* Иконка навыка */}[m
+[32m+[m[32m                  <div className="text-3xl flex-shrink-0">📦</div>[m
+[32m+[m[41m                  [m
+[32m+[m[32m                  {/* Информация о навыке */}[m
+[32m+[m[32m                  <div className="flex-1">[m
+[32m+[m[32m                    <div className="flex items-center justify-between mb-1">[m
+[32m+[m[32m                      <div className="text-sm font-semibold text-white">[m
+[32m+[m[32m                        {skill.name}[m
+[32m+[m[32m                      </div>[m
+[32m+[m[32m                      <div className="text-xs text-gray-400">[m
+[32m+[m[32m                        Уровень {skill.level_requirement}[m
+[32m+[m[32m                      </div>[m
+                     </div>[m
+                     [m
+[31m-                    <p className="text-sm text-gray-300 mt-1">{skill.description}</p>[m
+[32m+[m[32m                    <p className="text-sm text-gray-300 mb-2">{skill.description}</p>[m
+                     [m
+                     {/* Бонусы статов */}[m
+[31m-                    <div className="mt-2 text-xs">[m
+[32m+[m[32m                    <div className="text-xs">[m
+                       {skill.stat_bonuses && Object.entries(skill.stat_bonuses).map(([stat, value]) => ([m
+                         value && value > 0 ? ([m
+                           <span key={stat} className="mr-2 text-green-400">[m
+[36m@@ -243,7 +300,7 @@[m [mexport default function SkillsPanelNew({ character, onUpdateCharacter, isLoading[m
+         </div>[m
+ [m
+         {/* Активные навыки */}[m
+[31m-        <div className="game-panel p-6">[m
+[32m+[m[32m        <div className="game-panel p-4">[m
+           <div className="mb-4">[m
+             <h2 className="text-xl font-bold text-white flex items-center space-x-2">[m
+               <Sword className="w-5 h-5 text-yellow-400" />[m
+[36m@@ -252,27 +309,32 @@[m [mexport default function SkillsPanelNew({ character, onUpdateCharacter, isLoading[m
+             <p className="text-gray-400 text-sm">Изучаются за золото по достижению уровня</p>[m
+           </div>[m
+           [m
+[31m-          <div className="h-[calc(100%-80px)] overflow-y-auto">[m
+[31m-            <div className="grid grid-cols-2 gap-3">[m
+[32m+[m[32m          <div className="h-[calc(100%-70px)] overflow-y-auto">[m
+[32m+[m[32m            <div className="flex flex-col gap-3 pt-2 pb-2">[m
+               {availableActiveSkills.map((skill) => ([m
+                 <div [m
+                   key={skill.id}[m
+                   className={`skill-card ${skill.is_learned ? 'skill-card--learned' : 'skill-card--locked'}`}[m
+                   onClick={() => handleSkillClick(skill)}[m
+                 >[m
+[31m-                  <div className="text-center">[m
+[31m-                    <div className="text-2xl mb-2">📦</div>[m
+[31m-                    <div className="text-sm font-semibold text-white mb-1">[m
+[31m-                      {skill.name}[m
+[31m-                    </div>[m
+[31m-                    <div className="text-xs text-gray-400 mb-2">[m
+[31m-                      Уровень {skill.level_requirement}[m
+[32m+[m[32m                  {/* Иконка навыка */}[m
+[32m+[m[32m                  <div className="text-3xl flex-shrink-0">📦</div>[m
+[32m+[m[41m                  [m
+[32m+[m[32m                  {/* Информация о навыке */}[m
+[32m+[m[32m                  <div className="flex-1">[m
+[32m+[m[32m                    <div className="flex items-center justify-between mb-1">[m
+[32m+[m[32m                      <div className="text-sm font-semibold text-white">[m
+[32m+[m[32m                        {skill.name}[m
+[32m+[m[32m                      </div>[m
+[32m+[m[32m                      <div className="text-xs text-gray-400">[m
+[32m+[m[32m                        Уровень {skill.level_requirement}[m
+[32m+[m[32m                      </div>[m
+                     </div>[m
+                     [m
+[31m-                    <p className="text-sm text-gray-300 mt-1">{skill.description}</p>[m
+[32m+[m[32m                    <p className="text-sm text-gray-300 mb-2">{skill.description}</p>[m
+                     [m
+                     {/* Информация о навыке */}[m
+[31m-                    <div className="mt-2 text-xs space-y-1">[m
+[32m+[m[32m                    <div className="flex items-center gap-4 text-xs">[m
+                       <div className="text-blue-400">[m
+                         Урон: {skill.base_damage}[m
+                       </div>[m
+[36m@@ -283,17 +345,17 @@[m [mexport default function SkillsPanelNew({ character, onUpdateCharacter, isLoading[m
+                         Кулдаун: {skill.cooldown}с[m
+                       </div>[m
+                     </div>[m
+[31m-                    [m
+[31m-                    {/* Стоимость изучения */}[m
+[31m-                    {!skill.is_learned && ([m
+[31m-                      <div className="mt-2 pt-2 border-t border-white/10">[m
+[31m-                        <div className="text-xs text-yellow-400 flex items-center justify-center space-x-1">[m
+[31m-                          <span>💰</span>[m
+[31m-                          <span>{skill.cost_to_learn} золота</span>[m
+[31m-                        </div>[m
+[31m-                      </div>[m
+[31m-                    )}[m
+                   </div>[m
+[32m+[m[41m                  [m
+[32m+[m[32m                  {/* Стоимость изучения */}[m
+[32m+[m[32m                  {!skill.is_learned && ([m
+[32m+[m[32m                    <div className="flex-shrink-0">[m
+[32m+[m[32m                      <div className="text-xs text-yellow-400 flex items-center space-x-1">[m
+[32m+[m[32m                        <span>💰</span>[m
+[32m+[m[32m                        <span>{skill.cost_to_learn}</span>[m
+[32m+[m[32m                      </div>[m
+[32m+[m[32m                    </div>[m
+[32m+[m[32m                  )}[m
+                 </div>[m
+               ))}[m
+             </div>[m
+[36m@@ -304,7 +366,7 @@[m [mexport default function SkillsPanelNew({ character, onUpdateCharacter, isLoading[m
+       {/* Модальное окно покупки навыка */}[m
+       {showPurchaseModal && selectedSkill && ([m
+         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">[m
+[31m-          <div className="game-panel p-6 max-w-md w-full mx-4">[m
+[32m+[m[32m          <div className="game-panel p-4 max-w-md w-full mx-4">[m
+             <h3 className="text-xl font-bold text-white mb-4">[m
+               Изучить навык "{selectedSkill.name}"[m
+             </h3>[m

@@ -173,8 +173,7 @@ export default function SkillsPanelNew({ character, onUpdateCharacter, isLoading
       setShowPurchaseModal(false)
       alert(`Навык "${skill.name}" изучен!`)
       
-      // TODO: Позже добавить сохранение в БД
-      /*
+      // Сохраняем в БД
       const { data, error } = await (supabase as any)
         .rpc('learn_active_skill', { 
           p_character_id: character.id, 
@@ -182,50 +181,20 @@ export default function SkillsPanelNew({ character, onUpdateCharacter, isLoading
         })
 
       if (error) {
-        throw error
+        console.error('Ошибка при изучении навыка:', error)
+        alert('Ошибка при изучении навыка: ' + error.message)
+        return
       }
 
-      if (data.success) {
-        // Обновляем золото персонажа
-        await onUpdateCharacter({ 
-          gold: character.gold - data.gold_spent 
-        }, true) // silent = true
-        
-        // Перезагружаем навыки
-        const loadSkills = async () => {
-          const { data: activeSkillsData } = await (supabase as any)
-            .rpc('get_character_active_skills', { p_character_id: character.id })
-          
-          if (activeSkillsData) {
-            const formattedActiveSkills = activeSkillsData.map((skill: any) => ({
-              id: skill.skill_key,
-              name: skill.name,
-              description: skill.description,
-              level_requirement: skill.level_requirement,
-              icon: skill.icon,
-              skill_type: skill.skill_type,
-              damage_type: skill.damage_type,
-              base_damage: skill.base_damage,
-              mana_cost: skill.mana_cost,
-              cooldown: skill.cooldown,
-              scaling_stat: skill.scaling_stat,
-              scaling_ratio: skill.scaling_ratio,
-              class_requirements: [className],
-              cost_to_learn: skill.cost_to_learn,
-              is_learned: skill.is_learned,
-              nodes: []
-            }))
-            setAvailableActiveSkills(formattedActiveSkills)
-          }
-        }
-        
-        loadSkills()
-        setShowPurchaseModal(false)
-        alert(`Навык "${skill.name}" изучен!`)
+      console.log('Результат изучения навыка:', data)
+
+      if (data && data.success) {
+        // Навык успешно изучен в БД
+        console.log('Навык успешно изучен в базе данных')
       } else {
-        alert(data.error || 'Ошибка при изучении навыка')
+        console.error('Ошибка изучения в БД:', data?.error)
+        alert('Ошибка при сохранении в БД: ' + (data?.error || 'Неизвестная ошибка'))
       }
-      */
     } catch (error) {
       console.error('Ошибка при покупке навыка:', error)
       alert('Ошибка при изучении навыка')
