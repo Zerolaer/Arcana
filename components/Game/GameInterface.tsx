@@ -14,7 +14,7 @@ import InventoryPanelNew from './UI/InventoryPanelNew'
 import LocationPanel from './UI/LocationPanel'
 import WorldMapNew from './World/WorldMapNew'
 import SkillsPanel from './UI/SkillsPanel'
-import RegenerationSystem from './UI/RegenerationSystem'
+import RegenerationSystemSimple from './UI/RegenerationSystemSimple'
 import AdminPanel from './Admin/AdminPanel'
 
 interface GameInterfaceProps {
@@ -247,7 +247,7 @@ export default function GameInterface({ character: initialCharacter, user, onLog
       </div>
 
       {/* Regeneration System */}
-      <RegenerationSystem 
+      <RegenerationSystemSimple 
         character={character}
         onUpdateCharacter={updateCharacterData}
         isInCombat={character.is_in_combat}

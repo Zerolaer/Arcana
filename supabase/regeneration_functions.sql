@@ -28,15 +28,15 @@ BEGIN
         );
     END IF;
 
-    -- Базовая регенерация: 1.0 в секунду + бонусы от характеристик
-    -- HP регенерация: 1.0 + (vitality * 0.05) + (level * 0.02)
-    v_base_health_regen := 1.0 + (v_character.vitality * 0.05) + (v_character.level * 0.02);
+    -- Базовая регенерация: 1.0 в секунду + бонусы от новых характеристик
+    -- HP регенерация: 1.0 + (endurance * 0.05) + (level * 0.02)
+    v_base_health_regen := 1.0 + (v_character.endurance * 0.05) + (v_character.level * 0.02);
     
-    -- MP регенерация: 1.0 + (energy * 0.05) + (intelligence * 0.02) + (level * 0.01)
-    v_base_mana_regen := 1.0 + (v_character.energy * 0.05) + (v_character.intelligence * 0.02) + (v_character.level * 0.01);
+    -- MP регенерация: 1.0 + (intelligence * 0.05) + (level * 0.01)
+    v_base_mana_regen := 1.0 + (v_character.intelligence * 0.05) + (v_character.level * 0.01);
     
-    -- Stamina регенерация: 1.0 + (dexterity * 0.08) + (vitality * 0.03) + (level * 0.02)
-    v_base_stamina_regen := 1.0 + (v_character.dexterity * 0.08) + (v_character.vitality * 0.03) + (v_character.level * 0.02);
+    -- Stamina регенерация: 1.0 + (agility * 0.08) + (endurance * 0.03) + (level * 0.02)
+    v_base_stamina_regen := 1.0 + (v_character.agility * 0.08) + (v_character.endurance * 0.03) + (v_character.level * 0.02);
 
     -- Получаем бонусы от экипировки
     SELECT get_character_equipment(p_character_id) INTO v_equipment;
