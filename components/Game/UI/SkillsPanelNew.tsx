@@ -190,10 +190,45 @@ export default function SkillsPanelNew({ character, onUpdateCharacter, isLoading
 
       if (data && data.success) {
         // Навык успешно изучен в БД
-        console.log('Навык успешно изучен в базе данных')
+        console.log('Навык успешно изучен в базе данных:', data.skill_learned)
+        
+        if (data.already_learned) {
+          console.log('Навык уже был изучен ранее')
+        }
+        
+        // Перезагружаем навыки из БД
+        const { data: skillsData } = await (supabase as any)
+          .rpc('get_character_active_skills', { p_character_id: character.id })
+        
+        if (skillsData) {
+          const formattedSkills = skillsData.map((skillData: any) => ({
+            id: skillData.skill_key,
+            name: skillData.name,
+            description: skillData.description,
+            level_requirement: skillData.level_requirement,
+            icon: '⚔️',
+            skill_type: 'attack',
+            damage_type: 'physical',
+            base_damage: 0,
+            mana_cost: 0,
+            cooldown: 0,
+            scaling_stat: 'strength' as const,
+            scaling_ratio: 1.0,
+            class_requirements: [className],
+            cost_to_learn: skillData.cost_to_learn,
+            is_learned: skillData.is_learned,
+            nodes: []
+          }))
+          setAvailableActiveSkills(formattedSkills)
+        }
       } else {
         console.error('Ошибка изучения в БД:', data?.error)
         alert('Ошибка при сохранении в БД: ' + (data?.error || 'Неизвестная ошибка'))
+        
+        // Возвращаем золото если навык не изучился
+        await onUpdateCharacter({ 
+          gold: character.gold + skill.cost_to_learn 
+        }, true)
       }
     } catch (error) {
       console.error('Ошибка при покупке навыка:', error)
