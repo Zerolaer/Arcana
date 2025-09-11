@@ -124,41 +124,7 @@ INSERT INTO mob_spawns (spot_id, mob_id, spawn_rate, max_concurrent) VALUES
 ((SELECT id FROM farming_spots WHERE name = 'Башня мага'), (SELECT id FROM mobs WHERE name = 'Некромант'), 0.6, 1),
 ((SELECT id FROM farming_spots WHERE name = 'Башня мага'), (SELECT id FROM mobs WHERE name = 'Древний лич'), 0.3, 1);
 
--- Items
-INSERT INTO items (name, description, item_type, slot, rarity, level_requirement, strength_bonus, dexterity_bonus, intelligence_bonus, vitality_bonus, energy_bonus, luck_bonus, attack_damage, defense, vendor_price, stack_size, icon) VALUES
--- Common weapons
-('Деревянный меч', 'Простой меч для начинающих воинов', 'weapon', 'weapon', 'common', 1, 2, 0, 0, 0, 0, 0, 15, 0, 50, 1, '🗡️'),
-('Охотничий лук', 'Базовый лук для лучников', 'weapon', 'weapon', 'common', 1, 0, 3, 0, 0, 0, 1, 12, 0, 60, 1, '🏹'),
-('Посох новичка', 'Простой посох для магов', 'weapon', 'weapon', 'common', 1, 0, 0, 4, 0, 2, 0, 8, 0, 70, 1, '🪄'),
-
--- Common armor
-('Кожаная броня', 'Легкая броня из кожи', 'armor', 'chest', 'common', 1, 0, 1, 0, 2, 0, 0, 0, 8, 80, 1, '🦺'),
-('Тканевые штаны', 'Простые штаны из ткани', 'armor', 'legs', 'common', 1, 0, 0, 1, 1, 1, 0, 0, 3, 30, 1, '👖'),
-('Кожаные сапоги', 'Удобные сапоги для путешествий', 'armor', 'boots', 'common', 1, 0, 2, 0, 0, 0, 1, 0, 2, 25, 1, '🥾'),
-
--- Uncommon items
-('Стальной меч', 'Прочный меч из закаленной стали', 'weapon', 'weapon', 'uncommon', 10, 8, 2, 0, 0, 0, 0, 35, 0, 200, 1, '⚔️'),
-('Эльфийский лук', 'Элегантный лук эльфийской работы', 'weapon', 'weapon', 'uncommon', 12, 2, 10, 0, 0, 0, 3, 28, 0, 250, 1, '🏹'),
-('Кольчуга', 'Прочная кольчужная броня', 'armor', 'chest', 'uncommon', 8, 3, 0, 0, 5, 0, 0, 0, 18, 180, 1, '🛡️'),
-
--- Rare items
-('Пламенный клинок', 'Меч, пылающий магическим огнем', 'weapon', 'weapon', 'rare', 20, 15, 5, 3, 0, 0, 0, 55, 0, 500, 1, '🔥'),
-('Лунный лук', 'Мистический лук, светящийся лунным светом', 'weapon', 'weapon', 'rare', 22, 3, 18, 5, 0, 0, 8, 48, 0, 600, 1, '🌙'),
-('Мантия архимага', 'Роскошная мантия с мощными чарами', 'armor', 'chest', 'rare', 25, 0, 2, 20, 8, 15, 5, 0, 15, 750, 1, '🧙‍♂️'),
-
--- Epic items
-('Драконий клинок', 'Легендарный меч, выкованный из драконьей кости', 'weapon', 'weapon', 'epic', 40, 25, 8, 5, 5, 0, 5, 85, 0, 1500, 1, '🐉'),
-('Коготь теней', 'Мистическое оружие убийц', 'weapon', 'weapon', 'epic', 35, 8, 30, 10, 0, 5, 15, 70, 0, 1200, 1, '🖤'),
-
--- Consumables
-('Зелье здоровья', 'Восстанавливает 100 здоровья', 'consumable', NULL, 'common', 1, 0, 0, 0, 0, 0, 0, 0, 0, 20, 50, '🧪'),
-('Зелье маны', 'Восстанавливает 50 маны', 'consumable', NULL, 'common', 1, 0, 0, 0, 0, 0, 0, 0, 0, 15, 50, '💙'),
-('Свиток телепорта', 'Мгновенно переносит в город', 'consumable', NULL, 'uncommon', 5, 0, 0, 0, 0, 0, 0, 0, 0, 100, 10, '📜'),
-
--- Materials
-('Железная руда', 'Базовый материал для крафта', 'material', NULL, 'common', 1, 0, 0, 0, 0, 0, 0, 0, 0, 5, 100, '⛏️'),
-('Драгоценный камень', 'Редкий материал для улучшений', 'material', NULL, 'rare', 20, 0, 0, 0, 0, 0, 0, 0, 0, 200, 20, '💎'),
-('Сущность тьмы', 'Мистический материал темной магии', 'material', NULL, 'epic', 50, 0, 0, 0, 0, 0, 0, 0, 0, 1000, 5, '🌑');
+-- Items - УДАЛЕНЫ, будем создавать заново
 
 -- Create loot tables
 INSERT INTO loot_tables (name) VALUES
@@ -185,53 +151,4 @@ UPDATE mobs SET loot_table_id = (SELECT id FROM loot_tables WHERE name = 'Ске
 UPDATE mobs SET loot_table_id = (SELECT id FROM loot_tables WHERE name = 'Некромант лут') WHERE name = 'Некромант';
 UPDATE mobs SET loot_table_id = (SELECT id FROM loot_tables WHERE name = 'Лич лут') WHERE name = 'Древний лич';
 
--- Loot drops
-INSERT INTO loot_drops (loot_table_id, item_id, drop_rate, quantity_min, quantity_max) VALUES
--- Слайм лут (низкий уровень)
-((SELECT id FROM loot_tables WHERE name = 'Слайм лут'), (SELECT id FROM items WHERE name = 'Зелье здоровья'), 30.0, 1, 2),
-((SELECT id FROM loot_tables WHERE name = 'Слайм лут'), (SELECT id FROM items WHERE name = 'Железная руда'), 20.0, 1, 3),
-
--- Волк лут
-((SELECT id FROM loot_tables WHERE name = 'Волк лут'), (SELECT id FROM items WHERE name = 'Зелье здоровья'), 25.0, 1, 1),
-((SELECT id FROM loot_tables WHERE name = 'Волк лут'), (SELECT id FROM items WHERE name = 'Кожаные сапоги'), 15.0, 1, 1),
-((SELECT id FROM loot_tables WHERE name = 'Волк лут'), (SELECT id FROM items WHERE name = 'Железная руда'), 35.0, 2, 4),
-
--- Паук лут
-((SELECT id FROM loot_tables WHERE name = 'Паук лут'), (SELECT id FROM items WHERE name = 'Зелье маны'), 20.0, 1, 2),
-((SELECT id FROM loot_tables WHERE name = 'Паук лут'), (SELECT id FROM items WHERE name = 'Деревянный меч'), 10.0, 1, 1),
-
--- Орк лут (лучшая добыча для новичков)
-((SELECT id FROM loot_tables WHERE name = 'Орк лут'), (SELECT id FROM items WHERE name = 'Стальной меч'), 8.0, 1, 1),
-((SELECT id FROM loot_tables WHERE name = 'Орк лут'), (SELECT id FROM items WHERE name = 'Кольчуга'), 5.0, 1, 1),
-((SELECT id FROM loot_tables WHERE name = 'Орк лут'), (SELECT id FROM items WHERE name = 'Зелье здоровья'), 40.0, 2, 5),
-((SELECT id FROM loot_tables WHERE name = 'Орк лут'), (SELECT id FROM items WHERE name = 'Железная руда'), 50.0, 3, 8),
-
--- Летучая мышь лут
-((SELECT id FROM loot_tables WHERE name = 'Летучая мышь лут'), (SELECT id FROM items WHERE name = 'Свиток телепорта'), 12.0, 1, 1),
-((SELECT id FROM loot_tables WHERE name = 'Летучая мышь лут'), (SELECT id FROM items WHERE name = 'Зелье маны'), 30.0, 1, 3),
-
--- Голем лут (хорошие материалы)
-((SELECT id FROM loot_tables WHERE name = 'Голем лут'), (SELECT id FROM items WHERE name = 'Драгоценный камень'), 15.0, 1, 2),
-((SELECT id FROM loot_tables WHERE name = 'Голем лут'), (SELECT id FROM items WHERE name = 'Железная руда'), 70.0, 5, 15),
-((SELECT id FROM loot_tables WHERE name = 'Голем лут'), (SELECT id FROM items WHERE name = 'Эльфийский лук'), 3.0, 1, 1),
-
--- Убийца лут (редкое оружие)
-((SELECT id FROM loot_tables WHERE name = 'Убийца лут'), (SELECT id FROM items WHERE name = 'Коготь теней'), 2.0, 1, 1),
-((SELECT id FROM loot_tables WHERE name = 'Убийца лут'), (SELECT id FROM items WHERE name = 'Сущность тьмы'), 8.0, 1, 2),
-((SELECT id FROM loot_tables WHERE name = 'Убийца лут'), (SELECT id FROM items WHERE name = 'Зелье здоровья'), 45.0, 3, 6),
-
--- Скелет лут
-((SELECT id FROM loot_tables WHERE name = 'Скелет лут'), (SELECT id FROM items WHERE name = 'Пламенный клинок'), 4.0, 1, 1),
-((SELECT id FROM loot_tables WHERE name = 'Скелет лут'), (SELECT id FROM items WHERE name = 'Драгоценный камень'), 25.0, 1, 3),
-((SELECT id FROM loot_tables WHERE name = 'Скелет лут'), (SELECT id FROM items WHERE name = 'Сущность тьмы'), 15.0, 1, 2),
-
--- Некромант лут (магические предметы)
-((SELECT id FROM loot_tables WHERE name = 'Некромант лут'), (SELECT id FROM items WHERE name = 'Мантия архимага'), 6.0, 1, 1),
-((SELECT id FROM loot_tables WHERE name = 'Некромант лут'), (SELECT id FROM items WHERE name = 'Сущность тьмы'), 40.0, 2, 5),
-((SELECT id FROM loot_tables WHERE name = 'Некромант лут'), (SELECT id FROM items WHERE name = 'Зелье маны'), 60.0, 5, 10),
-
--- Лич лут (лучшие награды)
-((SELECT id FROM loot_tables WHERE name = 'Лич лут'), (SELECT id FROM items WHERE name = 'Драконий клинок'), 1.0, 1, 1),
-((SELECT id FROM loot_tables WHERE name = 'Лич лут'), (SELECT id FROM items WHERE name = 'Мантия архимага'), 8.0, 1, 1),
-((SELECT id FROM loot_tables WHERE name = 'Лич лут'), (SELECT id FROM items WHERE name = 'Сущность тьмы'), 60.0, 3, 8),
-((SELECT id FROM loot_tables WHERE name = 'Лич лут'), (SELECT id FROM items WHERE name = 'Драгоценный камень'), 45.0, 2, 6);
+-- Loot drops - УДАЛЕНЫ, будем создавать заново

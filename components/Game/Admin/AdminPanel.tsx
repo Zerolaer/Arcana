@@ -14,16 +14,23 @@ interface AdminPanelProps {
 
 interface GameItem {
   id: string;
+  item_key: string;
   name: string;
+  description: string;
   icon: string;
-  grade_id: string;
-  equipment_slot?: string;
+  rarity: string;
+  type: string;
+  subtype?: string;
+  level_requirement: number;
+  class_requirement?: string;
+  base_value: number;
+  stackable: boolean;
+  max_stack: number;
 }
 
 const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, character, onCharacterUpdate }) => {
   const [availableItems, setAvailableItems] = useState<GameItem[]>([]);
   const [selectedItem, setSelectedItem] = useState<string>('');
-  const [itemQuality, setItemQuality] = useState<number>(75);
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState<string>('');
 
@@ -39,8 +46,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, character, onC
       console.log('🔍 Загружаем доступные предметы...');
       
       const { data, error } = await (supabase as any)
-        .from('items_new')
-        .select('id, name, icon, grade_id, equipment_slot')
+        .from('items')
+        .select('id, item_key, name, description, icon, rarity, type, subtype, level_requirement, class_requirement, base_value, stackable, max_stack')
         .order('name');
 
       if (error) {
@@ -99,8 +106,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, character, onC
         character_id: character.id,
         item_id: selectedItem,
         slot_position: freeSlot,
-        quality: itemQuality,
-        stack_size: 1
+        quantity: 1
       };
 
       console.log('💾 Данные для вставки:', insertData);
@@ -283,9 +289,21 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, character, onC
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Добавление предметов */}
           <div className="bg-gray-800 p-4 rounded-lg">
-            <h3 className="text-lg font-semibold text-white mb-4">📦 Добавить предмет</h3>
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold text-white">📦 Добавить предмет</h3>
+              <button
+                onClick={loadAvailableItems}
+                disabled={isLoading}
+                className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 text-white px-3 py-1 rounded text-sm"
+              >
+                🔄 Обновить
+              </button>
+            </div>
             
             <div className="space-y-3">
+              <div className="text-sm text-gray-400">
+                Доступно предметов: {availableItems.length}
+              </div>
               <div>
                 <label className="block text-sm text-gray-300 mb-1">Предмет:</label>
                 <select
@@ -296,25 +314,12 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, character, onC
                   <option value="">Выберите предмет</option>
                   {availableItems.map(item => (
                     <option key={item.id} value={item.id}>
-                      {item.icon} {item.name}
+                      {item.icon} {item.name} ({item.rarity}) - Ур.{item.level_requirement} - {item.base_value}💰
                     </option>
                   ))}
                 </select>
               </div>
 
-              <div>
-                <label className="block text-sm text-gray-300 mb-1">
-                  Качество: {itemQuality}%
-                </label>
-                <input
-                  type="range"
-                  min="1"
-                  max="100"
-                  value={itemQuality}
-                  onChange={(e) => setItemQuality(Number(e.target.value))}
-                  className="w-full"
-                />
-              </div>
 
               <button
                 onClick={addItemToInventory}
@@ -380,7 +385,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, character, onC
             <h3 className="text-lg font-semibold text-white mb-4">⚡ Статы</h3>
             
             <div className="space-y-2">
-              {['strength', 'agility', 'intelligence', 'vitality', 'luck'].map(stat => (
+              {['agility', 'precision', 'evasion', 'intelligence', 'spell_power', 'resistance', 'strength', 'endurance', 'armor', 'stealth'].map(stat => (
                 <div key={stat} className="flex items-center gap-2">
                   <span className="text-gray-300 w-20 text-sm capitalize">{stat}:</span>
                   <span className="text-white w-8">{character[stat] || 0}</span>
