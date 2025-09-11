@@ -9,14 +9,11 @@ const createMobs = (baseLevel: number): Mob[] => [
     health: baseLevel * 20,
     attack: baseLevel * 3,
     defense: baseLevel * 2,
-    experience_reward: Math.max(5, baseLevel * 2),
+    experience_reward: Math.max(12, baseLevel * 8 + Math.floor(baseLevel * baseLevel * 0.5)),
     gold_reward: baseLevel * 2,
     icon: '👹',
     rarity: 'common',
-    loot_table: [
-      { item_id: 'iron_ore', drop_rate: 30, quantity_min: 1, quantity_max: 3 },
-      { item_id: 'health_potion', drop_rate: 15, quantity_min: 1, quantity_max: 2 }
-    ]
+    loot_table: [] // Нет предметов в игре
   },
   {
     id: `orc_${baseLevel}`,
@@ -25,14 +22,11 @@ const createMobs = (baseLevel: number): Mob[] => [
     health: (baseLevel + 2) * 25,
     attack: (baseLevel + 2) * 4,
     defense: (baseLevel + 2) * 3,
-    experience_reward: (baseLevel + 2) * 15,
+    experience_reward: Math.max(26, (baseLevel + 2) * 8 + Math.floor((baseLevel + 2) * (baseLevel + 2) * 0.5)),
     gold_reward: (baseLevel + 2) * 3,
     icon: '🧌',
     rarity: 'uncommon',
-    loot_table: [
-      { item_id: 'iron_sword', drop_rate: 10, quantity_min: 1, quantity_max: 1 },
-      { item_id: 'leather_armor', drop_rate: 20, quantity_min: 1, quantity_max: 1 }
-    ]
+    loot_table: [] // Нет предметов в игре
   },
   {
     id: `troll_${baseLevel}`,
@@ -41,14 +35,11 @@ const createMobs = (baseLevel: number): Mob[] => [
     health: (baseLevel + 5) * 40,
     attack: (baseLevel + 5) * 6,
     defense: (baseLevel + 5) * 5,
-    experience_reward: (baseLevel + 5) * 25,
+    experience_reward: Math.max(48, (baseLevel + 5) * 8 + Math.floor((baseLevel + 5) * (baseLevel + 5) * 0.5)),
     gold_reward: (baseLevel + 5) * 5,
     icon: '🧟',
     rarity: 'rare',
-    loot_table: [
-      { item_id: 'steel_sword', drop_rate: 15, quantity_min: 1, quantity_max: 1 },
-      { item_id: 'health_potion', drop_rate: 40, quantity_min: 2, quantity_max: 5 }
-    ]
+    loot_table: [] // Нет предметов в игре
   }
 ]
 
