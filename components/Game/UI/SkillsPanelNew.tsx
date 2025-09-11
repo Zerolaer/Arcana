@@ -97,9 +97,9 @@ export default function SkillsPanelNew({ character, onUpdateCharacter, isLoading
           setAvailablePassiveSkills(formattedPassiveSkills)
         }
 
-        // Загружаем активные навыки из базы данных
+        // Загружаем активные навыки из базы данных (только для класса персонажа)
         const { data: activeSkillsData, error: activeError } = await (supabase as any)
-          .rpc('get_character_active_skills', { p_character_id: character.id })
+          .rpc('get_character_class_skills', { p_character_id: character.id })
         
         if (activeError) {
           console.error('Ошибка загрузки активных навыков:', activeError)
@@ -118,28 +118,31 @@ export default function SkillsPanelNew({ character, onUpdateCharacter, isLoading
             setAvailableActiveSkills(activeSkills)
           }
         } else {
+          console.log('Активные навыки из БД:', activeSkillsData)
+          
           // Преобразуем данные из БД в формат компонента
           const formattedActiveSkills = activeSkillsData.map((skill: any) => ({
             id: skill.skill_key,
             name: skill.name,
             description: skill.description,
             level_requirement: skill.level_requirement,
-            icon: skill.icon,
-            skill_type: skill.skill_type,
-            damage_type: skill.damage_type,
-            base_damage: skill.base_damage,
-            mana_cost: skill.mana_cost,
-            cooldown: skill.cooldown,
-            scaling_stat: skill.scaling_stat,
-            scaling_ratio: skill.scaling_ratio,
-            class_requirements: [className], // Упрощенно
+            icon: '⚔️',
+            skill_type: 'attack',
+            damage_type: 'physical',
+            base_damage: 0,
+            mana_cost: 0,
+            cooldown: 0,
+            scaling_stat: 'strength' as const,
+            scaling_ratio: 1.0,
+            class_requirements: [className],
             cost_to_learn: skill.cost_to_learn,
             is_learned: skill.is_learned,
             nodes: []
           }))
+          
+          console.log('Форматированные активные навыки:', formattedActiveSkills)
           setAvailableActiveSkills(formattedActiveSkills)
         }
-        */
       } catch (error) {
         console.error('Ошибка загрузки навыков:', error)
       }
@@ -196,9 +199,9 @@ export default function SkillsPanelNew({ character, onUpdateCharacter, isLoading
           console.log('Навык уже был изучен ранее')
         }
         
-        // Перезагружаем навыки из БД
+        // Перезагружаем навыки из БД (только для класса персонажа)
         const { data: skillsData } = await (supabase as any)
-          .rpc('get_character_active_skills', { p_character_id: character.id })
+          .rpc('get_character_class_skills', { p_character_id: character.id })
         
         if (skillsData) {
           const formattedSkills = skillsData.map((skillData: any) => ({

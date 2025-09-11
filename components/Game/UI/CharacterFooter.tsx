@@ -66,10 +66,10 @@ export default function CharacterFooter({ character }: CharacterFooterProps) {
                 <div className="absolute inset-0 bg-gradient-to-r from-red-500/30 via-transparent to-transparent animate-pulse" />
               </div>
               <div className="text-xs text-gray-300 mt-1 flex items-center justify-between">
-                <span>{character.health} / {calculatedStats.max_health}</span>
+                <span>{Math.floor(character.health)} / {Math.floor(calculatedStats.max_health)}</span>
                 {calculatedStats.health_regen && character.health < calculatedStats.max_health && !character.is_in_combat && (
                   <span className="text-green-400 text-xs">
-                    +{calculatedStats.health_regen.toFixed(1)}/сек
+                    +{Math.floor(calculatedStats.health_regen)}/сек
                   </span>
                 )}
               </div>
@@ -88,10 +88,10 @@ export default function CharacterFooter({ character }: CharacterFooterProps) {
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-500/30 via-transparent to-transparent animate-pulse" />
               </div>
               <div className="text-xs text-gray-300 mt-1 flex items-center justify-between">
-                <span>{character.mana} / {calculatedStats.max_mana}</span>
+                <span>{Math.floor(character.mana)} / {Math.floor(calculatedStats.max_mana)}</span>
                 {calculatedStats.mana_regen && character.mana < calculatedStats.max_mana && !character.is_in_combat && (
                   <span className="text-blue-400 text-xs">
-                    +{calculatedStats.mana_regen.toFixed(1)}/сек
+                    +{Math.floor(calculatedStats.mana_regen)}/сек
                   </span>
                 )}
               </div>
@@ -106,7 +106,7 @@ export default function CharacterFooter({ character }: CharacterFooterProps) {
             <Coins className="w-5 h-5 text-yellow-400" />
             <div className="flex flex-col items-end">
               <span className="text-lg font-bold text-yellow-400">
-                {character.gold.toLocaleString()}
+                {Math.floor(character.gold).toLocaleString()}
               </span>
               <span className="text-xs text-yellow-500">Золото</span>
             </div>
