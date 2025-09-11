@@ -6,7 +6,7 @@ import { calculateCharacterStats } from '@/lib/characterStats'
 
 interface RegenerationSystemSimpleProps {
   character: Character
-  onUpdateCharacter: (updates: Partial<Character>) => Promise<boolean>
+  onUpdateCharacter: (updates: Partial<Character>, silent?: boolean) => Promise<boolean>
   isInCombat?: boolean
 }
 
@@ -72,7 +72,7 @@ export default function RegenerationSystemSimple({
       // Обновляем только если есть изменения
       if (Object.keys(updates).length > 0) {
         isUpdating.current = true
-        await onUpdateCharacter(updates)
+        await onUpdateCharacter(updates, true) // Тихое обновление
         isUpdating.current = false
       }
 
