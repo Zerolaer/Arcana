@@ -158,11 +158,27 @@ export default function CombatPanel({ character, onUpdateCharacter, isLoading }:
     let experienceGained = 0
     let goldGained = 0
     let damageTaken = 0
+    let droppedItems: string[] = []
     
     if (victory) {
       experienceGained = Math.floor(mob.experience_reward * (1 + Math.random() * 0.2))
       goldGained = Math.floor(mob.gold_reward * (1 + Math.random() * 0.3))
       damageTaken = Math.floor(mob.attack_damage * 0.3)
+      
+      // Дроп предметов
+      try {
+        const { data: lootData, error: lootError } = await (supabase as any).rpc('process_mob_loot', {
+          p_character_id: character.id,
+          p_mob_id: mob.id,
+          p_character_level: character.level
+        })
+        
+        if (!lootError && lootData?.success) {
+          droppedItems = lootData.items_dropped?.map((item: any) => item.item_name) || []
+        }
+      } catch (error) {
+        console.error('Error processing loot:', error)
+      }
     } else {
       damageTaken = Math.floor(mob.attack_damage * 0.8)
     }
@@ -204,7 +220,11 @@ export default function CombatPanel({ character, onUpdateCharacter, isLoading }:
 
     // Show results
     if (victory) {
-      toast.success(`Победа! +${experienceGained} опыта, +${goldGained} золота`)
+      let message = `Победа! +${experienceGained} опыта, +${goldGained} золота`
+      if (droppedItems.length > 0) {
+        message += `\nПолучено: ${droppedItems.join(', ')}`
+      }
+      toast.success(message)
       if (levelUp) {
         toast.success(`Поздравляем! Вы достигли ${newLevel} уровня!`, { duration: 5000 })
       }
@@ -220,7 +240,7 @@ export default function CombatPanel({ character, onUpdateCharacter, isLoading }:
       victory,
       experience_gained: experienceGained,
       gold_gained: goldGained,
-      items_dropped: [],
+      items_dropped: droppedItems,
       duration: 3,
       timestamp: new Date().toISOString()
     }
