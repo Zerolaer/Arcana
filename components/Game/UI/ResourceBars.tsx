@@ -33,15 +33,6 @@ export default function ResourceBars({ character, showLabels = true, className =
       bgColor: 'bg-blue-500/20',
       textColor: 'text-blue-400'
     },
-    {
-      name: 'Выносливость',
-      icon: <Activity className="w-4 h-4 text-green-500" />,
-      current: character.stamina,
-      max: calculatedStats.max_stamina,
-      color: 'from-green-500 to-green-600',
-      bgColor: 'bg-green-500/20',
-      textColor: 'text-green-400'
-    }
   ]
 
   const getPercentage = (current: number, max: number) => {

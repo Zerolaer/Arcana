@@ -261,14 +261,14 @@ export default function CombatPanel({ character, onUpdateCharacter, isLoading }:
     let newLevel = character.level
     let newExperienceToNext = character.experience_to_next
     let newStatPoints = character.stat_points
-    let newSkillPoints = character.skill_points
+    let newSkillPoints = 0 // Убрали skill_points из новой системы
 
     if (newExperience >= character.experience_to_next) {
       levelUp = true
       newLevel = character.level + 1
       newExperienceToNext = Math.floor(100 * Math.pow(newLevel + 1, 2.2))
       newStatPoints = character.stat_points + 5
-      newSkillPoints = character.skill_points + 1
+      newSkillPoints = 0 // Убрали skill_points из новой системы
     }
 
     const updates = {

@@ -267,7 +267,7 @@ export default function GameLobby({ user, onCharacterCreated, onLogout }: GameLo
                         {characterClass.primary_stats.map((stat) => (
                           <div key={stat} className="flex items-center space-x-1">
                             {getPrimaryStatIcon(stat)}
-                            <span className="text-dark-300">{characterClass[`base_${stat}`] || 0}</span>
+                            <span className="text-dark-300">{(characterClass as any)[`base_${stat}`] || 0}</span>
                           </div>
                         ))}
                       </div>
@@ -316,11 +316,11 @@ export default function GameLobby({ user, onCharacterCreated, onLogout }: GameLo
                   <div className="space-y-2">
                     {[
                       { name: 'Сила', value: selectedClass.base_strength, icon: <Sword className="w-3 h-3 text-red-400" />, color: 'red' },
-                      { name: 'Ловкость', value: selectedClass.base_dexterity, icon: <Zap className="w-3 h-3 text-yellow-400" />, color: 'yellow' },
+                      { name: 'Ловкость', value: selectedClass.base_agility, icon: <Zap className="w-3 h-3 text-yellow-400" />, color: 'yellow' },
                       { name: 'Интеллект', value: selectedClass.base_intelligence, icon: <Eye className="w-3 h-3 text-blue-400" />, color: 'blue' },
-                      { name: 'Живучесть', value: selectedClass.base_vitality, icon: <Shield className="w-3 h-3 text-green-400" />, color: 'green' },
-                      { name: 'Энергия', value: selectedClass.base_energy, icon: <Star className="w-3 h-3 text-purple-400" />, color: 'purple' },
-                      { name: 'Удача', value: selectedClass.base_luck, icon: <Crown className="w-3 h-3 text-gold-400" />, color: 'gold' }
+                      { name: 'Выносливость', value: selectedClass.base_endurance, icon: <Shield className="w-3 h-3 text-green-400" />, color: 'green' },
+                      { name: 'Сила заклинаний', value: selectedClass.base_spell_power, icon: <Star className="w-3 h-3 text-purple-400" />, color: 'purple' },
+                      { name: 'Сопротивление', value: selectedClass.base_resistance, icon: <Shield className="w-3 h-3 text-green-400" />, color: 'green' }
                     ].map((stat) => (
                       <div key={stat.name} className="flex items-center justify-between">
                         <div className="flex items-center space-x-2">

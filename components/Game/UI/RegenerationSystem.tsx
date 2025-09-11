@@ -40,16 +40,14 @@ export default function RegenerationSystem({
       // Проверяем, нужно ли регенерировать
       const needsHealthRegen = character.health < calculatedStats.max_health
       const needsManaRegen = character.mana < calculatedStats.max_mana
-      const needsStaminaRegen = character.stamina < calculatedStats.max_stamina
 
-      if (!needsHealthRegen && !needsManaRegen && !needsStaminaRegen) {
+      if (!needsHealthRegen && !needsManaRegen) {
         return
       }
 
       // Используем рассчитанные значения регенерации
       const healthRegen = calculatedStats.health_regen
       const manaRegen = calculatedStats.mana_regen
-      const staminaRegen = calculatedStats.stamina_regen
 
       // Вызываем функцию регенерации из базы данных
       const { data, error } = await (supabase as any)
@@ -70,19 +68,12 @@ export default function RegenerationSystem({
         if (data.new_mana !== character.mana) {
           updates.mana = data.new_mana
         }
-        if (data.new_stamina !== character.stamina) {
-          updates.stamina = data.new_stamina
-        }
-
         // Обновляем регенерацию, если она изменилась (с небольшой погрешностью)
         if (data.health_regen_rate && Math.abs(data.health_regen_rate - (character.health_regen || 0)) > 0.01) {
           updates.health_regen = data.health_regen_rate
         }
         if (data.mana_regen_rate && Math.abs(data.mana_regen_rate - (character.mana_regen || 0)) > 0.01) {
           updates.mana_regen = data.mana_regen_rate
-        }
-        if (data.stamina_regen_rate && Math.abs(data.stamina_regen_rate - (character.stamina_regen || 0)) > 0.01) {
-          updates.stamina_regen = data.stamina_regen_rate
         }
 
         // Обновляем только если есть изменения
@@ -120,9 +111,7 @@ export default function RegenerationSystem({
         if (Math.abs(data.mana_regen - (character.mana_regen || 0)) > 0.01) {
           updates.mana_regen = data.mana_regen
         }
-        if (Math.abs(data.stamina_regen - (character.stamina_regen || 0)) > 0.01) {
-          updates.stamina_regen = data.stamina_regen
-        }
+        // Убрали stamina_regen из новой системы
 
         // Обновляем только если есть изменения
         if (Object.keys(updates).length > 0) {
@@ -134,7 +123,7 @@ export default function RegenerationSystem({
     } catch (error) {
       // Тихо обрабатываем ошибки пересчета регенерации
     }
-  }, [character.id, character.health_regen, character.mana_regen, character.stamina_regen, onUpdateCharacter])
+  }, [character.id, character.health_regen, character.mana_regen, onUpdateCharacter])
 
   // Запускаем таймер регенерации
   useEffect(() => {
@@ -159,7 +148,7 @@ export default function RegenerationSystem({
   // Пересчитываем регенерацию при изменении характеристик или экипировки
   useEffect(() => {
     // Только если регенерация не определена или равна 0
-    if (!character.health_regen || !character.mana_regen || !character.stamina_regen) {
+    if (!character.health_regen || !character.mana_regen) {
       // Добавляем небольшую задержку, чтобы избежать частых вызовов
       const timeoutId = setTimeout(() => {
         recalculateRegeneration()
@@ -170,10 +159,10 @@ export default function RegenerationSystem({
   }, [
     character.level,
     character.strength,
-    character.dexterity,
+    character.agility,
     character.intelligence,
-    character.vitality,
-    character.energy
+    character.endurance,
+    character.spell_power
   ])
 
   // Компонент не рендерит ничего видимого

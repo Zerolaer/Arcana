@@ -24,12 +24,16 @@ export function useCharacterStats({ character, equipment = [] }: UseCharacterSta
     setCalculatedStats(stats)
     console.log('📊 Character stats calculated:', {
       base: {
-        strength: character.strength,
-        dexterity: character.dexterity,
+        agility: character.agility,
+        precision: character.precision,
+        evasion: character.evasion,
         intelligence: character.intelligence,
-        vitality: character.vitality,
-        energy: character.energy,
-        luck: character.luck
+        spell_power: character.spell_power,
+        resistance: character.resistance,
+        strength: character.strength,
+        endurance: character.endurance,
+        armor: character.armor,
+        stealth: character.stealth
       },
       equipment: equipmentBonuses,
       calculated: stats
@@ -43,7 +47,6 @@ export function useCharacterStats({ character, equipment = [] }: UseCharacterSta
     return (
       character.max_health !== calculatedStats.max_health ||
       character.max_mana !== calculatedStats.max_mana ||
-      character.max_stamina !== calculatedStats.max_stamina ||
       character.attack_damage !== calculatedStats.attack_damage ||
       character.magic_damage !== calculatedStats.magic_damage ||
       character.defense !== calculatedStats.defense ||
@@ -51,10 +54,8 @@ export function useCharacterStats({ character, equipment = [] }: UseCharacterSta
       Math.abs(character.critical_chance - calculatedStats.critical_chance) > 0.01 ||
       Math.abs(character.critical_damage - calculatedStats.critical_damage) > 0.01 ||
       Math.abs(character.attack_speed - calculatedStats.attack_speed) > 0.01 ||
-      Math.abs(character.movement_speed - calculatedStats.movement_speed) > 0.01 ||
       Math.abs(character.health_regen - calculatedStats.health_regen) > 0.01 ||
-      Math.abs(character.mana_regen - calculatedStats.mana_regen) > 0.01 ||
-      Math.abs(character.stamina_regen - calculatedStats.stamina_regen) > 0.01
+      Math.abs(character.mana_regen - calculatedStats.mana_regen) > 0.01
     )
   }, [character, calculatedStats])
 
@@ -66,12 +67,16 @@ export function useCharacterStats({ character, equipment = [] }: UseCharacterSta
     totalStats: calculatedStats ? {
       ...calculatedStats,
       // Добавляем базовые статы с бонусами
-      strength: character.strength + (equipmentBonuses.strength_bonus || 0),
-      dexterity: character.dexterity + (equipmentBonuses.dexterity_bonus || 0),
+      agility: character.agility + (equipmentBonuses.agility_bonus || 0),
+      precision: character.precision + (equipmentBonuses.precision_bonus || 0),
+      evasion: character.evasion + (equipmentBonuses.evasion_bonus || 0),
       intelligence: character.intelligence + (equipmentBonuses.intelligence_bonus || 0),
-      vitality: character.vitality + (equipmentBonuses.vitality_bonus || 0),
-      energy: character.energy + (equipmentBonuses.energy_bonus || 0),
-      luck: character.luck + (equipmentBonuses.luck_bonus || 0)
+      spell_power: character.spell_power + (equipmentBonuses.spell_power_bonus || 0),
+      resistance: character.resistance + (equipmentBonuses.resistance_bonus || 0),
+      strength: character.strength + (equipmentBonuses.strength_bonus || 0),
+      endurance: character.endurance + (equipmentBonuses.endurance_bonus || 0),
+      armor: character.armor + (equipmentBonuses.armor_bonus || 0),
+      stealth: character.stealth + (equipmentBonuses.stealth_bonus || 0)
     } : null
   }
 }

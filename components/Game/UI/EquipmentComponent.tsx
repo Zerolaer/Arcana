@@ -329,7 +329,7 @@ export default function EquipmentComponent({
               <div className="text-gray-400">Magic Power</div>
             </div>
             <div className="text-center">
-              <div className="text-red-400 font-semibold">{character.strength + character.dexterity}</div>
+              <div className="text-red-400 font-semibold">{character.strength + character.agility}</div>
               <div className="text-gray-400">Attack</div>
             </div>
             <div className="text-center">

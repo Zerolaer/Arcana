@@ -130,7 +130,6 @@ export default function GameHeader({ character, user, onLogout }: GameHeaderProp
           
           <div className="flex items-center space-x-4">
             <span>Очки характеристик: <span className="text-primary-400 font-semibold">{character.stat_points}</span></span>
-            <span>Очки навыков: <span className="text-purple-400 font-semibold">{character.skill_points}</span></span>
           </div>
         </div>
       </div>

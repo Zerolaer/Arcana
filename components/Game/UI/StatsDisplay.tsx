@@ -25,7 +25,7 @@ export default function StatsDisplay({ character, showDerived = true, className 
       key: 'dexterity' as const,
       name: 'Ловкость',
       icon: <Zap className="w-4 h-4 text-yellow-400" />,
-      value: character.dexterity,
+      value: character.agility,
       color: 'text-yellow-400'
     },
     {
@@ -39,21 +39,21 @@ export default function StatsDisplay({ character, showDerived = true, className 
       key: 'vitality' as const,
       name: 'Живучесть',
       icon: <Shield className="w-4 h-4 text-green-400" />,
-      value: character.vitality,
+      value: character.endurance,
       color: 'text-green-400'
     },
     {
       key: 'energy' as const,
       name: 'Энергия',
       icon: <Star className="w-4 h-4 text-purple-400" />,
-      value: character.energy,
+      value: character.spell_power,
       color: 'text-purple-400'
     },
     {
       key: 'luck' as const,
       name: 'Удача',
       icon: <Crown className="w-4 h-4 text-gold-400" />,
-      value: character.luck,
+      value: 0, // Убрали luck из новой системы
       color: 'text-gold-400'
     }
   ]
@@ -73,14 +73,6 @@ export default function StatsDisplay({ character, showDerived = true, className 
       current: character.mana,
       max: calculatedStats.max_mana,
       color: 'text-blue-500',
-      showBar: true
-    },
-    {
-      name: 'Выносливость',
-      icon: <Activity className="w-4 h-4 text-green-500" />,
-      current: character.stamina,
-      max: calculatedStats.max_stamina,
-      color: 'text-green-500',
       showBar: true
     },
     {

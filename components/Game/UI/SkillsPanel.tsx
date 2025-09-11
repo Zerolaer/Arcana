@@ -15,7 +15,7 @@ export default function SkillsPanel({ character, onUpdateCharacter, isLoading }:
       <div className="flex items-center justify-end mb-4">
         <div className="text-right">
           <div className="text-sm text-dark-400">Очков навыков:</div>
-          <div className="text-xl font-bold text-purple-400">{character.skill_points}</div>
+          <div className="text-xl font-bold text-purple-400">0</div>
         </div>
       </div>
 

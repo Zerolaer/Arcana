@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Character, Skill, SkillNode, CharacterSkill } from '@/types/game'
+import { Character, Skill, CharacterSkill } from '@/types/game'
 import { Zap, Target, Shield, Sword, Eye, Star, Lock, CheckCircle } from 'lucide-react'
 
 interface SkillsTreeProps {
@@ -64,15 +64,15 @@ export default function SkillsTree({
 
   const canLearnSkill = (skill: Skill) => {
     if (character.level < skill.required_level) return false
-    if (character.skill_points < 1) return false
-    if (skill.required_class && !skill.required_class.includes(character.class_id)) return false
+    // Убрали проверку skill_points из новой системы
+    if (skill.required_class && !skill.required_class.includes(character.class_id)) return false     
     return true
   }
 
   const canUpgradeSkill = (skillId: string) => {
     const characterSkill = skills.find(s => s.skill_id === skillId)
     if (!characterSkill) return false
-    if (character.skill_points < 1) return false
+    // Убрали проверку skill_points из новой системы
     return characterSkill.level < 10 // Max skill level
   }
 
@@ -108,7 +108,7 @@ export default function SkillsTree({
         
         <div className="flex items-center space-x-4">
           <div className="text-sm text-gray-300">
-            Доступно очков: <span className="text-gold-400 font-bold">{character.skill_points}</span>
+            Доступно очков: <span className="text-gold-400 font-bold">0</span>
           </div>
         </div>
       </div>

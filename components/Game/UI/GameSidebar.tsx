@@ -42,7 +42,7 @@ export default function GameSidebar({ character, activePanel, onPanelChange }: G
       name: 'Навыки',
       icon: <Zap className="w-5 h-5" />,
       description: 'Умения и способности',
-      badge: character.skill_points > 0 ? character.skill_points : undefined,
+      badge: undefined, // Убрали skill_points из новой системы
       color: 'purple'
     },
     {

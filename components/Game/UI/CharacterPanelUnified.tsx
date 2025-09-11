@@ -117,12 +117,16 @@ export default function CharacterPanelUnified({ character, onUpdateCharacter, is
 
   const resetTempStats = () => {
     setTempStats({
-      strength: 0,
-      dexterity: 0,
+      agility: 0,
+      precision: 0,
+      evasion: 0,
       intelligence: 0,
-      vitality: 0,
-      energy: 0,
-      luck: 0
+      spell_power: 0,
+      resistance: 0,
+      strength: 0,
+      endurance: 0,
+      armor: 0,
+      stealth: 0
     })
   }
 
@@ -133,12 +137,16 @@ export default function CharacterPanelUnified({ character, onUpdateCharacter, is
     }
 
     const newStats = {
-      strength: character.strength + tempStats.strength,
-      dexterity: character.dexterity + tempStats.dexterity,
+      agility: character.agility + tempStats.agility,
+      precision: character.precision + tempStats.precision,
+      evasion: character.evasion + tempStats.evasion,
       intelligence: character.intelligence + tempStats.intelligence,
-      vitality: character.vitality + tempStats.vitality,
-      energy: character.energy + tempStats.energy,
-      luck: character.luck + tempStats.luck,
+      spell_power: character.spell_power + tempStats.spell_power,
+      resistance: character.resistance + tempStats.resistance,
+      strength: character.strength + tempStats.strength,
+      endurance: character.endurance + tempStats.endurance,
+      armor: character.armor + tempStats.armor,
+      stealth: character.stealth + tempStats.stealth,
       stat_points: remainingPoints
     }
 
@@ -150,8 +158,7 @@ export default function CharacterPanelUnified({ character, onUpdateCharacter, is
       ...newStats,
       ...calculatedStats,
       health: Math.min(character.health, calculatedStats.max_health),
-      mana: Math.min(character.mana, calculatedStats.max_mana),
-      stamina: Math.min(character.stamina, calculatedStats.max_stamina)
+      mana: Math.min(character.mana, calculatedStats.max_mana)
     }
 
     const success = await onUpdateCharacter(updates)
@@ -167,78 +174,7 @@ export default function CharacterPanelUnified({ character, onUpdateCharacter, is
     return character[stat] + tempStats[stat]
   }
 
-  const getStatEffects = (stat: keyof typeof tempStats, additionalPoints: number = 0) => {
-    const tempCharacter = { 
-      ...character, 
-      [stat]: character[stat] + tempStats[stat] + additionalPoints 
-    }
-    const currentStats = calculateCharacterStats(character)
-    const newStats = calculateCharacterStats(tempCharacter)
-    
-    const effects = []
-    
-    switch (stat) {
-      case 'strength':
-        if (newStats.attack_damage !== currentStats.attack_damage) {
-          effects.push(`Физический урон: ${currentStats.attack_damage} → ${newStats.attack_damage}`)
-        }
-        if (newStats.max_health !== currentStats.max_health) {
-          effects.push(`Здоровье: ${currentStats.max_health} → ${newStats.max_health}`)
-        }
-        break
-      case 'dexterity':
-        if (newStats.attack_speed !== currentStats.attack_speed) {
-          effects.push(`Скорость атаки: ${currentStats.attack_speed}% → ${newStats.attack_speed}%`)
-        }
-        if (newStats.critical_chance !== currentStats.critical_chance) {
-          effects.push(`Критический шанс: ${currentStats.critical_chance}% → ${newStats.critical_chance}%`)
-        }
-        if (newStats.max_stamina !== currentStats.max_stamina) {
-          effects.push(`Выносливость: ${currentStats.max_stamina} → ${newStats.max_stamina}`)
-        }
-        break
-      case 'intelligence':
-        if (newStats.magic_damage !== currentStats.magic_damage) {
-          effects.push(`Магический урон: ${currentStats.magic_damage} → ${newStats.magic_damage}`)
-        }
-        if (newStats.max_mana !== currentStats.max_mana) {
-          effects.push(`Мана: ${currentStats.max_mana} → ${newStats.max_mana}`)
-        }
-        if (newStats.magic_resistance !== currentStats.magic_resistance) {
-          effects.push(`Маг. защита: ${currentStats.magic_resistance} → ${newStats.magic_resistance}`)
-        }
-        break
-      case 'vitality':
-        if (newStats.max_health !== currentStats.max_health) {
-          effects.push(`Здоровье: ${currentStats.max_health} → ${newStats.max_health}`)
-        }
-        if (newStats.defense !== currentStats.defense) {
-          effects.push(`Защита: ${currentStats.defense} → ${newStats.defense}`)
-        }
-        if (newStats.max_stamina !== currentStats.max_stamina) {
-          effects.push(`Выносливость: ${currentStats.max_stamina} → ${newStats.max_stamina}`)
-        }
-        break
-      case 'energy':
-        if (newStats.max_mana !== currentStats.max_mana) {
-          effects.push(`Мана: ${currentStats.max_mana} → ${newStats.max_mana}`)
-        }
-        if (newStats.magic_resistance !== currentStats.magic_resistance) {
-          effects.push(`Маг. защита: ${currentStats.magic_resistance} → ${newStats.magic_resistance}`)
-        }
-        break
-      case 'luck':
-        if (newStats.critical_chance !== currentStats.critical_chance) {
-          effects.push(`Критический шанс: ${currentStats.critical_chance}% → ${newStats.critical_chance}%`)
-        }
-        if (newStats.critical_damage !== currentStats.critical_damage) {
-          effects.push(`Критический урон: ${currentStats.critical_damage}% → ${newStats.critical_damage}%`)
-        }
-        break
-    }
-    
-    return effects
-  }
+  const getStatEffects = () => []
 
 
   return (
@@ -323,10 +259,10 @@ export default function CharacterPanelUnified({ character, onUpdateCharacter, is
                               <div className="text-green-400 font-semibold mb-2">
                                 +{tempValue + 1} → {totalValue + 1}
                               </div>
-                              {getStatEffects(stat.key, 1).length > 0 && (
+                              {false && (
                                 <div className="border-t border-dark-300 pt-2 mt-2">
                                   <div className="text-gray-300 mb-1">Эффекты:</div>
-                                  {getStatEffects(stat.key, 1).map((effect, idx) => (
+                                  {[].map((effect, idx) => (
                                     <div key={idx} className="text-green-300 text-xs">
                                       {effect}
                                     </div>

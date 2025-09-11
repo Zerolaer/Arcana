@@ -140,14 +140,13 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, character, onC
         .from('characters')
         .update({ 
           health: calculatedStats.max_health,
-          mana: calculatedStats.max_mana,
-          stamina: calculatedStats.max_stamina
+          mana: calculatedStats.max_mana
         })
         .eq('id', character.id);
 
       if (error) throw error;
 
-      setMessage('✅ HP/MP/Stamina восстановлены');
+      setMessage('✅ HP/MP восстановлены');
       onCharacterUpdate();
     } catch (error) {
       console.error('Ошибка восстановления:', error);
@@ -337,7 +336,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, character, onC
                 disabled={isLoading}
                 className="w-full bg-red-600 hover:bg-red-700 disabled:bg-gray-600 text-white py-2 px-4 rounded"
               >
-                {isLoading ? 'Восстановление...' : 'Восстановить HP/MP/Stamina'}
+                {isLoading ? 'Восстановление...' : 'Восстановить HP/MP'}
               </button>
 
               <div className="grid grid-cols-2 gap-2">

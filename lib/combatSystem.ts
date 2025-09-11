@@ -194,7 +194,7 @@ export class CombatSystem {
         const newLevel = character.level + 1
         const newExperienceToNext = this.calculateExperienceToNextLevel(newLevel)
         const newStatPoints = character.stat_points + 5 // 5 очков за уровень
-        const newSkillPoints = character.skill_points + 1 // 1 очко навыков за уровень
+        // Убрали skill_points из новой системы
         
         // Увеличиваем базовые характеристики
         const newMaxHealth = character.max_health + 20 // +20 HP за уровень
@@ -205,7 +205,7 @@ export class CombatSystem {
           level: newLevel,
           experience_to_next: newExperienceToNext,
           stat_points: newStatPoints,
-          skill_points: newSkillPoints,
+          // Убрали skill_points из новой системы
           max_health: newMaxHealth,
           max_mana: newMaxMana,
           health: newMaxHealth, // Полное восстановление при повышении уровня

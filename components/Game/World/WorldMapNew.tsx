@@ -102,7 +102,7 @@ export default function WorldMapNew({ character, onUpdateCharacter }: WorldMapPr
         if (result.level_up) {
           updates.level = character.level + 1
           updates.stat_points = character.stat_points + 5
-          updates.skill_points = character.skill_points + 1
+          // Убрали skill_points из новой системы
           updates.max_health = character.max_health + 20
           updates.max_mana = character.max_mana + 10
           updates.health = updates.max_health // Полное восстановление при повышении уровня
