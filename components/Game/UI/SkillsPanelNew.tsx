@@ -23,36 +23,58 @@ export default function SkillsPanelNew({ character, onUpdateCharacter, isLoading
   // Загружаем навыки при изменении персонажа
   useEffect(() => {
     const loadSkills = async () => {
-      const passiveSkills = getAvailablePassiveSkills(character.level)
-      setAvailablePassiveSkills(passiveSkills)
-
-      // Получаем название класса
-      if (character.class_id) {
-        const { data: classData } = await (supabase as any)
-          .from('character_classes')
-          .select('name')
-          .eq('id', character.class_id)
-          .single()
+      try {
+        // Загружаем пассивные навыки из базы данных
+        const { data: passiveSkillsData, error: passiveError } = await (supabase as any)
+          .rpc('get_character_passive_skills', { p_character_id: character.id })
         
-        if (classData) {
-          // Маппинг названий классов на ключи
-          const classMapping: { [key: string]: string } = {
-            'Лучник': 'archer',
-            'Маг': 'mage', 
-            'Берсерк': 'berserker',
-            'Ассасин': 'assassin'
-          }
-          
-          const classNameKey = classMapping[classData.name] || 'archer'
-          setClassName(classNameKey)
-          const activeSkills = getAvailableSkills(classNameKey, character.level)
-          setAvailableActiveSkills(activeSkills)
+        if (passiveError) {
+          console.error('Ошибка загрузки пассивных навыков:', passiveError)
+          // Fallback на статические данные
+          const passiveSkills = getAvailablePassiveSkills(character.level)
+          setAvailablePassiveSkills(passiveSkills)
+        } else {
+          setAvailablePassiveSkills(passiveSkillsData || [])
         }
+
+        // Загружаем активные навыки из базы данных
+        const { data: activeSkillsData, error: activeError } = await (supabase as any)
+          .rpc('get_character_active_skills', { p_character_id: character.id })
+        
+        if (activeError) {
+          console.error('Ошибка загрузки активных навыков:', activeError)
+          // Fallback на статические данные
+          if (character.class_id) {
+            const { data: classData } = await (supabase as any)
+              .from('character_classes')
+              .select('name')
+              .eq('id', character.class_id)
+              .single()
+            
+            if (classData) {
+              const classMapping: { [key: string]: string } = {
+                'Лучник': 'archer',
+                'Маг': 'mage', 
+                'Берсерк': 'berserker',
+                'Ассасин': 'assassin'
+              }
+              
+              const classNameKey = classMapping[classData.name] || 'archer'
+              setClassName(classNameKey)
+              const activeSkills = getAvailableSkills(classNameKey, character.level)
+              setAvailableActiveSkills(activeSkills)
+            }
+          }
+        } else {
+          setAvailableActiveSkills(activeSkillsData || [])
+        }
+      } catch (error) {
+        console.error('Ошибка загрузки навыков:', error)
       }
     }
 
     loadSkills()
-  }, [character.level, character.class_id])
+  }, [character.level, character.class_id, character.id])
 
   // Покупка активного навыка
   const purchaseSkill = async (skill: ActiveSkill) => {
@@ -62,17 +84,36 @@ export default function SkillsPanelNew({ character, onUpdateCharacter, isLoading
     }
 
     try {
-      const updates = {
-        gold: character.gold - skill.cost_to_learn
+      // Вызываем SQL функцию для изучения навыка
+      const { data, error } = await (supabase as any)
+        .rpc('learn_active_skill', {
+          p_character_id: character.id,
+          p_skill_key: skill.id
+        })
+
+      if (error) {
+        throw error
       }
-      
-      await onUpdateCharacter(updates)
-      
-      // TODO: Сохранить изучение навыка в базу данных
-      setShowPurchaseModal(false)
-      setSelectedSkill(null)
-      
-      alert(`Навык "${skill.name}" изучен!`)
+
+      if (data.success) {
+        // Обновляем золото персонажа
+        const updates = {
+          gold: character.gold - data.gold_spent
+        }
+        
+        await onUpdateCharacter(updates)
+        
+        // Обновляем список навыков
+        const activeSkills = getAvailableSkills(className, character.level)
+        setAvailableActiveSkills(activeSkills)
+        
+        setShowPurchaseModal(false)
+        setSelectedSkill(null)
+        
+        alert(`Навык "${skill.name}" изучен!`)
+      } else {
+        alert(data.error || 'Ошибка при изучении навыка')
+      }
     } catch (error) {
       console.error('Ошибка покупки навыка:', error)
       alert('Ошибка при покупке навыка')
