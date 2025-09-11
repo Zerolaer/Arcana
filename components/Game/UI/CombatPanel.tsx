@@ -5,6 +5,7 @@ import { Character } from '@/types/game'
 import { Swords, Target, Activity, Award, Clock, Zap } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'react-hot-toast'
+import { processXpGain } from '@/lib/levelSystemV2'
 
 interface CombatPanelProps {
   character: Character
@@ -256,31 +257,24 @@ export default function CombatPanel({ character, onUpdateCharacter, isLoading }:
     const newExperience = character.experience + experienceGained
     const newGold = character.gold + goldGained
 
-    // Check for level up
-    let levelUp = false
-    let newLevel = character.level
-    let newExperienceToNext = character.experience_to_next
-    let newStatPoints = character.stat_points
-    let newSkillPoints = 0 // Убрали skill_points из новой системы
-
-    if (newExperience >= character.experience_to_next) {
-      levelUp = true
-      newLevel = character.level + 1
-      newExperienceToNext = Math.floor(100 * Math.pow(newLevel + 1, 2.2))
-      newStatPoints = character.stat_points + 5
-      newSkillPoints = 0 // Убрали skill_points из новой системы
-    }
+    // Используем новую систему прогрессии V2
+    const levelUpResult = processXpGain(character.level, character.experience, experienceGained)
+    
+    const levelUp = levelUpResult.levelsGained > 0
+    const newLevel = levelUpResult.newLevel
+    const newXpProgress = levelUpResult.newXpProgress
+    const newStatPoints = character.stat_points + levelUpResult.totalStatPointsGained
+    const newExperienceToNext = levelUpResult.xpToNext
 
     const updates = {
       health: newHealth,
-      experience: newExperience,
+      experience: newXpProgress, // Теперь это прогресс до следующего уровня
       gold: newGold,
       is_in_combat: false,
       ...(levelUp && {
         level: newLevel,
         experience_to_next: newExperienceToNext,
-        stat_points: newStatPoints,
-        skill_points: newSkillPoints
+        stat_points: newStatPoints
       })
     }
 

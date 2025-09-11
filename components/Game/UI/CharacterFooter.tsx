@@ -3,6 +3,7 @@
 import { Character } from '@/types/game'
 import { Heart, Zap, Star, Coins } from 'lucide-react'
 import { calculateCharacterStats } from '@/lib/characterStats'
+import { getLevelProgressInfo, formatExperience } from '@/lib/levelSystemV2'
 
 interface CharacterFooterProps {
   character: Character
@@ -16,12 +17,9 @@ export default function CharacterFooter({ character }: CharacterFooterProps) {
   const healthPercent = (character.health / calculatedStats.max_health) * 100
   const manaPercent = (character.mana / calculatedStats.max_mana) * 100
   
-  // Calculate experience to next level (simple calculation)
-  const expForCurrentLevel = character.level * 100
-  const expForNextLevel = (character.level + 1) * 100
-  const expNeeded = expForNextLevel - expForCurrentLevel
-  const expCurrent = character.experience - expForCurrentLevel
-  const expPercent = Math.max(0, Math.min(100, (expCurrent / expNeeded) * 100))
+  // Используем новую систему прогрессии
+  const progressInfo = getLevelProgressInfo(character)
+  const expPercent = progressInfo.progressPercent
 
   return (
     <div className="bg-gradient-to-r from-gray-900/95 to-black/95 backdrop-blur-md border-t border-white/10 px-6 py-4">
@@ -39,10 +37,10 @@ export default function CharacterFooter({ character }: CharacterFooterProps) {
         {/* EXP Text */}
         <div className="flex justify-between items-center mt-1">
           <span className="text-xs text-gray-400">
-            EXP: {Math.floor(expCurrent)}/{expNeeded}
+            EXP: {formatExperience(progressInfo.experience)}/{formatExperience(progressInfo.experienceRequired)}
           </span>
           <span className="text-xs text-gray-400">
-            До {character.level + 1} уровня: {Math.ceil(expNeeded - expCurrent)}
+            До {progressInfo.level + 1} уровня: {formatExperience(progressInfo.experienceToNext)}
           </span>
         </div>
       </div>

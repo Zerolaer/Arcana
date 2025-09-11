@@ -3,6 +3,7 @@
 import { User } from '@supabase/supabase-js'
 import { Character } from '@/types/game'
 import { LogOut, Settings, Bell, Coins, MapPin } from 'lucide-react'
+import { getLevelProgressInfo, formatExperience } from '@/lib/levelSystemV2'
 import { calculateCombatPower, formatCombatPower, getCombatPowerColor } from '@/lib/combatPower'
 import { calculateCharacterStats } from '@/lib/characterStats'
 
@@ -18,7 +19,9 @@ export default function GameHeader({ character, user, onLogout }: GameHeaderProp
   
   const healthPercentage = (character.health / calculatedStats.max_health) * 100
   const manaPercentage = (character.mana / calculatedStats.max_mana) * 100
-  const expPercentage = character.experience_to_next > 0 ? (character.experience / character.experience_to_next) * 100 : 0
+  // Используем новую систему прогрессии
+  const progressInfo = getLevelProgressInfo(character)
+  const expPercentage = progressInfo.progressPercent
   
   // Расчет боевой мощи
   const combatStats = calculateCombatPower(character)
