@@ -264,6 +264,135 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, character, onC
     }
   };
 
+  const resetCharacter = async () => {
+    if (!character) return;
+
+    const confirmReset = window.confirm(
+      `⚠️ ВНИМАНИЕ! Это действие полностью обнулит персонажа "${character.name}".\n\n` +
+      `Будут удалены:\n` +
+      `• Все предметы из инвентаря\n` +
+      `• Вся экипировка\n` +
+      `• Уровень и опыт\n` +
+      `• Все очки характеристик\n` +
+      `• Золото (останется только базовое)\n\n` +
+      `Это действие НЕОБРАТИМО! Продолжить?`
+    );
+
+    if (!confirmReset) return;
+
+    setIsLoading(true);
+    setMessage('');
+
+    try {
+      console.log('🔄 Начинаем полное обнуление персонажа...');
+
+      // 1. Удаляем все предметы из инвентаря
+      const { error: inventoryError } = await (supabase as any)
+        .from('character_inventory')
+        .delete()
+        .eq('character_id', character.id);
+
+      if (inventoryError) throw inventoryError;
+      console.log('✅ Инвентарь очищен');
+
+      // 2. Удаляем всю экипировку
+      const { error: equipmentError } = await (supabase as any)
+        .from('character_equipment')
+        .delete()
+        .eq('character_id', character.id);
+
+      if (equipmentError) throw equipmentError;
+      console.log('✅ Экипировка удалена');
+
+      // 3. Сбрасываем персонажа к начальному состоянию
+      const { error: characterError } = await (supabase as any)
+        .from('characters')
+        .update({
+          // Уровень и опыт
+          level: 1,
+          experience: 0,
+          experience_to_next: 230, // XP для 2 уровня по новой формуле
+          
+          // Все статы к базовым значениям
+          agility: 10,
+          precision: 10,
+          evasion: 10,
+          intelligence: 10,
+          spell_power: 10,
+          resistance: 10,
+          strength: 10,
+          endurance: 10,
+          armor: 10,
+          stealth: 10,
+          
+          // Очки характеристик
+          stat_points: 0,
+          
+          // Ресурсы
+          health: 100,
+          max_health: 100,
+          mana: 50,
+          max_mana: 50,
+          
+          // Золото
+          gold: 100,
+          
+          // Сбрасываем рассчитанные статы
+          attack_damage: 0,
+          magic_damage: 0,
+          defense: 0,
+          magic_resistance: 0,
+          critical_chance: 5.0,
+          critical_damage: 150.0,
+          attack_speed: 100.0,
+          accuracy: 85.0,
+          dodge_chance: 5.0,
+          stealth_bonus: 0.0,
+          health_regen: 1.0,
+          mana_regen: 1.0
+        })
+        .eq('id', character.id);
+
+      if (characterError) throw characterError;
+      console.log('✅ Персонаж сброшен к начальному состоянию');
+
+      // 4. Синхронизируем статы
+      const resetCharacter = {
+        ...character,
+        level: 1,
+        experience: 0,
+        experience_to_next: 230,
+        agility: 10,
+        precision: 10,
+        evasion: 10,
+        intelligence: 10,
+        spell_power: 10,
+        resistance: 10,
+        strength: 10,
+        endurance: 10,
+        armor: 10,
+        stealth: 10,
+        stat_points: 0,
+        health: 100,
+        max_health: 100,
+        mana: 50,
+        max_mana: 50,
+        gold: 100
+      };
+      
+      await syncCharacterStats(resetCharacter);
+      console.log('✅ Статы синхронизированы');
+
+      setMessage('✅ Персонаж полностью обнулен! Теперь он как новый.');
+      onCharacterUpdate();
+    } catch (error) {
+      console.error('Ошибка обнуления персонажа:', error);
+      setMessage('❌ Ошибка обнуления персонажа');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -464,6 +593,29 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, character, onC
                   Ур. 100
                 </button>
               </div>
+            </div>
+          </div>
+
+          {/* Кнопка обнуления */}
+          <div className="bg-red-900/50 border border-red-600 p-4 rounded-lg">
+            <h3 className="text-lg font-semibold text-red-400 mb-4">⚠️ ОПАСНАЯ ЗОНА</h3>
+            
+            <div className="space-y-3">
+              <p className="text-red-300 text-sm">
+                Полностью обнуляет персонажа, удаляя все предметы, уровень и статы.
+              </p>
+              
+              <button
+                onClick={resetCharacter}
+                disabled={isLoading}
+                className="w-full bg-red-600 hover:bg-red-700 disabled:bg-gray-600 text-white py-3 px-4 rounded font-semibold transition-colors"
+              >
+                {isLoading ? '⏳ Обнуляем...' : '💀 ОБНУЛИТЬ ПЕРСОНАЖА'}
+              </button>
+              
+              <p className="text-red-400 text-xs text-center">
+                Это действие НЕОБРАТИМО!
+              </p>
             </div>
           </div>
         </div>
