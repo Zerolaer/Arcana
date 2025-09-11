@@ -127,8 +127,9 @@ export default function ItemTooltip({
   const renderStats = () => {
     if (!item.stats || typeof item.stats !== 'object') return null
     
+    // Показываем все статы, включая нулевые (для отладки)
     const stats = Object.entries(item.stats)
-      .filter(([_, value]) => value && value > 0)
+      .filter(([_, value]) => value !== undefined && value !== null)
       .map(([key, value]) => [key, value!] as [string, number])
     
     if (stats.length === 0) return null
@@ -139,12 +140,14 @@ export default function ItemTooltip({
     const otherStats = stats.filter(([key]) => !key.includes('_bonus') && !['attack_damage', 'magic_damage', 'defense', 'magic_resistance'].includes(key))
 
     const renderStatGroup = (stats: [string, number][], title: string) => {
-      if (stats.length === 0) return null
+      // Фильтруем только ненулевые статы для отображения
+      const nonZeroStats = stats.filter(([_, value]) => value !== 0)
+      if (nonZeroStats.length === 0) return null
       
       return (
         <div className="mb-2">
           <div className="text-xs font-semibold text-blue-400 mb-1">{title}:</div>
-          {stats.map(([key, value]) => (
+          {nonZeroStats.map(([key, value]) => (
             <div key={key} className="flex justify-between text-sm">
               <span className="text-gray-300">{statNames[key] || key}:</span>
               <span className="text-white font-medium">

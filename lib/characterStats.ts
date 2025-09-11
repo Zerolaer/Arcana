@@ -221,11 +221,73 @@ export async function updateCharacterStatsInDB(characterId: string, calculatedSt
 }
 
 /**
- * Получает бонусы от экипировки (заглушка, будет реализована позже)
+ * Получает бонусы от экипировки
  */
 export function getEquipmentBonuses(equipment: any[]): any {
-  // TODO: Реализовать расчет бонусов от экипировки
-  return {}
+  if (!equipment || !Array.isArray(equipment)) return {}
+  
+  const bonuses = {
+    // Базовые характеристики
+    strength_bonus: 0,
+    dexterity_bonus: 0,
+    intelligence_bonus: 0,
+    vitality_bonus: 0,
+    energy_bonus: 0,
+    luck_bonus: 0,
+    
+    // Боевые характеристики
+    attack_damage: 0,
+    magic_damage: 0,
+    defense: 0,
+    magic_resistance: 0,
+    
+    // Ресурсы
+    health: 0,
+    mana: 0,
+    stamina: 0,
+    
+    // Дополнительные эффекты
+    critical_chance: 0,
+    critical_damage: 0,
+    attack_speed: 0,
+    movement_speed: 0,
+    health_regen: 0,
+    mana_regen: 0,
+    stamina_regen: 0
+  }
+  
+  equipment.forEach(slot => {
+    if (slot?.item?.stats) {
+      const stats = slot.item.stats
+      
+      // Базовые характеристики
+      bonuses.strength_bonus += stats.strength_bonus || 0
+      bonuses.dexterity_bonus += stats.dexterity_bonus || 0
+      bonuses.intelligence_bonus += stats.intelligence_bonus || 0
+      bonuses.vitality_bonus += stats.vitality_bonus || 0
+      bonuses.energy_bonus += stats.energy_bonus || 0
+      bonuses.luck_bonus += stats.luck_bonus || 0
+      
+      // Боевые характеристики
+      bonuses.attack_damage += stats.attack_damage || 0
+      bonuses.magic_damage += stats.magic_damage || 0
+      bonuses.defense += stats.defense || 0
+      bonuses.magic_resistance += stats.magic_resistance || 0
+      
+      // Ресурсы (старые поля для совместимости)
+      bonuses.health += stats.health || 0
+      bonuses.mana += stats.mana || 0
+      bonuses.stamina += stats.stamina || 0
+      
+      // Дополнительные эффекты
+      bonuses.critical_chance += stats.critChance || 0
+      bonuses.critical_damage += stats.critDamage || 0
+      bonuses.attack_speed += stats.speed || 0
+      bonuses.movement_speed += stats.speed || 0
+    }
+  })
+  
+  return bonuses
 }
 
 /**

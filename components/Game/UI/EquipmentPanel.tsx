@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase'
 import { GameItem } from '../../UI/ItemTooltip'
 import ItemTooltip from '../../UI/ItemTooltip'
 import { toast } from 'react-hot-toast'
+import { useCharacterStats } from '@/lib/useCharacterStats'
 import { 
   Sword, Shield, Crown, Zap, Eye, 
   Shield as ShieldIcon, Star, 
@@ -41,6 +42,12 @@ const equipmentSlots = [
 export default function EquipmentPanel({ character, onUpdateCharacter, isLoading }: EquipmentPanelProps) {
   const [equipment, setEquipment] = useState<EquipmentSlot[]>([])
   const [loading, setLoading] = useState(true)
+  
+  // Используем новый хук для расчета статов с учетом экипировки
+  const { calculatedStats, equipmentBonuses, statsChanged } = useCharacterStats({
+    character,
+    equipment: equipment.filter(slot => slot.item).map(slot => ({ item: slot.item }))
+  })
 
   // Загрузка экипировки из базы данных
   const loadEquipment = useCallback(async () => {
@@ -271,14 +278,18 @@ export default function EquipmentPanel({ character, onUpdateCharacter, isLoading
           <h3 className="text-lg font-bold text-white mb-3">Бонусы от экипировки</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {[
-              { key: 'damage', name: 'Урон', icon: '⚔️' },
+              { key: 'attack_damage', name: 'Физический урон', icon: '⚔️' },
+              { key: 'magic_damage', name: 'Магический урон', icon: '🔮' },
               { key: 'defense', name: 'Защита', icon: '🛡️' },
-              { key: 'health', name: 'Здоровье', icon: '❤️' },
-              { key: 'mana', name: 'Мана', icon: '💙' }
+              { key: 'magic_resistance', name: 'Маг. защита', icon: '✨' },
+              { key: 'strength_bonus', name: 'Сила', icon: '💪' },
+              { key: 'dexterity_bonus', name: 'Ловкость', icon: '🏃' },
+              { key: 'intelligence_bonus', name: 'Интеллект', icon: '🧠' },
+              { key: 'vitality_bonus', name: 'Живучесть', icon: '❤️' }
             ].map(stat => {
-              const totalBonus = equipment
-                .filter(eq => eq.item?.stats?.[stat.key])
-                .reduce((sum, eq) => sum + (eq.item?.stats?.[stat.key] || 0), 0)
+              const totalBonus = equipmentBonuses[stat.key] || 0
+              
+              if (totalBonus === 0) return null
               
               return (
                 <div key={stat.key} className="bg-dark-200/30 rounded border border-dark-300/30 p-3">
@@ -293,6 +304,15 @@ export default function EquipmentPanel({ character, onUpdateCharacter, isLoading
               )
             })}
           </div>
+          
+          {/* Показываем предупреждение, если статы изменились */}
+          {statsChanged && (
+            <div className="mt-4 p-3 bg-yellow-900/20 border border-yellow-500/30 rounded">
+              <div className="text-yellow-400 text-sm">
+                ⚠️ Статы персонажа изменились! Перезагрузите страницу для обновления.
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>

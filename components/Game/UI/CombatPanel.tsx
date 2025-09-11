@@ -165,17 +165,85 @@ export default function CombatPanel({ character, onUpdateCharacter, isLoading }:
       goldGained = Math.floor(mob.gold_reward * (1 + Math.random() * 0.3))
       damageTaken = Math.floor(mob.attack_damage * 0.3)
       
-      // Дроп предметов
+      // Дроп предметов - временная простая реализация
       try {
-        const { data: lootData, error: lootError } = await (supabase as any).rpc('process_mob_loot', {
-          p_character_id: character.id,
-          p_mob_id: mob.id,
-          p_character_level: character.level
-        })
+        console.log('🎯 Processing loot for mob:', mob.name, 'ID:', mob.id)
         
-        if (!lootError && lootData?.success) {
-          droppedItems = lootData.items_dropped?.map((item: any) => item.item_name) || []
+        // Получаем таблицу лута для моба
+        const { data: mobData, error: mobError } = await supabase
+          .from('mobs')
+          .select('loot_table_id')
+          .eq('id', mob.id)
+          .single()
+        
+        if (mobError) {
+          console.error('Error getting mob loot table:', mobError)
+          return
         }
+        
+        if (!mobData?.loot_table_id) {
+          console.log('❌ No loot table for mob:', mob.name)
+          return
+        }
+        
+        console.log('📦 Mob loot table ID:', mobData.loot_table_id)
+        
+        // Получаем предметы из таблицы лута
+        const { data: lootData, error: lootError } = await supabase
+          .from('loot_drops')
+          .select(`
+            drop_rate,
+            quantity_min,
+            quantity_max,
+            items (
+              id,
+              name,
+              icon,
+              item_type,
+              rarity
+            )
+          `)
+          .eq('loot_table_id', mobData.loot_table_id)
+        
+        if (lootError) {
+          console.error('Error getting loot drops:', lootError)
+          return
+        }
+        
+        console.log('🎲 Loot drops found:', lootData?.length || 0)
+        
+        if (lootData && lootData.length > 0) {
+          const droppedItemsList: string[] = []
+          
+          for (const drop of lootData) {
+            const randomChance = Math.random() * 100
+            console.log(`🎲 Rolling for ${drop.items.name}: ${randomChance.toFixed(2)}% vs ${drop.drop_rate}%`)
+            
+            if (randomChance <= drop.drop_rate) {
+              const quantity = Math.floor(Math.random() * (drop.quantity_max - drop.quantity_min + 1)) + drop.quantity_min
+              
+              // Добавляем предмет в инвентарь
+              const { error: addError } = await supabase
+                .from('character_inventory')
+                .insert({
+                  character_id: character.id,
+                  item_id: drop.items.id,
+                  quantity: quantity,
+                  slot_position: Math.floor(Math.random() * 100) + 1 // Временное решение
+                })
+              
+              if (!addError) {
+                droppedItemsList.push(`${drop.items.name} x${quantity}`)
+                console.log(`✅ Dropped: ${drop.items.name} x${quantity}`)
+              } else {
+                console.error('Error adding item to inventory:', addError)
+              }
+            }
+          }
+          
+          droppedItems = droppedItemsList
+        }
+        
       } catch (error) {
         console.error('Error processing loot:', error)
       }
