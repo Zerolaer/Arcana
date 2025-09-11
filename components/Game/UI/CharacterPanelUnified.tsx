@@ -18,12 +18,16 @@ interface CharacterPanelProps {
 
 export default function CharacterPanelUnified({ character, onUpdateCharacter, isLoading }: CharacterPanelProps) {
   const [tempStats, setTempStats] = useState({
-    strength: 0,
-    dexterity: 0,
+    agility: 0,
+    precision: 0,
+    evasion: 0,
     intelligence: 0,
-    vitality: 0,
-    energy: 0,
-    luck: 0
+    spell_power: 0,
+    resistance: 0,
+    strength: 0,
+    endurance: 0,
+    armor: 0,
+    stealth: 0
   })
   const [equipmentKey, setEquipmentKey] = useState(0) // Для принудительного обновления EquipmentComponent
   
@@ -35,40 +39,64 @@ export default function CharacterPanelUnified({ character, onUpdateCharacter, is
 
   const statInfo = [
     {
-      key: 'strength' as const,
-      name: 'Сила',
-      icon: <Sword className="w-4 h-4 text-red-400" />,
-      effects: ['Физический урон: +2 за очко', 'Здоровье: +10 за очко']
+      key: 'agility' as const,
+      name: 'Ловкость',
+      icon: <Zap className="w-4 h-4 text-yellow-400" />,
+      effects: ['Скорость атаки: +1.2% за очко', 'Критический шанс: +0.15% за очко', 'Физический урон: +1.5 за очко']
     },
     {
-      key: 'dexterity' as const,
-      name: 'Ловкость', 
-      icon: <Zap className="w-4 h-4 text-yellow-400" />,
-      effects: ['Скорость атаки: +0.8% за очко', 'Критический шанс: +0.05% за очко']
+      key: 'precision' as const,
+      name: 'Меткость',
+      icon: <Eye className="w-4 h-4 text-blue-400" />,
+      effects: ['Точность: +1% за очко', 'Дальность атаки']
+    },
+    {
+      key: 'evasion' as const,
+      name: 'Уклонение',
+      icon: <Shield className="w-4 h-4 text-green-400" />,
+      effects: ['Шанс избежать удара']
     },
     {
       key: 'intelligence' as const,
       name: 'Интеллект',
       icon: <Eye className="w-4 h-4 text-blue-400" />,
-      effects: ['Магический урон: +2.5 за очко', 'Мана: +5 за очко']
+      effects: ['Мана: +8 за очко', 'Магический урон: +1 за очко', 'Регенерация маны: +0.1/сек за очко']
     },
     {
-      key: 'vitality' as const,
-      name: 'Живучесть',
-      icon: <Shield className="w-4 h-4 text-green-400" />,
-      effects: ['Здоровье: +10 за очко', 'Защита: +1.5 за очко']
-    },
-    {
-      key: 'energy' as const,
-      name: 'Энергия',
+      key: 'spell_power' as const,
+      name: 'Сила заклинаний',
       icon: <Star className="w-4 h-4 text-purple-400" />,
-      effects: ['Мана: +5 за очко', 'Магическая защита: +1 за очко']
+      effects: ['Магический урон: +3 за очко']
     },
     {
-      key: 'luck' as const,
-      name: 'Удача',
-      icon: <Crown className="w-4 h-4 text-gold-400" />,
-      effects: ['Критический шанс: +0.1% за очко', 'Редкие предметы: +0.05% за очко']
+      key: 'resistance' as const,
+      name: 'Сопротивление',
+      icon: <Shield className="w-4 h-4 text-green-400" />,
+      effects: ['Магическая защита: +2.5 за очко']
+    },
+    {
+      key: 'strength' as const,
+      name: 'Сила',
+      icon: <Sword className="w-4 h-4 text-red-400" />,
+      effects: ['Физический урон: +2.5 за очко', 'Критический урон: +0.8% за очко']
+    },
+    {
+      key: 'endurance' as const,
+      name: 'Выносливость',
+      icon: <Shield className="w-4 h-4 text-green-400" />,
+      effects: ['Здоровье: +15 за очко', 'Защита: +1 за очко', 'Регенерация HP: +0.1/сек за очко']
+    },
+    {
+      key: 'armor' as const,
+      name: 'Броня',
+      icon: <Shield className="w-4 h-4 text-gray-400" />,
+      effects: ['Защита: +2 за очко']
+    },
+    {
+      key: 'stealth' as const,
+      name: 'Скрытность',
+      icon: <Eye className="w-4 h-4 text-indigo-400" />,
+      effects: ['Урон из невидимости: +1.8 за очко', 'Шанс критического удара']
     }
   ]
 
@@ -353,10 +381,9 @@ export default function CharacterPanelUnified({ character, onUpdateCharacter, is
               { name: 'Критический шанс', value: `${calculatedStats.critical_chance.toFixed(1)}%`, icon: '💥' },
               { name: 'Критический урон', value: `${calculatedStats.critical_damage.toFixed(0)}%`, icon: '⚡' },
               { name: 'Скорость атаки', value: `${calculatedStats.attack_speed.toFixed(0)}%`, icon: '🏃' },
-              { name: 'Скорость движения', value: `${calculatedStats.movement_speed.toFixed(0)}%`, icon: '💨' },
+              { name: 'Точность', value: `${calculatedStats.accuracy.toFixed(0)}%`, icon: '🎯' },
               { name: 'Регенерация HP', value: `${calculatedStats.health_regen.toFixed(1)}/сек`, icon: '❤️', color: 'text-red-400' },
-              { name: 'Регенерация MP', value: `${calculatedStats.mana_regen.toFixed(1)}/сек`, icon: '💙', color: 'text-blue-400' },
-              { name: 'Регенерация Stamina', value: `${calculatedStats.stamina_regen.toFixed(1)}/сек`, icon: '💚', color: 'text-green-400' }
+              { name: 'Регенерация MP', value: `${calculatedStats.mana_regen.toFixed(1)}/сек`, icon: '💙', color: 'text-blue-400' }
             ].map((stat) => (
               <div key={stat.name} className="flex items-center justify-between p-2 bg-dark-200/30 rounded border border-dark-300/30">
                 <div className="flex items-center space-x-2">

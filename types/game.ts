@@ -12,32 +12,32 @@ export interface Character {
   player_id: string;
   name: string;
   class_id: string;
-  subclass_id?: string;
   level: number;
   experience: number;
   experience_to_next: number;
   
-  // Base stats
-  strength: number;
-  dexterity: number;
-  intelligence: number;
-  vitality: number;
-  energy: number;
-  luck: number;
+  // Основные характеристики
+  agility: number;        // Ловкость (скорость атаки, крит шанс)
+  precision: number;      // Меткость (точность, дальность)
+  evasion: number;        // Уклонение (шанс избежать удара)
+  intelligence: number;   // Интеллект (магическая сила)
+  spell_power: number;    // Сила заклинаний (урон заклинаниями)
+  resistance: number;     // Сопротивление (защита от магии)
+  strength: number;       // Сила (физический урон)
+  endurance: number;      // Выносливость (здоровье)
+  armor: number;          // Броня (защита от физического урона)
+  stealth: number;        // Скрытность (урон из невидимости)
   
-  // Available stat points
+  // Очки характеристик
   stat_points: number;
-  skill_points: number;
   
-  // Resources
+  // Ресурсы
   health: number;
   max_health: number;
   mana: number;
   max_mana: number;
-  stamina: number;
-  max_stamina: number;
   
-  // Combat stats (calculated)
+  // Боевые характеристики (рассчитываемые)
   attack_damage: number;
   magic_damage: number;
   defense: number;
@@ -45,21 +45,20 @@ export interface Character {
   critical_chance: number;
   critical_damage: number;
   attack_speed: number;
-  movement_speed: number;
+  accuracy: number;
   
-  // Regeneration stats
+  // Регенерация
   health_regen: number;
   mana_regen: number;
-  stamina_regen: number;
   
-  // Economy
+  // Экономика
   gold: number;
   
-  // Location
+  // Локация
   current_location_id: string;
   current_spot_id?: string;
   
-  // Status
+  // Статус
   is_online: boolean;
   is_in_combat: boolean;
   is_afk_farming: boolean;
@@ -74,102 +73,75 @@ export interface CharacterClass {
   name: string;
   description: string;
   
-  // Base stat bonuses
-  base_strength: number;
-  base_dexterity: number;
+  // Базовые характеристики класса
+  base_agility: number;
+  base_precision: number;
+  base_evasion: number;
   base_intelligence: number;
-  base_vitality: number;
-  base_energy: number;
-  base_luck: number;
+  base_spell_power: number;
+  base_resistance: number;
+  base_strength: number;
+  base_endurance: number;
+  base_armor: number;
+  base_stealth: number;
   
-  // Stat growth per level
-  strength_per_level: number;
-  dexterity_per_level: number;
+  // Прирост характеристик за уровень
+  agility_per_level: number;
+  precision_per_level: number;
+  evasion_per_level: number;
   intelligence_per_level: number;
-  vitality_per_level: number;
-  energy_per_level: number;
-  luck_per_level: number;
+  spell_power_per_level: number;
+  resistance_per_level: number;
+  strength_per_level: number;
+  endurance_per_level: number;
+  armor_per_level: number;
+  stealth_per_level: number;
   
-  // Starting skills
+  // Начальные скиллы
   starting_skills: string[];
   
   icon: string;
-  primary_stat: 'strength' | 'dexterity' | 'intelligence' | 'vitality' | 'energy';
+  primary_stats: string[]; // Основные статы для класса
   created_at: string;
 }
 
-export interface Subclass {
-  id: string;
-  class_id: string;
-  name: string;
-  description: string;
-  required_level: number;
-  
-  // Additional stat bonuses
-  bonus_strength: number;
-  bonus_dexterity: number;
-  bonus_intelligence: number;
-  bonus_vitality: number;
-  bonus_energy: number;
-  bonus_luck: number;
-  
-  // Unique skills
-  unique_skills: string[];
-  
-  icon: string;
-  created_at: string;
-}
+// Убираем подклассы - упрощаем систему
 
 export interface Skill {
   id: string;
   name: string;
   description: string;
-  skill_type: 'active' | 'passive' | 'aoe';
+  skill_type: 'standard' | 'enhanced' | 'aoe' | 'buff' | 'barrier' | 'lifesteal';
   
-  // Requirements
+  // Требования
   required_level: number;
   required_class?: string[];
   
-  // Resource costs
+  // Стоимость ресурсов
   mana_cost: number;
-  stamina_cost: number;
   cooldown: number;
   
-  // Base damage/effects
+  // Базовый урон/эффекты
   base_damage: number;
   damage_type: 'physical' | 'magical' | 'true';
-  scaling_stat: 'strength' | 'dexterity' | 'intelligence';
+  scaling_stat: 'agility' | 'precision' | 'intelligence' | 'spell_power' | 'strength' | 'stealth';
   scaling_ratio: number;
   
-  // Available nodes
-  available_nodes: string[];
+  // Специальные эффекты
+  special_effects?: string[];
   
   icon: string;
   created_at: string;
 }
 
-export interface SkillNode {
-  id: string;
-  skill_id: string;
-  name: string;
-  description: string;
-  
-  // Effects
-  damage_multiplier?: number;
-  cooldown_reduction?: number;
-  mana_cost_reduction?: number;
-  additional_effects?: string[];
-  
-  icon: string;
-}
+// Убираем сложную систему нод скиллов - упрощаем
 
 export interface CharacterSkill {
   character_id: string;
   skill_id: string;
   level: number;
-  selected_nodes: string[];
   
-  // Calculated values
+  // Рассчитанные значения
   damage: number;
   cooldown: number;
   mana_cost: number;

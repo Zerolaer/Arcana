@@ -46,7 +46,7 @@ export default function EquipmentPanel({ character, onUpdateCharacter, isLoading
   // Используем новый хук для расчета статов с учетом экипировки
   const { calculatedStats, equipmentBonuses, statsChanged } = useCharacterStats({
     character,
-    equipment: equipment.filter(slot => slot.item).map(slot => ({ item: slot.item }))
+    equipment: equipment?.filter(slot => slot.item).map(slot => ({ item: slot.item })) || []
   })
 
   // Загрузка экипировки из базы данных
@@ -131,6 +131,16 @@ export default function EquipmentPanel({ character, onUpdateCharacter, isLoading
     console.log('🔍 handleUnequip called with slotType:', slotType)
     
     try {
+      // Проверяем, что предмет действительно экипирован
+      const equippedItem = equipment.find(slot => slot.slotType === slotType && slot.item)
+      if (!equippedItem) {
+        console.warn('No item found in slot:', slotType)
+        toast.error('В этом слоте нет предмета для снятия')
+        return
+      }
+
+      console.log('Attempting to unequip item:', equippedItem.item?.name)
+
       const { data, error } = await (supabase as any)
         .rpc('unequip_item', {
           p_character_id: character.id,

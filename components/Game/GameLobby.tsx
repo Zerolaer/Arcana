@@ -97,24 +97,26 @@ export default function GameLobby({ user, onCharacterCreated, onLogout }: GameLo
         return
       }
 
-      // Calculate starting stats - round to integers
+      // Calculate starting stats for new system
       const startingStats = {
-        strength: Math.round(selectedClass.base_strength + (selectedClass.strength_per_level * 0)),
-        dexterity: Math.round(selectedClass.base_dexterity + (selectedClass.dexterity_per_level * 0)),
-        intelligence: Math.round(selectedClass.base_intelligence + (selectedClass.intelligence_per_level * 0)),
-        vitality: Math.round(selectedClass.base_vitality + (selectedClass.vitality_per_level * 0)),
-        energy: Math.round(selectedClass.base_energy + (selectedClass.energy_per_level * 0)),
-        luck: Math.round(selectedClass.base_luck + (selectedClass.luck_per_level * 0))
+        agility: Math.round(selectedClass.base_agility),
+        precision: Math.round(selectedClass.base_precision),
+        evasion: Math.round(selectedClass.base_evasion),
+        intelligence: Math.round(selectedClass.base_intelligence),
+        spell_power: Math.round(selectedClass.base_spell_power),
+        resistance: Math.round(selectedClass.base_resistance),
+        strength: Math.round(selectedClass.base_strength),
+        endurance: Math.round(selectedClass.base_endurance),
+        armor: Math.round(selectedClass.base_armor),
+        stealth: Math.round(selectedClass.base_stealth)
       }
 
-      const maxHealth = startingStats.vitality * 10 + 100
-      const maxMana = startingStats.energy * 5 + 50
-      const maxStamina = startingStats.vitality * 5 + startingStats.dexterity * 3 + 100
+      const maxHealth = 100 + (startingStats.endurance * 15)
+      const maxMana = 50 + (startingStats.intelligence * 8)
 
       // Calculate regeneration stats (base 1.0 + bonuses)
-      const healthRegen = 1.0 + (startingStats.vitality * 0.05) + (1 * 0.02) // level 1
-      const manaRegen = 1.0 + (startingStats.energy * 0.05) + (startingStats.intelligence * 0.02) + (1 * 0.01)
-      const staminaRegen = 1.0 + (startingStats.dexterity * 0.08) + (startingStats.vitality * 0.03) + (1 * 0.02)
+      const healthRegen = 1.0 + (startingStats.endurance * 0.1)
+      const manaRegen = 1.0 + (startingStats.intelligence * 0.1)
 
       const characterData = {
         player_id: user.id,
@@ -125,24 +127,20 @@ export default function GameLobby({ user, onCharacterCreated, onLogout }: GameLo
         experience_to_next: 100,
         ...startingStats,
         stat_points: 0,
-        skill_points: 1,
         health: maxHealth,
         max_health: maxHealth,
         mana: maxMana,
         max_mana: maxMana,
-        stamina: maxStamina,
-        max_stamina: maxStamina,
-        attack_damage: Math.round(startingStats.strength * 2 + startingStats.dexterity),
-        magic_damage: Math.round(startingStats.intelligence * 2.5),
-        defense: Math.round(startingStats.vitality * 1.5 + startingStats.strength * 0.5),
-        magic_resistance: Math.round(startingStats.energy + startingStats.intelligence * 0.3),
-        critical_chance: Math.round(Math.min(startingStats.luck * 0.1 + startingStats.dexterity * 0.05, 50) * 100) / 100,
-        critical_damage: Math.round((150 + startingStats.strength * 0.5) * 100) / 100,
-        attack_speed: Math.round((100 + startingStats.dexterity * 0.8) * 100) / 100,
-        movement_speed: Math.round((100 + startingStats.dexterity * 0.5) * 100) / 100,
+        attack_damage: Math.round(startingStats.strength * 2.5 + startingStats.agility * 1.5),
+        magic_damage: Math.round(startingStats.spell_power * 3.0 + startingStats.intelligence * 1.0),
+        defense: Math.round(startingStats.armor * 2.0 + startingStats.endurance * 1.0),
+        magic_resistance: Math.round(startingStats.resistance * 2.5),
+        critical_chance: Math.round(Math.min(5.0 + startingStats.agility * 0.15, 50) * 100) / 100,
+        critical_damage: Math.round((150.0 + startingStats.strength * 0.8) * 100) / 100,
+        attack_speed: Math.round((100.0 + startingStats.agility * 1.2) * 100) / 100,
+        accuracy: Math.round((85.0 + startingStats.precision * 1.0) * 100) / 100,
         health_regen: Math.round(healthRegen * 100) / 100,
         mana_regen: Math.round(manaRegen * 100) / 100,
-        stamina_regen: Math.round(staminaRegen * 100) / 100,
         gold: 100,
         current_location_id: firstLocation.id,
         is_online: true,
@@ -176,11 +174,16 @@ export default function GameLobby({ user, onCharacterCreated, onLogout }: GameLo
 
   const getPrimaryStatIcon = (stat: string) => {
     switch (stat) {
-      case 'strength': return <Sword className="w-4 h-4 text-red-400" />
-      case 'dexterity': return <Zap className="w-4 h-4 text-yellow-400" />
+      case 'agility': return <Zap className="w-4 h-4 text-yellow-400" />
+      case 'precision': return <Eye className="w-4 h-4 text-blue-400" />
+      case 'evasion': return <Shield className="w-4 h-4 text-green-400" />
       case 'intelligence': return <Eye className="w-4 h-4 text-blue-400" />
-      case 'vitality': return <Shield className="w-4 h-4 text-green-400" />
-      case 'energy': return <Star className="w-4 h-4 text-purple-400" />
+      case 'spell_power': return <Star className="w-4 h-4 text-purple-400" />
+      case 'resistance': return <Shield className="w-4 h-4 text-green-400" />
+      case 'strength': return <Sword className="w-4 h-4 text-red-400" />
+      case 'endurance': return <Shield className="w-4 h-4 text-green-400" />
+      case 'armor': return <Shield className="w-4 h-4 text-green-400" />
+      case 'stealth': return <Eye className="w-4 h-4 text-indigo-400" />
       default: return <Crown className="w-4 h-4 text-gray-400" />
     }
   }
@@ -252,27 +255,21 @@ export default function GameLobby({ user, onCharacterCreated, onLogout }: GameLo
                       <div>
                         <h3 className="font-bold text-white">{characterClass.name}</h3>
                         <div className="flex items-center space-x-1 text-sm">
-                          {getPrimaryStatIcon(characterClass.primary_stat)}
-                          <span className="text-dark-400 capitalize">{characterClass.primary_stat}</span>
+                          {getPrimaryStatIcon(characterClass.primary_stats[0])}
+                          <span className="text-dark-400 capitalize">{characterClass.primary_stats.join(', ')}</span>
                         </div>
                       </div>
                     </div>
 
                     {/* Stats Preview */}
                     <div className="space-y-2 mb-3">
-                      <div className="grid grid-cols-3 gap-2 text-xs">
-                        <div className="flex items-center space-x-1">
-                          <Sword className="w-3 h-3 text-red-400" />
-                          <span className="text-dark-300">{characterClass.base_strength}</span>
-                        </div>
-                        <div className="flex items-center space-x-1">
-                          <Zap className="w-3 h-3 text-yellow-400" />
-                          <span className="text-dark-300">{characterClass.base_dexterity}</span>
-                        </div>
-                        <div className="flex items-center space-x-1">
-                          <Eye className="w-3 h-3 text-blue-400" />
-                          <span className="text-dark-300">{characterClass.base_intelligence}</span>
-                        </div>
+                      <div className="grid grid-cols-2 gap-2 text-xs">
+                        {characterClass.primary_stats.map((stat) => (
+                          <div key={stat} className="flex items-center space-x-1">
+                            {getPrimaryStatIcon(stat)}
+                            <span className="text-dark-300">{characterClass[`base_${stat}`] || 0}</span>
+                          </div>
+                        ))}
                       </div>
                     </div>
 
@@ -302,8 +299,8 @@ export default function GameLobby({ user, onCharacterCreated, onLogout }: GameLo
                   <div>
                     <h3 className="text-xl font-bold text-white">{selectedClass.name}</h3>
                     <div className="flex items-center space-x-2 text-sm text-dark-400">
-                      {getPrimaryStatIcon(selectedClass.primary_stat)}
-                      <span className="capitalize">{selectedClass.primary_stat}</span>
+                      {getPrimaryStatIcon(selectedClass.primary_stats[0])}
+                      <span className="capitalize">{selectedClass.primary_stats.join(', ')}</span>
                     </div>
                   </div>
                 </div>
