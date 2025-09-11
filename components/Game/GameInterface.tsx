@@ -13,7 +13,7 @@ import CharacterPanelUnified from './UI/CharacterPanelUnified'
 import InventoryPanelNew from './UI/InventoryPanelNew'
 import LocationPanel from './UI/LocationPanel'
 import WorldMapNew from './World/WorldMapNew'
-import SkillsPanel from './UI/SkillsPanel'
+import SkillsPanelNew from './UI/SkillsPanelNew'
 import RegenerationSystemSimple from './UI/RegenerationSystemSimple'
 import AdminPanel from './Admin/AdminPanel'
 
@@ -187,7 +187,7 @@ export default function GameInterface({ character: initialCharacter, user, onLog
         )
       case 'skills':
         return (
-          <SkillsPanel
+          <SkillsPanelNew 
             character={character}
             onUpdateCharacter={updateCharacterData}
             isLoading={isLoading}
