@@ -69,31 +69,23 @@ const CLASS_NAMES: Record<string, string> = {
 }
 
 // Маппинг аватарок для классов (эмодзи и изображения)
+// Соответствует классам из supabase/data.sql
 const CLASS_AVATARS: Record<string, { emoji: string; image?: string }> = {
-  'mage': { emoji: '🔮', image: '/avatars/mage.svg' }, // Маг - кристальный шар
-  'wizard': { emoji: '🧙‍♂️', image: '/avatars/wizard.png' }, // Волшебник - волшебник с бородой
-  'sorcerer': { emoji: '🧙‍♀️', image: '/avatars/sorcerer.png' }, // Чародей - волшебница
-  'warlock': { emoji: '👹', image: '/avatars/warlock.png' }, // Варлок - демон
-  'necromancer': { emoji: '💀', image: '/avatars/necromancer.png' }, // Некромант - череп
-  'shaman': { emoji: '🌩️', image: '/avatars/shaman.png' }, // Шаман - молния
-  'druid': { emoji: '🌿', image: '/avatars/druid.png' }, // Друид - листья
-  'priest': { emoji: '⛪', image: '/avatars/priest.png' }, // Жрец - церковь
-  'cleric': { emoji: '⛪', image: '/avatars/cleric.png' }, // Клирик - церковь
-  'paladin': { emoji: '🛡️', image: '/avatars/paladin.png' }, // Паладин - щит
-  'warrior': { emoji: '⚔️', image: '/avatars/warrior.svg' }, // Воин - мечи
-  'fighter': { emoji: '⚔️', image: '/avatars/warrior.svg' }, // Боец - мечи
-  'knight': { emoji: '🛡️', image: '/avatars/warrior.svg' }, // Рыцарь - щит
-  'barbarian': { emoji: '🪓', image: '/avatars/warrior.svg' }, // Варвар - топор
-  'berserker': { emoji: '🪓', image: '/avatars/warrior.svg' }, // Берсерк - топор
-  'rogue': { emoji: '🗡️', image: '/avatars/rogue.svg' }, // Разбойник - кинжал
-  'thief': { emoji: '🗡️', image: '/avatars/thief.png' }, // Вор - кинжал
-  'assassin': { emoji: '🗡️', image: '/avatars/assassin.png' }, // Убийца - кинжал
-  'archer': { emoji: '🏹', image: '/avatars/archer.png' }, // Лучник - лук
-  'hunter': { emoji: '🏹', image: '/avatars/hunter.png' }, // Охотник - лук
-  'ranger': { emoji: '🏹', image: '/avatars/ranger.png' }, // Следопыт - лук
-  'monk': { emoji: '🥋', image: '/avatars/monk.png' }, // Монах - кимоно
-  'bard': { emoji: '🎵', image: '/avatars/bard.png' }, // Бард - нота
-  'death_knight': { emoji: '💀', image: '/avatars/death_knight.png' } // Рыцарь Смерти - череп
+  // Классы с полноценными картинками (из твоих 4 картинок)
+  'Маг': { emoji: '🔮', image: '/avatars/mage.png' }, // Маг - полноценная картинка
+  'Берсерк': { emoji: '🪓', image: '/avatars/berserker.png' }, // Берсерк - полноценная картинка
+  'Лучник': { emoji: '🏹', image: '/avatars/archer.png' }, // Лучник - полноценная картинка
+  'Убийца': { emoji: '🗡️', image: '/avatars/rogue.png' }, // Убийца (вместо Разбойника) - полноценная картинка
+  
+  // Остальные классы с эмодзи (пока нет картинок)
+  'Воин': { emoji: '⚔️' }, // Воин - мечи
+  'Паладин': { emoji: '🛡️' }, // Паладин - щит
+  'Некромант': { emoji: '💀' }, // Некромант - череп
+  'Друид': { emoji: '🌿' }, // Друид - листья
+  'Монах': { emoji: '👊' }, // Монах - кулак
+  'Варлок': { emoji: '🔥' }, // Варлок - огонь
+  'Рыцарь Смерти': { emoji: '⚰️' }, // Рыцарь Смерти - гроб
+  'Следопыт': { emoji: '🦅' } // Следопыт - орел
 }
 
 export default function EquipmentComponent({ 
