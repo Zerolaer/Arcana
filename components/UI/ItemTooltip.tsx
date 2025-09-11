@@ -4,8 +4,22 @@ import { ReactNode } from 'react'
 import Tooltip from './Tooltip'
 
 export interface ItemStats {
-  damage?: number
+  // Базовые характеристики
+  strength_bonus?: number
+  dexterity_bonus?: number
+  intelligence_bonus?: number
+  vitality_bonus?: number
+  energy_bonus?: number
+  luck_bonus?: number
+  
+  // Боевые характеристики
+  attack_damage?: number
+  magic_damage?: number
   defense?: number
+  magic_resistance?: number
+  
+  // Старые поля для совместимости
+  damage?: number
   health?: number
   mana?: number
   critChance?: number
@@ -76,8 +90,22 @@ const rarityNames = {
 }
 
 const statNames: Record<string, string> = {
-  damage: 'Урон',
+  // Базовые характеристики
+  strength_bonus: 'Сила',
+  dexterity_bonus: 'Ловкость',
+  intelligence_bonus: 'Интеллект',
+  vitality_bonus: 'Живучесть',
+  energy_bonus: 'Энергия',
+  luck_bonus: 'Удача',
+  
+  // Боевые характеристики
+  attack_damage: 'Физический урон',
+  magic_damage: 'Магический урон',
   defense: 'Защита',
+  magic_resistance: 'Магическая защита',
+  
+  // Старые поля для совместимости
+  damage: 'Урон',
   health: 'Здоровье',
   mana: 'Мана',
   critChance: 'Шанс крита',
@@ -103,17 +131,35 @@ export default function ItemTooltip({
     
     if (stats.length === 0) return null
 
+    // Группируем статы по типам
+    const baseStats = stats.filter(([key]) => key.includes('_bonus'))
+    const combatStats = stats.filter(([key]) => ['attack_damage', 'magic_damage', 'defense', 'magic_resistance'].includes(key))
+    const otherStats = stats.filter(([key]) => !key.includes('_bonus') && !['attack_damage', 'magic_damage', 'defense', 'magic_resistance'].includes(key))
+
+    const renderStatGroup = (stats: [string, number][], title: string) => {
+      if (stats.length === 0) return null
+      
+      return (
+        <div className="mb-2">
+          <div className="text-xs font-semibold text-blue-400 mb-1">{title}:</div>
+          {stats.map(([key, value]) => (
+            <div key={key} className="flex justify-between text-sm">
+              <span className="text-gray-300">{statNames[key] || key}:</span>
+              <span className="text-white font-medium">
+                {key.includes('Chance') || key.includes('Speed') ? `${value}%` : `+${value}`}
+              </span>
+            </div>
+          ))}
+        </div>
+      )
+    }
+
     return (
       <div className="border-t border-white/20 pt-3 mt-3">
         <div className="text-sm font-semibold text-green-400 mb-2">Характеристики:</div>
-        {stats.map(([key, value]) => (
-          <div key={key} className="flex justify-between text-sm">
-            <span className="text-gray-300">{statNames[key] || key}:</span>
-            <span className="text-white font-medium">
-              {key.includes('Chance') || key.includes('Speed') ? `${value}%` : `+${value}`}
-            </span>
-          </div>
-        ))}
+        {renderStatGroup(baseStats, 'Базовые характеристики')}
+        {renderStatGroup(combatStats, 'Боевые характеристики')}
+        {renderStatGroup(otherStats, 'Дополнительные эффекты')}
       </div>
     )
   }

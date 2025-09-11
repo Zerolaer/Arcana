@@ -105,18 +105,32 @@ export default function DatabaseInventoryPanel({ character, onUpdateCharacter, i
               id: inventoryItem.item.id, // VARCHAR из items_new
               name: inventoryItem.item.name,
               description: inventoryItem.item.description || '',
-              rarity: 'common', // Будет определяться по grade_id
+              rarity: inventoryItem.item.rarity || 'common',
               type: itemType,
-              subType: '',
+              subType: inventoryItem.item.subType || '',
               icon: inventoryItem.item.icon,
-              level: 1,
-              stats: inventoryItem.actual_stats && typeof inventoryItem.actual_stats === 'object' ? inventoryItem.actual_stats : {},
-              value: inventoryItem.value || 0,
-              stackable: true,
-              stackSize: inventoryItem.stack_size || 1,
+              level: inventoryItem.item.level_requirement || 1,
+              stats: {
+                // Базовые характеристики
+                strength_bonus: inventoryItem.item.strength_bonus || 0,
+                dexterity_bonus: inventoryItem.item.dexterity_bonus || 0,
+                intelligence_bonus: inventoryItem.item.intelligence_bonus || 0,
+                vitality_bonus: inventoryItem.item.vitality_bonus || 0,
+                energy_bonus: inventoryItem.item.energy_bonus || 0,
+                luck_bonus: inventoryItem.item.luck_bonus || 0,
+                
+                // Боевые характеристики
+                attack_damage: inventoryItem.item.attack_damage || 0,
+                magic_damage: inventoryItem.item.magic_damage || 0,
+                defense: inventoryItem.item.defense || 0,
+                magic_resistance: inventoryItem.item.magic_resistance || 0
+              },
+              value: inventoryItem.item.vendor_price || 0,
+              stackable: inventoryItem.item.stack_size > 1,
+              stackSize: inventoryItem.item.stack_size || 1,
               quality: inventoryItem.quality || 50, // новая система качества
               setBonus: '',
-              equipment_slot: inventoryItem.item.equipment_slot || null,
+              equipment_slot: inventoryItem.item.slot || null,
               slot_position: inventoryItem.slot_position,
               item_key: inventoryItem.item.id, // Используем id как item_key
               isEquipped: isEquipped // Проверяем экипировку по ID

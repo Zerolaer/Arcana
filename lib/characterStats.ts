@@ -76,97 +76,105 @@ const BASE_STAT_MODIFIERS = {
 export function calculateCharacterStats(character: Character, equipmentBonuses: any = {}): CalculatedStats {
   const { strength, dexterity, intelligence, vitality, energy, luck } = character
   
+  // Добавляем бонусы от экипировки к базовым характеристикам
+  const totalStrength = strength + (equipmentBonuses.strength_bonus || 0)
+  const totalDexterity = dexterity + (equipmentBonuses.dexterity_bonus || 0)
+  const totalIntelligence = intelligence + (equipmentBonuses.intelligence_bonus || 0)
+  const totalVitality = vitality + (equipmentBonuses.vitality_bonus || 0)
+  const totalEnergy = energy + (equipmentBonuses.energy_bonus || 0)
+  const totalLuck = luck + (equipmentBonuses.luck_bonus || 0)
+  
   // Ресурсы
   const max_health = Math.round(
     BASE_STAT_MODIFIERS.base_health + 
-    vitality * BASE_STAT_MODIFIERS.health_per_vitality +
+    totalVitality * BASE_STAT_MODIFIERS.health_per_vitality +
     (equipmentBonuses.health || 0)
   )
   
   const max_mana = Math.round(
     BASE_STAT_MODIFIERS.base_mana + 
-    energy * BASE_STAT_MODIFIERS.mana_per_energy +
-    intelligence * BASE_STAT_MODIFIERS.mana_per_energy +
+    totalEnergy * BASE_STAT_MODIFIERS.mana_per_energy +
+    totalIntelligence * BASE_STAT_MODIFIERS.mana_per_energy +
     (equipmentBonuses.mana || 0)
   )
   
   const max_stamina = Math.round(
     BASE_STAT_MODIFIERS.base_stamina + 
-    vitality * BASE_STAT_MODIFIERS.stamina_per_vitality +
-    dexterity * BASE_STAT_MODIFIERS.stamina_per_dexterity +
+    totalVitality * BASE_STAT_MODIFIERS.stamina_per_vitality +
+    totalDexterity * BASE_STAT_MODIFIERS.stamina_per_dexterity +
     (equipmentBonuses.stamina || 0)
   )
   
   // Боевые характеристики
   const attack_damage = Math.round(
-    strength * BASE_STAT_MODIFIERS.attack_damage_per_strength +
-    dexterity * BASE_STAT_MODIFIERS.attack_damage_per_dexterity +
+    totalStrength * BASE_STAT_MODIFIERS.attack_damage_per_strength +
+    totalDexterity * BASE_STAT_MODIFIERS.attack_damage_per_dexterity +
     (equipmentBonuses.attack_damage || 0)
   )
   
   const magic_damage = Math.round(
-    intelligence * BASE_STAT_MODIFIERS.magic_damage_per_intelligence +
+    totalIntelligence * BASE_STAT_MODIFIERS.magic_damage_per_intelligence +
     (equipmentBonuses.magic_damage || 0)
   )
   
   const defense = Math.round(
-    vitality * BASE_STAT_MODIFIERS.defense_per_vitality +
-    strength * BASE_STAT_MODIFIERS.defense_per_strength +
+    totalVitality * BASE_STAT_MODIFIERS.defense_per_vitality +
+    totalStrength * BASE_STAT_MODIFIERS.defense_per_strength +
     (equipmentBonuses.defense || 0)
   )
   
   const magic_resistance = Math.round(
-    energy * BASE_STAT_MODIFIERS.magic_resistance_per_energy +
-    intelligence * BASE_STAT_MODIFIERS.magic_resistance_per_intelligence +
+    totalEnergy * BASE_STAT_MODIFIERS.magic_resistance_per_energy +
+    totalIntelligence * BASE_STAT_MODIFIERS.magic_resistance_per_intelligence +
     (equipmentBonuses.magic_resistance || 0)
   )
   
   // Критические характеристики
   const critical_chance = Math.min(
     BASE_STAT_MODIFIERS.base_critical_chance +
-    luck * BASE_STAT_MODIFIERS.critical_chance_per_luck +
-    dexterity * BASE_STAT_MODIFIERS.critical_chance_per_dexterity +
+    totalLuck * BASE_STAT_MODIFIERS.critical_chance_per_luck +
+    totalDexterity * BASE_STAT_MODIFIERS.critical_chance_per_dexterity +
     (equipmentBonuses.critical_chance || 0),
     50.0 // Максимум 50%
   )
   
   const critical_damage = Math.round(
     (BASE_STAT_MODIFIERS.base_critical_damage + 
-    strength * BASE_STAT_MODIFIERS.critical_damage_per_strength +
+    totalStrength * BASE_STAT_MODIFIERS.critical_damage_per_strength +
     (equipmentBonuses.critical_damage || 0)) * 100
   ) / 100
   
   // Скорость
   const attack_speed = Math.round(
     (BASE_STAT_MODIFIERS.base_attack_speed + 
-    dexterity * BASE_STAT_MODIFIERS.attack_speed_per_dexterity +
+    totalDexterity * BASE_STAT_MODIFIERS.attack_speed_per_dexterity +
     (equipmentBonuses.attack_speed || 0)) * 100
   ) / 100
   
   const movement_speed = Math.round(
     (BASE_STAT_MODIFIERS.base_movement_speed + 
-    dexterity * BASE_STAT_MODIFIERS.movement_speed_per_dexterity +
+    totalDexterity * BASE_STAT_MODIFIERS.movement_speed_per_dexterity +
     (equipmentBonuses.movement_speed || 0)) * 100
   ) / 100
   
   // Регенерация
   const health_regen = Math.round(
     (BASE_STAT_MODIFIERS.base_health_regen + 
-    vitality * 0.1 + 
+    totalVitality * 0.1 + 
     (equipmentBonuses.health_regen || 0)) * 100
   ) / 100
   
   const mana_regen = Math.round(
     (BASE_STAT_MODIFIERS.base_mana_regen + 
-    energy * 0.1 + 
-    intelligence * 0.05 +
+    totalEnergy * 0.1 + 
+    totalIntelligence * 0.05 +
     (equipmentBonuses.mana_regen || 0)) * 100
   ) / 100
   
   const stamina_regen = Math.round(
     (BASE_STAT_MODIFIERS.base_stamina_regen + 
-    vitality * 0.05 + 
-    dexterity * 0.1 +
+    totalVitality * 0.05 + 
+    totalDexterity * 0.1 +
     (equipmentBonuses.stamina_regen || 0)) * 100
   ) / 100
   

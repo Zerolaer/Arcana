@@ -68,16 +68,30 @@ export default function EquipmentPanel({ character, onUpdateCharacter, isLoading
               name: equippedItem.item.name,
               description: equippedItem.item.description,
               rarity: equippedItem.item.rarity,
-              type: equippedItem.item.type,
-              subType: equippedItem.item.subType,
+              type: equippedItem.item.item_type,
+              subType: equippedItem.item.subType || '',
               icon: equippedItem.item.icon,
-              level: equippedItem.item.level,
-              stats: equippedItem.item.stats,
-              value: equippedItem.item.value,
+              level: equippedItem.item.level_requirement,
+              stats: {
+                // Базовые характеристики
+                strength_bonus: equippedItem.item.strength_bonus || 0,
+                dexterity_bonus: equippedItem.item.dexterity_bonus || 0,
+                intelligence_bonus: equippedItem.item.intelligence_bonus || 0,
+                vitality_bonus: equippedItem.item.vitality_bonus || 0,
+                energy_bonus: equippedItem.item.energy_bonus || 0,
+                luck_bonus: equippedItem.item.luck_bonus || 0,
+                
+                // Боевые характеристики
+                attack_damage: equippedItem.item.attack_damage || 0,
+                magic_damage: equippedItem.item.magic_damage || 0,
+                defense: equippedItem.item.defense || 0,
+                magic_resistance: equippedItem.item.magic_resistance || 0
+              },
+              value: equippedItem.item.vendor_price || 0,
               stackable: false,
               stackSize: 1,
               quality: equippedItem.quality || 50,
-              setBonus: equippedItem.item.setBonus
+              setBonus: equippedItem.item.setBonus || ''
             },
             quality: equippedItem.quality || 50,
             upgradeLevel: equippedItem.upgrade_level,
