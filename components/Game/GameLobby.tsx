@@ -124,7 +124,7 @@ export default function GameLobby({ user, onCharacterCreated, onLogout }: GameLo
         class_id: selectedClass.id,
         level: 1,
         experience: 0,
-        experience_to_next: 1000,
+        experience_to_next: 55, // Updated to new balanced system's L1->L2 XP
         ...startingStats,
         stat_points: 0,
         health: maxHealth,
