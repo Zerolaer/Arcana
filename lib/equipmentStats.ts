@@ -1,29 +1,6 @@
 import { Character } from '@/types/game'
 import { supabase } from './supabase'
-
-/**
- * Интерфейс для бонусов с экипировки
- */
-export interface EquipmentBonuses {
-  // Базовые характеристики
-  strength_bonus: number
-  dexterity_bonus: number
-  intelligence_bonus: number
-  vitality_bonus: number
-  energy_bonus: number
-  luck_bonus: number
-  
-  // Боевые характеристики
-  attack_damage: number
-  magic_damage: number
-  defense: number
-  magic_resistance: number
-  
-  // Ресурсы (для совместимости)
-  health: number
-  mana: number
-  stamina: number
-}
+import { EquipmentBonuses } from './characterStats'
 
 /**
  * Получает бонусы с экипировки персонажа
@@ -31,33 +8,67 @@ export interface EquipmentBonuses {
 export async function getEquipmentBonuses(characterId: string): Promise<EquipmentBonuses> {
   try {
     const { data, error } = await (supabase as any)
-      .rpc('get_character_equipment', { p_character_id: characterId })
+      .rpc('get_equipment_bonuses', { p_character_id: characterId })
 
     if (error) {
-      console.error('Error loading equipment:', error)
+      console.error('Error loading equipment bonuses:', error)
       return getEmptyBonuses()
     }
 
-    const bonuses: EquipmentBonuses = getEmptyBonuses()
+    // Если функция вернула данные, используем их
+    if (data) {
+      return data
+    }
 
-    if (data && Array.isArray(data)) {
-      data.forEach((equippedItem: any) => {
-        if (equippedItem.item) {
-          const item = equippedItem.item
+    // Иначе загружаем экипировку и считаем бонусы вручную
+    const { data: equipment, error: equipmentError } = await supabase
+      .from('character_equipment')
+      .select(`
+        item_id,
+        items!inner (
+          agility_bonus,
+          precision_bonus,
+          evasion_bonus,
+          intelligence_bonus,
+          spell_power_bonus,
+          resistance_bonus,
+          strength_bonus,
+          endurance_bonus,
+          armor_bonus,
+          stealth_bonus,
+          attack_damage,
+          defense
+        )
+      `)
+      .eq('character_id', characterId)
+
+    if (equipmentError) {
+      console.error('Error loading equipment:', equipmentError)
+      return getEmptyBonuses()
+    }
+
+    const bonuses = getEmptyBonuses()
+
+    if (equipment && Array.isArray(equipment)) {
+      equipment.forEach((equippedItem: any) => {
+        if (equippedItem.items) {
+          const item = equippedItem.items
           
-          // Базовые характеристики
-          bonuses.strength_bonus += item.strength_bonus || 0
-          bonuses.dexterity_bonus += item.dexterity_bonus || 0
-          bonuses.intelligence_bonus += item.intelligence_bonus || 0
-          bonuses.vitality_bonus += item.vitality_bonus || 0
-          bonuses.energy_bonus += item.energy_bonus || 0
-          bonuses.luck_bonus += item.luck_bonus || 0
+          // Новые характеристики
+          bonuses.agility += item.agility_bonus || 0
+          bonuses.precision += item.precision_bonus || 0
+          bonuses.evasion += item.evasion_bonus || 0
+          bonuses.intelligence += item.intelligence_bonus || 0
+          bonuses.spell_power += item.spell_power_bonus || 0
+          bonuses.resistance += item.resistance_bonus || 0
+          bonuses.strength += item.strength_bonus || 0
+          bonuses.endurance += item.endurance_bonus || 0
+          bonuses.armor += item.armor_bonus || 0
+          bonuses.stealth += item.stealth_bonus || 0
           
           // Боевые характеристики
           bonuses.attack_damage += item.attack_damage || 0
-          bonuses.magic_damage += item.magic_damage || 0
           bonuses.defense += item.defense || 0
-          bonuses.magic_resistance += item.magic_resistance || 0
         }
       })
     }
@@ -74,24 +85,33 @@ export async function getEquipmentBonuses(characterId: string): Promise<Equipmen
  */
 function getEmptyBonuses(): EquipmentBonuses {
   return {
-    strength_bonus: 0,
-    dexterity_bonus: 0,
-    intelligence_bonus: 0,
-    vitality_bonus: 0,
-    energy_bonus: 0,
-    luck_bonus: 0,
+    agility: 0,
+    precision: 0,
+    evasion: 0,
+    intelligence: 0,
+    spell_power: 0,
+    resistance: 0,
+    strength: 0,
+    endurance: 0,
+    armor: 0,
+    stealth: 0,
     attack_damage: 0,
-    magic_damage: 0,
     defense: 0,
-    magic_resistance: 0,
     health: 0,
     mana: 0,
-    stamina: 0
+    magic_damage: 0,
+    magic_resistance: 0,
+    critical_chance: 0,
+    critical_damage: 0,
+    attack_speed: 0,
+    accuracy: 0,
+    health_regen: 0,
+    mana_regen: 0
   }
 }
 
 /**
- * Рассчитывает итоговые характеристики персонажа с учетом экипировки
+ * Рассчитывает статы персонажа с учетом экипировки
  */
 export async function calculateCharacterStatsWithEquipment(character: Character): Promise<any> {
   const equipmentBonuses = await getEquipmentBonuses(character.id)

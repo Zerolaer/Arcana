@@ -3,7 +3,33 @@ import { Character } from '@/types/game'
 /**
  * Единая система расчета характеристик персонажа
  * Новая упрощенная система с 4 классами
+ * Включает бонусы от предметов
  */
+
+export interface EquipmentBonuses {
+  agility: number
+  precision: number
+  evasion: number
+  intelligence: number
+  spell_power: number
+  resistance: number
+  strength: number
+  endurance: number
+  armor: number
+  stealth: number
+  attack_damage: number
+  defense: number
+  health: number
+  mana: number
+  magic_damage: number
+  magic_resistance: number
+  critical_chance: number
+  critical_damage: number
+  attack_speed: number
+  accuracy: number
+  health_regen: number
+  mana_regen: number
+}
 
 export interface CalculatedStats {
   // Ресурсы
@@ -65,24 +91,30 @@ const BASE_STAT_MODIFIERS = {
 
 /**
  * Рассчитывает все характеристики персонажа на основе новых статов
+ * Включает бонусы от экипировки
  */
-export function calculateCharacterStats(character: Character, equipmentBonuses: any = {}): CalculatedStats {
+export function calculateCharacterStats(character: Character, equipmentBonuses: EquipmentBonuses = {
+  agility: 0, precision: 0, evasion: 0, intelligence: 0, spell_power: 0, resistance: 0,
+  strength: 0, endurance: 0, armor: 0, stealth: 0, attack_damage: 0, defense: 0,
+  health: 0, mana: 0, magic_damage: 0, magic_resistance: 0, critical_chance: 0,
+  critical_damage: 0, attack_speed: 0, accuracy: 0, health_regen: 0, mana_regen: 0
+}): CalculatedStats {
   const { 
     agility, precision, evasion, intelligence, spell_power, resistance,
     strength, endurance, armor, stealth 
   } = character
   
   // Добавляем бонусы от экипировки к базовым характеристикам
-  const totalAgility = agility + (equipmentBonuses.agility_bonus || 0)
-  const totalPrecision = precision + (equipmentBonuses.precision_bonus || 0)
-  const totalEvasion = evasion + (equipmentBonuses.evasion_bonus || 0)
-  const totalIntelligence = intelligence + (equipmentBonuses.intelligence_bonus || 0)
-  const totalSpellPower = spell_power + (equipmentBonuses.spell_power_bonus || 0)
-  const totalResistance = resistance + (equipmentBonuses.resistance_bonus || 0)
-  const totalStrength = strength + (equipmentBonuses.strength_bonus || 0)
-  const totalEndurance = endurance + (equipmentBonuses.endurance_bonus || 0)
-  const totalArmor = armor + (equipmentBonuses.armor_bonus || 0)
-  const totalStealth = stealth + (equipmentBonuses.stealth_bonus || 0)
+  const totalAgility = agility + equipmentBonuses.agility
+  const totalPrecision = precision + equipmentBonuses.precision
+  const totalEvasion = evasion + equipmentBonuses.evasion
+  const totalIntelligence = intelligence + equipmentBonuses.intelligence
+  const totalSpellPower = spell_power + equipmentBonuses.spell_power
+  const totalResistance = resistance + equipmentBonuses.resistance
+  const totalStrength = strength + equipmentBonuses.strength
+  const totalEndurance = endurance + equipmentBonuses.endurance
+  const totalArmor = armor + equipmentBonuses.armor
+  const totalStealth = stealth + equipmentBonuses.stealth
   
   // Ресурсы
   const max_health = Math.round(
