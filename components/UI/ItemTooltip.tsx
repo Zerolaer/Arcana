@@ -127,7 +127,9 @@ export default function ItemTooltip({
   const renderStats = () => {
     if (!item.stats || typeof item.stats !== 'object') return null
     
-    const stats = Object.entries(item.stats).filter(([_, value]) => value && value > 0)
+    const stats = Object.entries(item.stats)
+      .filter(([_, value]) => value && value > 0)
+      .map(([key, value]) => [key, value!] as [string, number])
     
     if (stats.length === 0) return null
 
