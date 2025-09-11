@@ -181,12 +181,12 @@ export default function CombatPanel({ character, onUpdateCharacter, isLoading }:
           return
         }
         
-        if (!mobData?.loot_table_id) {
+        if (!mobData || !(mobData as any).loot_table_id) {
           console.log('❌ No loot table for mob:', mob.name)
           return
         }
         
-        console.log('📦 Mob loot table ID:', mobData.loot_table_id)
+        console.log('📦 Mob loot table ID:', (mobData as any).loot_table_id)
         
         // Получаем предметы из таблицы лута
         const { data: lootData, error: lootError } = await supabase
@@ -203,7 +203,7 @@ export default function CombatPanel({ character, onUpdateCharacter, isLoading }:
               rarity
             )
           `)
-          .eq('loot_table_id', mobData.loot_table_id)
+          .eq('loot_table_id', (mobData as any).loot_table_id)
         
         if (lootError) {
           console.error('Error getting loot drops:', lootError)
@@ -217,24 +217,24 @@ export default function CombatPanel({ character, onUpdateCharacter, isLoading }:
           
           for (const drop of lootData) {
             const randomChance = Math.random() * 100
-            console.log(`🎲 Rolling for ${drop.items.name}: ${randomChance.toFixed(2)}% vs ${drop.drop_rate}%`)
+            console.log(`🎲 Rolling for ${(drop as any).items.name}: ${randomChance.toFixed(2)}% vs ${(drop as any).drop_rate}%`)
             
-            if (randomChance <= drop.drop_rate) {
-              const quantity = Math.floor(Math.random() * (drop.quantity_max - drop.quantity_min + 1)) + drop.quantity_min
+            if (randomChance <= (drop as any).drop_rate) {
+              const quantity = Math.floor(Math.random() * ((drop as any).quantity_max - (drop as any).quantity_min + 1)) + (drop as any).quantity_min
               
               // Добавляем предмет в инвентарь
-              const { error: addError } = await supabase
+              const { error: addError } = await (supabase as any)
                 .from('character_inventory')
                 .insert({
                   character_id: character.id,
-                  item_id: drop.items.id,
+                  item_id: (drop as any).items.id,
                   quantity: quantity,
                   slot_position: Math.floor(Math.random() * 100) + 1 // Временное решение
                 })
               
               if (!addError) {
-                droppedItemsList.push(`${drop.items.name} x${quantity}`)
-                console.log(`✅ Dropped: ${drop.items.name} x${quantity}`)
+                droppedItemsList.push(`${(drop as any).items.name} x${quantity}`)
+                console.log(`✅ Dropped: ${(drop as any).items.name} x${quantity}`)
               } else {
                 console.error('Error adding item to inventory:', addError)
               }
