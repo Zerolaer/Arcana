@@ -88,6 +88,8 @@ const CLASS_AVATARS: Record<string, { emoji: string; image?: string }> = {
   'Следопыт': { emoji: '🦅' } // Следопыт - орел
 }
 
+console.log('CLASS_AVATARS loaded:', CLASS_AVATARS)
+
 export default function EquipmentComponent({ 
   character, 
   onUpdateCharacter, 
@@ -100,6 +102,7 @@ export default function EquipmentComponent({
   // Загрузка информации о классе
   const loadCharacterClass = useCallback(async () => {
     try {
+      console.log('Loading character class for class_id:', character.class_id)
       const { data, error } = await supabase
         .from('character_classes')
         .select('name, icon')
@@ -111,8 +114,10 @@ export default function EquipmentComponent({
         return
       }
 
+      console.log('Character class data:', data)
       if (data) {
         setCharacterClass(data)
+        console.log('Set character class:', data)
       }
     } catch (error) {
       console.error('Error loading character class:', error)
@@ -267,7 +272,9 @@ export default function EquipmentComponent({
           <div className="relative w-48 h-64 bg-gradient-to-b from-dark-100/20 to-dark-200/40 border border-dark-300/30 rounded-lg flex items-center justify-center overflow-hidden">
             {/* Аватарка класса */}
             {(() => {
-              const avatarData = CLASS_AVATARS[character.class_id]
+              console.log('Rendering avatar:', { characterClass, characterClass_name: characterClass?.name })
+              const avatarData = characterClass?.name ? CLASS_AVATARS[characterClass.name] : null
+              console.log('Avatar data:', avatarData)
               if (avatarData?.image) {
                 // Показываем изображение если оно есть
                 return (
@@ -275,7 +282,11 @@ export default function EquipmentComponent({
                     src={avatarData.image} 
                     alt={characterClass?.name || 'Персонаж'}
                     className="w-full h-full object-cover opacity-90"
+                    onLoad={() => {
+                      console.log('Image loaded successfully:', avatarData.image)
+                    }}
                     onError={(e) => {
+                      console.error('Image failed to load:', avatarData.image, e)
                       // Если изображение не загрузилось, показываем эмодзи класса
                       const target = e.target as HTMLImageElement
                       target.style.display = 'none'
