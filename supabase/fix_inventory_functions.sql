@@ -55,12 +55,12 @@ BEGIN
                 'mana_regen', i.mana_regen
             ),
             'obtained_at', ci.created_at
-        )
+        ) ORDER BY ci.slot_position
     )
+    INTO v_result
     FROM character_inventory ci
     JOIN items i ON ci.item_id = i.id
-    WHERE ci.character_id = p_character_id
-    ORDER BY ci.slot_position;
+    WHERE ci.character_id = p_character_id;
     
     RETURN COALESCE(v_result, '[]'::json);
 END;
@@ -121,6 +121,7 @@ BEGIN
             )
         )
     )
+    INTO v_result
     FROM character_equipment ce
     JOIN items i ON ce.item_id = i.id
     WHERE ce.character_id = p_character_id;

@@ -47,6 +47,10 @@ export interface Character {
   attack_speed: number;
   accuracy: number;
   
+  // Защитные характеристики
+  dodge_chance: number;
+  stealth_bonus: number;
+  
   // Регенерация
   health_regen: number;
   mana_regen: number;

@@ -46,6 +46,10 @@ export interface CalculatedStats {
   attack_speed: number
   accuracy: number
   
+  // Защитные характеристики
+  dodge_chance: number
+  stealth_bonus: number
+  
   // Регенерация
   health_regen: number
   mana_regen: number
@@ -74,7 +78,11 @@ const BASE_STAT_MODIFIERS = {
   
   // Скорость и точность
   attack_speed_per_agility: 1.2,
-  accuracy_per_precision: 1.0,
+  accuracy_per_precision: 0.5,
+  
+  // Уклонение и скрытность
+  dodge_chance_per_evasion: 0.3,
+  stealth_bonus_per_stealth: 0.2,
   
   // Регенерация (базовая)
   base_health_regen: 1.0,
@@ -86,7 +94,9 @@ const BASE_STAT_MODIFIERS = {
   base_critical_chance: 5.0,
   base_critical_damage: 150.0,
   base_attack_speed: 100.0,
-  base_accuracy: 85.0
+  base_accuracy: 85.0,
+  base_dodge_chance: 5.0,
+  base_stealth_bonus: 0.0
 }
 
 /**
@@ -194,6 +204,18 @@ export function calculateCharacterStats(character: Character, equipmentBonuses: 
     (equipmentBonuses.mana_regen || 0)) * 100
   ) / 100
   
+  // Защитные характеристики
+  const dodge_chance = Math.min(
+    BASE_STAT_MODIFIERS.base_dodge_chance +
+    totalEvasion * BASE_STAT_MODIFIERS.dodge_chance_per_evasion,
+    25.0 // Максимум 25%
+  )
+  
+  const stealth_bonus = Math.round(
+    (BASE_STAT_MODIFIERS.base_stealth_bonus + 
+    totalStealth * BASE_STAT_MODIFIERS.stealth_bonus_per_stealth) * 100
+  ) / 100
+  
   return {
     max_health,
     max_mana,
@@ -205,6 +227,8 @@ export function calculateCharacterStats(character: Character, equipmentBonuses: 
     critical_damage,
     attack_speed,
     accuracy,
+    dodge_chance,
+    stealth_bonus,
     health_regen,
     mana_regen
   }
@@ -326,6 +350,8 @@ export function shouldUpdateStats(character: Character, calculatedStats: Calcula
     Math.abs(character.critical_damage - calculatedStats.critical_damage) > 0.01 ||
     Math.abs(character.attack_speed - calculatedStats.attack_speed) > 0.01 ||
     Math.abs(character.accuracy - calculatedStats.accuracy) > 0.01 ||
+    Math.abs((character.dodge_chance || 0) - calculatedStats.dodge_chance) > 0.01 ||
+    Math.abs((character.stealth_bonus || 0) - calculatedStats.stealth_bonus) > 0.01 ||
     Math.abs(character.health_regen - calculatedStats.health_regen) > 0.01 ||
     Math.abs(character.mana_regen - calculatedStats.mana_regen) > 0.01
   )

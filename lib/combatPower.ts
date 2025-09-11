@@ -32,8 +32,12 @@ function calculateEffectiveHP(character: Character): number {
   const averageDefense = (physicalDefense + magicDefense) / 2
   const damageReduction = averageDefense / (averageDefense + 100)
   
-  // Эффективное HP = базовое HP / (1 - редукция урона)
-  const effectiveHP = baseHP / (1 - damageReduction)
+  // Уклонение дополнительно защищает
+  const dodgeChance = stats.dodge_chance / 100
+  const evasionBonus = 1 + dodgeChance * 0.5 // 50% эффективность уклонения
+  
+  // Эффективное HP = базовое HP / (1 - редукция урона) * бонус уклонения
+  const effectiveHP = (baseHP / (1 - damageReduction)) * evasionBonus
   
   return Math.floor(effectiveHP)
 }
@@ -57,8 +61,14 @@ function calculateEffectiveDPS(character: Character): number {
   const critChance = stats.critical_chance / 100
   const critDamage = stats.critical_damage / 100
   
-  // Средний урон с учетом критов
-  const averageDamage = totalDamage * (1 + critChance * critDamage)
+  // Точность влияет на DPS (промахи снижают эффективность)
+  const accuracy = stats.accuracy / 100
+  
+  // Скрытность дает бонус к урону (сюрприз-атаки)
+  const stealthBonus = 1 + (stats.stealth_bonus / 100)
+  
+  // Средний урон с учетом критов, точности и скрытности
+  const averageDamage = totalDamage * (1 + critChance * critDamage) * accuracy * stealthBonus
   
   // Эффективный DPS = средний урон × скорость атаки
   const effectiveDPS = averageDamage * attackSpeed
