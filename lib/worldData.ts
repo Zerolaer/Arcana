@@ -9,7 +9,7 @@ const createMobs = (baseLevel: number): Mob[] => [
     health: baseLevel * 20,
     attack: baseLevel * 3,
     defense: baseLevel * 2,
-    experience_reward: baseLevel * 10,
+    experience_reward: Math.max(5, baseLevel * 2),
     gold_reward: baseLevel * 2,
     icon: '👹',
     rarity: 'common',

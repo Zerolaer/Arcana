@@ -15,11 +15,11 @@ export interface LevelData {
  * Параметры прогрессии (сбалансированы под комфортный темп)
  */
 const LEVEL_CONFIG = {
-  // Базовые параметры формулы
-  base: 50,
-  linear: 20,
-  quadratic: 35,
-  cubic: 0.3,
+  // Базовые параметры формулы (увеличены для медленной прокачки)
+  base: 100,
+  linear: 50,
+  quadratic: 80,
+  cubic: 0.5,
   
   // Софт-кап после 80 уровня
   softCapLevel: 80,
