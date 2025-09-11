@@ -75,8 +75,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, character, onC
     try {
       console.log('🔍 Начинаем добавление предмета:', { 
         characterId: character.id, 
-        itemId: selectedItem, 
-        quality: itemQuality 
+        itemId: selectedItem
       });
 
       // Находим свободный слот
