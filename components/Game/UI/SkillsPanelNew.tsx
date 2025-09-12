@@ -94,51 +94,20 @@ export default function SkillsPanelNew({ character, onUpdateCharacter, isLoading
           setAvailablePassiveSkills(formattedPassiveSkills)
         }
 
-        // Загружаем активные навыки из базы данных (только для класса персонажа)
-        const { data: activeSkillsData, error: activeError } = await (supabase as any)
-          .rpc('get_character_class_skills', { p_character_id: character.id })
+        // Активные навыки - используем статические данные с правильными статами
+        const classMapping = {
+          'Лучник': 'archer',
+          'Маг': 'mage', 
+          'Берсерк': 'berserker',
+          'Ассасин': 'assassin'
+        }
         
-        if (activeError) {
-          console.error('Ошибка загрузки активных навыков:', activeError)
-          // Fallback на статические данные
-          const classMapping = {
-            'Лучник': 'archer',
-            'Маг': 'mage', 
-            'Берсерк': 'berserker',
-            'Ассасин': 'assassin'
-          }
-          
-          const classNameKey = classMapping[character.class_id as keyof typeof classMapping] as keyof typeof getAvailableSkills
-          if (classNameKey) {
-            setClassName(classNameKey)
-            const activeSkills = getAvailableSkills(classNameKey, character.level)
-            setAvailableActiveSkills(activeSkills)
-          }
-        } else {
-          console.log('Активные навыки из БД:', activeSkillsData)
-          
-          // Преобразуем данные из БД в формат компонента
-          const formattedActiveSkills = activeSkillsData.map((skill: any) => ({
-            id: skill.skill_key,
-            name: skill.name,
-            description: skill.description,
-            level_requirement: skill.level_requirement,
-            icon: '⚔️',
-            skill_type: 'attack',
-            damage_type: 'physical',
-            base_damage: 0,
-            mana_cost: 0,
-            cooldown: 0,
-            scaling_stat: 'strength' as const,
-            scaling_ratio: 1.0,
-            class_requirements: [className],
-            cost_to_learn: skill.cost_to_learn,
-            is_learned: skill.is_learned,
-            nodes: []
-          }))
-          
-          console.log('Форматированные активные навыки:', formattedActiveSkills)
-          setAvailableActiveSkills(formattedActiveSkills)
+        const classNameKey = classMapping[className as keyof typeof classMapping] as keyof typeof getAvailableSkills
+        if (classNameKey) {
+          setClassName(classNameKey)
+          const activeSkills = getAvailableSkills(classNameKey, character.level)
+          console.log('Активные навыки (статические):', activeSkills)
+          setAvailableActiveSkills(activeSkills)
         }
         setSkillsLoading(false)
       } catch (error) {
@@ -207,30 +176,18 @@ export default function SkillsPanelNew({ character, onUpdateCharacter, isLoading
           )
         )
         
-        // Перезагружаем навыки из БД для синхронизации
-        const { data: skillsData } = await (supabase as any)
-          .rpc('get_character_class_skills', { p_character_id: character.id })
+        // Перезагружаем навыки из статических данных для синхронизации
+        const classMapping = {
+          'Лучник': 'archer',
+          'Маг': 'mage', 
+          'Берсерк': 'berserker',
+          'Ассасин': 'assassin'
+        }
         
-        if (skillsData) {
-          const formattedSkills = skillsData.map((skillData: any) => ({
-            id: skillData.skill_key,
-            name: skillData.name,
-            description: skillData.description,
-            level_requirement: skillData.level_requirement,
-            icon: '⚔️',
-            skill_type: 'attack',
-            damage_type: 'physical',
-            base_damage: 0,
-            mana_cost: 0,
-            cooldown: 0,
-            scaling_stat: 'strength' as const,
-            scaling_ratio: 1.0,
-            class_requirements: [className],
-            cost_to_learn: skillData.cost_to_learn,
-            is_learned: skillData.is_learned,
-            nodes: []
-          }))
-          setAvailableActiveSkills(formattedSkills)
+        const classNameKey = classMapping[className as keyof typeof classMapping] as keyof typeof getAvailableSkills
+        if (classNameKey) {
+          const activeSkills = getAvailableSkills(classNameKey, character.level)
+          setAvailableActiveSkills(activeSkills)
         }
       } else {
         console.error('Ошибка изучения в БД:', data?.error)
