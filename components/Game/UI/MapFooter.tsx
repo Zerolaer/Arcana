@@ -66,25 +66,47 @@ export default function MapFooter({ character, onUpdateCharacter, activeSkills: 
   useEffect(() => {
     const fetchLearnedSkills = async () => {
       try {
-        const { data, error } = await supabase
+        console.log('🔍 Загружаем изученные скиллы для персонажа:', character.id)
+        
+        // Сначала получаем skill_id из character_skills
+        const { data: characterSkillsData, error: characterSkillsError } = await supabase
           .from('character_skills')
-          .select(`
-            skill_id,
-            skills!inner(skill_key)
-          `)
+          .select('skill_id')
           .eq('character_id', character.id)
 
-        if (error) {
-          console.error('Error fetching learned skills:', error)
+        if (characterSkillsError) {
+          console.error('Error fetching character skills:', characterSkillsError)
           return
         }
 
-        if (data) {
-          const skillKeys = data
-            .map((row: any) => row.skills?.skill_key)
-            .filter(Boolean)
+        console.log('🔍 Найдены записи в character_skills:', characterSkillsData)
+
+        if (characterSkillsData && characterSkillsData.length > 0) {
+          // Получаем skill_key для каждого skill_id
+          const skillIds = characterSkillsData.map((row: any) => row.skill_id)
+          console.log('🔍 Skill IDs:', skillIds)
+
+          const { data: skillsData, error: skillsError } = await supabase
+            .from('skills')
+            .select('id, skill_key')
+            .in('id', skillIds)
+
+          if (skillsError) {
+            console.error('Error fetching skills:', skillsError)
+            return
+          }
+
+          console.log('🔍 Skills data:', skillsData)
+
+          const skillKeys = skillsData
+            ?.map((skill: any) => skill.skill_key)
+            .filter(Boolean) || []
+
           console.log('🔍 Загружены изученные скиллы:', skillKeys)
           setLearnedSkills(skillKeys)
+        } else {
+          console.log('🔍 Нет изученных скиллов')
+          setLearnedSkills([])
         }
       } catch (error) {
         console.error('Error fetching learned skills:', error)
