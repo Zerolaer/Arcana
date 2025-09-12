@@ -292,13 +292,25 @@ export default function SkillsPanelNew({ character, onUpdateCharacter, isLoading
                     
                     {/* Бонусы статов */}
                     <div className="text-xs">
-                      {skill.stat_bonuses && Object.entries(skill.stat_bonuses).map(([stat, value]) => (
-                        value && value > 0 ? (
-                          <span key={stat} className="mr-2 text-green-400">
-                            +{value} {stat}
-                          </span>
-                        ) : null
-                      ))}
+                      {(() => {
+                        // Обрабатываем stat_bonuses как объект или JSON строку
+                        let bonuses = skill.stat_bonuses
+                        if (typeof bonuses === 'string') {
+                          try {
+                            bonuses = JSON.parse(bonuses)
+                          } catch (e) {
+                            bonuses = {}
+                          }
+                        }
+                        
+                        return bonuses && Object.entries(bonuses).map(([stat, value]) => (
+                          value && value > 0 ? (
+                            <span key={stat} className="mr-2 text-green-400">
+                              +{value} {stat}
+                            </span>
+                          ) : null
+                        ))
+                      })()}
                     </div>
                   </div>
                 </div>

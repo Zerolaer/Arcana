@@ -14,6 +14,11 @@ export default function SkillsPanel({ character, onUpdateCharacter, isLoading }:
   // Получаем пассивные навыки для класса персонажа
   const className = getClassNameById(character.class_id)
   const passiveSkills = getAvailablePassiveSkills(className, character.level)
+  
+  // Отладочная информация
+  console.log('SkillsPanel - className:', className)
+  console.log('SkillsPanel - character.level:', character.level)
+  console.log('SkillsPanel - passiveSkills:', passiveSkills)
 
   return (
     <div className="flex-1 game-content p-4 space-y-4">
@@ -123,13 +128,25 @@ export default function SkillsPanel({ character, onUpdateCharacter, isLoading }:
                   <div className="mt-3 space-y-1">
                     <div className="text-xs text-green-400 font-semibold">Бонусы:</div>
                     <div className="flex flex-wrap gap-2">
-                      {Object.entries(skill.stat_bonuses).map(([stat, value]) => (
-                        value > 0 && (
-                          <div key={stat} className="text-xs px-2 py-1 bg-green-500/20 text-green-300 rounded border border-green-400/30">
-                            +{value} {stat}
-                          </div>
-                        )
-                      ))}
+                      {(() => {
+                        // Обрабатываем stat_bonuses как объект или JSON строку
+                        let bonuses = skill.stat_bonuses
+                        if (typeof bonuses === 'string') {
+                          try {
+                            bonuses = JSON.parse(bonuses)
+                          } catch (e) {
+                            bonuses = {}
+                          }
+                        }
+                        
+                        return Object.entries(bonuses).map(([stat, value]) => (
+                          value > 0 && (
+                            <div key={stat} className="text-xs px-2 py-1 bg-green-500/20 text-green-300 rounded border border-green-400/30">
+                              +{value} {stat}
+                            </div>
+                          )
+                        ))
+                      })()}
                     </div>
                   </div>
                 )}

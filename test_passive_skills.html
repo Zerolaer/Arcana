@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Passive Skills</title>
+</head>
+<body>
+    <h1>Test Passive Skills</h1>
+    <div id="output"></div>
+    
+    <script>
+        // Тестируем пассивные навыки
+        const CLASS_PASSIVE_SKILLS = {
+            'Лучник': [
+                {
+                    id: 'archer_precision',
+                    name: 'Точность Стрелка',
+                    description: 'Увеличивает точность и дальность атаки',
+                    level_requirement: 1,
+                    icon: '🎯',
+                    stat_bonuses: {
+                        precision: 8,
+                        agility: 5
+                    },
+                    is_learned: true,
+                    class_requirements: ['Лучник']
+                }
+            ]
+        }
+        
+        function getAvailablePassiveSkills(className, level) {
+            const classSkills = CLASS_PASSIVE_SKILLS[className] || []
+            return classSkills.map(skill => ({
+                ...skill,
+                is_learned: skill.level_requirement <= level
+            }))
+        }
+        
+        // Тест
+        const skills = getAvailablePassiveSkills('Лучник', 1)
+        console.log('Skills:', skills)
+        
+        const output = document.getElementById('output')
+        output.innerHTML = `
+            <h2>Результат теста:</h2>
+            <pre>${JSON.stringify(skills, null, 2)}</pre>
+            <h3>Бонусы первого навыка:</h3>
+            <pre>${JSON.stringify(skills[0].stat_bonuses, null, 2)}</pre>
+        `
+    </script>
+</body>
+</html>
