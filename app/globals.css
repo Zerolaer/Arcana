@@ -563,6 +563,10 @@ a {
   min-width: 280px;
 }
 
+.skill-tooltip {
+  min-width: 280px;
+}
+
 .animate-tooltip-show {
   animation: tooltipShow 0.2s ease-out forwards;
 }

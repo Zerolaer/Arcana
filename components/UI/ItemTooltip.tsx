@@ -392,7 +392,9 @@ export default function ItemTooltip({
           transform: 'translate(-50%, -100%)'
         }}
       >
-        {tooltipContent}
+        <div className="tooltip-content animate-tooltip-show">
+          {tooltipContent}
+        </div>
       </div>
     )
   }

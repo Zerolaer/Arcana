@@ -6,7 +6,7 @@ import { ActiveSkill } from '@/types/skills'
 import { getAvailableSkills } from '@/lib/activeSkills'
 import { useActiveSkills } from '@/lib/useActiveSkills'
 import { Heart, Zap, FlaskConical } from 'lucide-react'
-import ItemTooltip from '../../UI/ItemTooltip'
+import SkillTooltip from '../../UI/SkillTooltip'
 import { supabase } from '@/lib/supabase'
 
 interface MapFooterProps {
@@ -174,6 +174,17 @@ export default function MapFooter({ character, onUpdateCharacter }: MapFooterPro
                     {skill.level_requirement}
                   </div>
                 )}
+                
+                {/* Тултип скилла */}
+                {skill && !isLocked && hoveredSkill?.id === skill.id && (
+                  <SkillTooltip
+                    skill={skill}
+                    isActive={isActive}
+                    onActivate={() => handleSkillToggle(skill.id)}
+                    onClose={handleSkillLeave}
+                    position={tooltipPosition}
+                  />
+                )}
               </div>
             )
           })}
@@ -193,30 +204,6 @@ export default function MapFooter({ character, onUpdateCharacter }: MapFooterPro
         </div>
       </div>
 
-      {/* Тултип скилла */}
-      {hoveredSkill && (
-        <ItemTooltip
-          item={{
-            id: hoveredSkill.id,
-            name: hoveredSkill.name,
-            description: hoveredSkill.description,
-            rarity: 'common',
-            type: 'weapon',
-            icon: hoveredSkill.icon,
-            value: 0,
-            stats: {
-              damage: hoveredSkill.base_damage,
-              mana_cost: hoveredSkill.mana_cost,
-              cooldown: hoveredSkill.cooldown
-            }
-          }}
-          position={tooltipPosition}
-          onClose={() => setHoveredSkill(null)}
-          showActivateButton={true}
-          isActive={activeSkills.get(hoveredSkill.id)?.isActive || false}
-          onActivate={() => handleSkillToggle(hoveredSkill.id)}
-        />
-      )}
     </div>
   )
 }
