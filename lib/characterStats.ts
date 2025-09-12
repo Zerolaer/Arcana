@@ -195,18 +195,18 @@ export function calculateCharacterStats(character: Character, equipmentBonuses: 
     95.0 // Максимум 95%
   )
   
-  // Регенерация
+  // Регенерация - используем Math.round для правильного округления (1.4 = 1, 1.5 = 2)
   const health_regen = Math.round(
-    (BASE_STAT_MODIFIERS.base_health_regen + 
+    BASE_STAT_MODIFIERS.base_health_regen + 
     totalEndurance * 0.1 + 
-    (equipmentBonuses.health_regen || 0)) * 100
-  ) / 100
+    (equipmentBonuses.health_regen || 0)
+  )
   
   const mana_regen = Math.round(
-    (BASE_STAT_MODIFIERS.base_mana_regen + 
+    BASE_STAT_MODIFIERS.base_mana_regen + 
     totalIntelligence * 0.1 + 
-    (equipmentBonuses.mana_regen || 0)) * 100
-  ) / 100
+    (equipmentBonuses.mana_regen || 0)
+  )
   
   // Защитные характеристики
   const dodge_chance = Math.min(

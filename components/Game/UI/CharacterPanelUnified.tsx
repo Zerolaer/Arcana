@@ -318,8 +318,8 @@ export default function CharacterPanelUnified({ character, onUpdateCharacter, is
               { name: 'Критический урон', value: `${calculatedStats.critical_damage.toFixed(0)}%`, icon: '⚡' },
               { name: 'Скорость атаки', value: `${calculatedStats.attack_speed.toFixed(0)}%`, icon: '🏃' },
               { name: 'Точность', value: `${calculatedStats.accuracy.toFixed(0)}%`, icon: '🎯' },
-              { name: 'Регенерация HP', value: `${calculatedStats.health_regen.toFixed(1)}/сек`, icon: '❤️', color: 'text-red-400' },
-              { name: 'Регенерация MP', value: `${calculatedStats.mana_regen.toFixed(1)}/сек`, icon: '💙', color: 'text-blue-400' }
+              { name: 'Регенерация HP', value: `${Math.round(calculatedStats.health_regen)}/сек`, icon: '❤️', color: 'text-red-400' },
+              { name: 'Регенерация MP', value: `${Math.round(calculatedStats.mana_regen)}/сек`, icon: '💙', color: 'text-blue-400' }
             ].map((stat) => (
               <div key={stat.name} className="flex items-center justify-between p-2 bg-dark-200/30 rounded border border-dark-300/30">
                 <div className="flex items-center space-x-2">

@@ -29,14 +29,14 @@ BEGIN
     END IF;
 
     -- Базовая регенерация: 1.0 в секунду + бонусы от новых характеристик
-    -- HP регенерация: 1.0 + (endurance * 0.05) + (level * 0.02)
-    v_base_health_regen := 1.0 + (v_character.endurance * 0.05) + (v_character.level * 0.02);
+    -- HP регенерация: 1.0 + (endurance * 0.05) + (level * 0.02) - округляем до целого
+    v_base_health_regen := ROUND(1.0 + (v_character.endurance * 0.05) + (v_character.level * 0.02));
     
-    -- MP регенерация: 1.0 + (intelligence * 0.05) + (level * 0.01)
-    v_base_mana_regen := 1.0 + (v_character.intelligence * 0.05) + (v_character.level * 0.01);
+    -- MP регенерация: 1.0 + (intelligence * 0.05) + (level * 0.01) - округляем до целого
+    v_base_mana_regen := ROUND(1.0 + (v_character.intelligence * 0.05) + (v_character.level * 0.01));
     
-    -- Stamina регенерация: 1.0 + (agility * 0.08) + (endurance * 0.03) + (level * 0.02)
-    v_base_stamina_regen := 1.0 + (v_character.agility * 0.08) + (v_character.endurance * 0.03) + (v_character.level * 0.02);
+    -- Stamina регенерация: 1.0 + (agility * 0.08) + (endurance * 0.03) + (level * 0.02) - округляем до целого
+    v_base_stamina_regen := ROUND(1.0 + (v_character.agility * 0.08) + (v_character.endurance * 0.03) + (v_character.level * 0.02));
 
     -- Получаем бонусы от экипировки
     SELECT get_character_equipment(p_character_id) INTO v_equipment;
@@ -55,10 +55,10 @@ BEGIN
              jsonb_array_elements(equipment_item->'item') AS item;
     END IF;
 
-    -- Итоговая регенерация (базовая + экипировка)
-    v_final_health_regen := v_base_health_regen + (v_equipment_health_regen * 0.1);
-    v_final_mana_regen := v_base_mana_regen + (v_equipment_mana_regen * 0.1);
-    v_final_stamina_regen := v_base_stamina_regen + (v_equipment_stamina_regen * 0.1);
+    -- Итоговая регенерация (базовая + экипировка) - округляем до целого
+    v_final_health_regen := ROUND(v_base_health_regen + (v_equipment_health_regen * 0.1));
+    v_final_mana_regen := ROUND(v_base_mana_regen + (v_equipment_mana_regen * 0.1));
+    v_final_stamina_regen := ROUND(v_base_stamina_regen + (v_equipment_stamina_regen * 0.1));
 
     -- Обновляем регенерацию в базе данных
     UPDATE characters 

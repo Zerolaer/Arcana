@@ -69,7 +69,7 @@ export default function CharacterFooter({ character }: CharacterFooterProps) {
                 <span>{Math.floor(character.health)} / {Math.floor(calculatedStats.max_health)}</span>
                 {calculatedStats.health_regen && character.health < calculatedStats.max_health && !character.is_in_combat && (
                   <span className="text-green-400 text-xs">
-                    +{Math.floor(calculatedStats.health_regen)}/сек
+                    +{Math.round(calculatedStats.health_regen)}/сек
                   </span>
                 )}
               </div>
@@ -91,7 +91,7 @@ export default function CharacterFooter({ character }: CharacterFooterProps) {
                 <span>{Math.floor(character.mana)} / {Math.floor(calculatedStats.max_mana)}</span>
                 {calculatedStats.mana_regen && character.mana < calculatedStats.max_mana && !character.is_in_combat && (
                   <span className="text-blue-400 text-xs">
-                    +{Math.floor(calculatedStats.mana_regen)}/сек
+                    +{Math.round(calculatedStats.mana_regen)}/сек
                   </span>
                 )}
               </div>
