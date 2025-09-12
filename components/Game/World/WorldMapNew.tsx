@@ -183,8 +183,14 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
         const xpResult = processXpGain(character.level, character.experience, result.experience)
         
         // Применяем урон и расход маны
-        const newHealth = Math.max(1, character.health - result.damageTaken)
-        const newMana = Math.max(0, character.mana - result.manaUsed)
+        // Используем текущие значения здоровья и маны, а не исходные
+        const currentHealth = character.health
+        const currentMana = character.mana
+        const newHealth = Math.max(1, currentHealth - result.damageTaken)
+        const newMana = Math.max(0, currentMana - result.manaUsed)
+        
+        console.log(`💔 Урон применен: ${currentHealth} -> ${newHealth} (урон: ${result.damageTaken})`)
+        console.log(`💧 Мана потрачена: ${currentMana} -> ${newMana} (потрачено: ${result.manaUsed})`)
         
         await onUpdateCharacter({
           level: xpResult.newLevel,

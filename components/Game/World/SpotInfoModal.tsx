@@ -23,6 +23,7 @@ export default function SpotInfoModal({
   activeSkills 
 }: SpotInfoModalProps) {
   const [isFarming, setIsFarming] = useState(false)
+  const [isAutoFarming, setIsAutoFarming] = useState(false)
 
   // Отладочная информация
   console.log('🔍 SpotInfoModal Debug:', {
@@ -85,6 +86,39 @@ export default function SpotInfoModal({
     } finally {
       setIsFarming(false)
     }
+  }
+
+  const handleAutoFarming = async () => {
+    if (activeSkills.length === 0) {
+      alert('Нет активных скиллов для боя!')
+      return
+    }
+
+    setIsAutoFarming(true)
+    console.log('🤖 Начинаем автофарм спота:', spot.name)
+    
+    const autoFarmLoop = async () => {
+      try {
+        while (isAutoFarming) {
+          await onStartFarming(spot, activeSkills)
+          
+          // Небольшая пауза между боями
+          await new Promise(resolve => setTimeout(resolve, 1000))
+        }
+      } catch (error) {
+        console.error('Ошибка во время автофарма:', error)
+      } finally {
+        setIsAutoFarming(false)
+      }
+    }
+    
+    // Запускаем цикл автофарма
+    autoFarmLoop()
+  }
+
+  const handleStopAutoFarming = () => {
+    setIsAutoFarming(false)
+    console.log('⏹️ Автофарм остановлен')
   }
 
   const totalExperience = spot.mobs.reduce((sum, mob) => sum + mob.experience_reward, 0)
@@ -279,6 +313,39 @@ export default function SpotInfoModal({
               </>
             )}
           </button>
+          
+          {/* Кнопка автофарма */}
+          {!isAutoFarming ? (
+            <button
+              onClick={handleAutoFarming}
+              disabled={activeSkills.length === 0}
+              className={`px-6 py-2 rounded-lg transition-colors flex items-center space-x-2 ${
+                activeSkills.length === 0
+                  ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                  : 'bg-blue-600 hover:bg-blue-700 text-white'
+              }`}
+            >
+              {activeSkills.length === 0 ? (
+                <>
+                  <Sword className="w-4 h-4" />
+                  <span>Нет активных скиллов</span>
+                </>
+              ) : (
+                <>
+                  <Sword className="w-4 h-4" />
+                  <span>Авто-бой</span>
+                </>
+              )}
+            </button>
+          ) : (
+            <button
+              onClick={handleStopAutoFarming}
+              className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors flex items-center space-x-2"
+            >
+              <div className="animate-pulse rounded-full h-4 w-4 bg-white"></div>
+              <span>Остановить</span>
+            </button>
+          )}
         </div>
       </div>
     </div>
