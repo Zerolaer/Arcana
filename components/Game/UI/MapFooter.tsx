@@ -97,34 +97,42 @@ export default function MapFooter({ character, onUpdateCharacter }: MapFooterPro
           {Array.from({ length: 6 }, (_, index) => {
             const skill = availableSkills[index]
             const isActive = skill ? activeSkills.get(skill.id)?.isActive || false : false
+            const isLocked = !skill || (skill && skill.level_requirement > character.level)
             
             return (
               <div
                 key={index}
                 className="relative"
-                onMouseEnter={skill ? (e) => handleSkillHover(skill, e) : undefined}
+                onMouseEnter={skill && !isLocked ? (e) => handleSkillHover(skill, e) : undefined}
                 onMouseLeave={handleSkillLeave}
               >
                 <button
                   className={`
                     w-12 h-12 rounded-lg border-2 flex items-center justify-center text-2xl
                     transition-all duration-200 hover:scale-105
-                    ${skill 
-                      ? isActive 
+                    ${isLocked
+                      ? 'border-gray-600 bg-gray-800 text-gray-500 cursor-not-allowed'
+                      : isActive 
                         ? 'border-yellow-400 bg-yellow-400/20 text-yellow-400' 
                         : 'border-dark-300 bg-dark-200 hover:border-blue-400 text-white'
-                      : 'border-dark-400 bg-dark-300 text-gray-500 cursor-not-allowed'
                     }
                   `}
-                  onClick={() => skill && handleSkillToggle(skill.id)}
-                  disabled={!skill}
+                  onClick={() => skill && !isLocked && handleSkillToggle(skill.id)}
+                  disabled={isLocked}
                 >
-                  {skill ? skill.icon : '?'}
+                  {isLocked ? '🔒' : (skill ? skill.icon : '?')}
                 </button>
                 
                 {/* Индикатор активности */}
-                {isActive && (
+                {isActive && !isLocked && (
                   <div className="absolute -top-1 -right-1 w-3 h-3 bg-yellow-400 rounded-full border border-dark-100" />
+                )}
+                
+                {/* Индикатор уровня для заблокированных скиллов */}
+                {isLocked && skill && (
+                  <div className="absolute -bottom-1 -right-1 bg-gray-600 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-bold">
+                    {skill.level_requirement}
+                  </div>
                 )}
               </div>
             )
