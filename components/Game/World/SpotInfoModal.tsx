@@ -99,15 +99,36 @@ export default function SpotInfoModal({
     setIsAutoFarming(true)
     autoFarmingRef.current = true
     
+    let iterationCount = 0
+    const maxIterations = 10 // Ограничиваем количество итераций
+    
     const autoFarmLoop = async () => {
       try {
-        while (autoFarmingRef.current) {
-          console.log('🔄 Автофарм: запускаем бой...')
-          await onStartFarming(spot, activeSkills)
+        while (autoFarmingRef.current && iterationCount < maxIterations) {
+          iterationCount++
+          console.log(`🔄 Автофарм: запускаем бой ${iterationCount}/${maxIterations}...`)
+          
+          try {
+            await onStartFarming(spot, activeSkills)
+            console.log(`✅ Автофарм: бой ${iterationCount} завершен успешно`)
+          } catch (farmingError) {
+            console.error(`❌ Автофарм: ошибка в бою ${iterationCount}:`, farmingError)
+            // Продолжаем следующий бой, не останавливаем весь цикл
+          }
+          
+          // Проверяем, не остановлен ли автофарм
+          if (!autoFarmingRef.current) {
+            console.log('⏹️ Автофарм: остановлен пользователем')
+            break
+          }
           
           // Небольшая пауза между боями
-          console.log('⏱️ Автофарм: пауза 1 секунда...')
-          await new Promise(resolve => setTimeout(resolve, 1000))
+          console.log('⏱️ Автофарм: пауза 2 секунды...')
+          await new Promise(resolve => setTimeout(resolve, 2000))
+        }
+        
+        if (iterationCount >= maxIterations) {
+          console.log('⏹️ Автофарм: достигнут лимит итераций')
         }
         console.log('⏹️ Автофарм: цикл завершен')
       } catch (error) {
@@ -348,13 +369,26 @@ export default function SpotInfoModal({
               )}
             </button>
           ) : (
-            <button
-              onClick={handleStopAutoFarming}
-              className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors flex items-center space-x-2"
-            >
-              <div className="animate-pulse rounded-full h-4 w-4 bg-white"></div>
-              <span>Остановить</span>
-            </button>
+            <div className="flex space-x-2">
+              <button
+                onClick={handleStopAutoFarming}
+                className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors flex items-center space-x-2"
+              >
+                <div className="animate-pulse rounded-full h-4 w-4 bg-white"></div>
+                <span>Остановить</span>
+              </button>
+              <button
+                onClick={() => {
+                  console.log('🛑 Принудительная остановка автофарма')
+                  autoFarmingRef.current = false
+                  setIsAutoFarming(false)
+                }}
+                className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors flex items-center space-x-2"
+              >
+                <span>🛑</span>
+                <span>Стоп</span>
+              </button>
+            </div>
           )}
         </div>
       </div>
