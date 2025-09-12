@@ -286,6 +286,8 @@ export class AutoCombatSystem {
     // Простое применение защиты
     const finalDamage = Math.max(1, totalDamage - target.defense)
     
+    console.log(`⚔️ Скилл ${skill.name}: базовый урон ${baseDamage} + бонус стата ${statBonus} = ${totalDamage}, итого ${Math.round(finalDamage)} (защита моба: ${target.defense})`)
+    
     return Math.round(finalDamage)
   }
 
@@ -293,6 +295,8 @@ export class AutoCombatSystem {
   private calculateBasicDamage(target: Mob): number {
     const baseDamage = this.character.attack_damage
     const finalDamage = Math.max(1, baseDamage - target.defense)
+    
+    console.log(`👊 Базовая атака: урон ${baseDamage}, итого ${Math.round(finalDamage)} (защита моба: ${target.defense})`)
     
     return Math.round(finalDamage)
   }
@@ -308,7 +312,7 @@ export class AutoCombatSystem {
   // Получение бонуса от стата
   private getStatBonus(stat: string): number {
     const statValue = this.character[stat as keyof Character] as number || 0
-    return Math.round(statValue * 0.5) // Простое масштабирование
+    return Math.round(statValue * 2.0) // Увеличиваем бонус от статов для скиллов
   }
 
   // Проверка условий остановки

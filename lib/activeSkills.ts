@@ -15,7 +15,7 @@ export const ACTIVE_SKILLS = {
       icon: '🏹',
       skill_type: 'active' as const,
       damage_type: 'physical' as const,
-      base_damage: 80,
+      base_damage: 200, // Увеличиваем базовый урон скилла
       mana_cost: 0,
       cooldown: 1,
       scaling_stat: 'agility' as const,
@@ -33,7 +33,7 @@ export const ACTIVE_SKILLS = {
       icon: '🎯',
       skill_type: 'active' as const,
       damage_type: 'physical' as const,
-      base_damage: 150,
+      base_damage: 300, // Увеличиваем урон мощного выстрела
       mana_cost: 15,
       cooldown: 3,
       scaling_stat: 'agility' as const,
