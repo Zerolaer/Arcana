@@ -162,7 +162,24 @@ export default function CombatPanel({ character, onUpdateCharacter, isLoading }:
     let droppedItems: string[] = []
     
     if (victory) {
-      experienceGained = Math.floor(mob.experience_reward * (1 + Math.random() * 0.2))
+      // Базовый опыт с небольшим рандомом
+      let baseExperience = Math.floor(mob.experience_reward * (1 + Math.random() * 0.2))
+      
+      // Модификатор уровня - если игрок намного выше моба, получает меньше опыта
+      const levelDifference = character.level - mob.level
+      let levelModifier = 1.0
+      
+      if (levelDifference > 5) {
+        levelModifier = 0.1 // 90% снижение опыта
+      } else if (levelDifference > 3) {
+        levelModifier = 0.3 // 70% снижение опыта
+      } else if (levelDifference > 1) {
+        levelModifier = 0.6 // 40% снижение опыта
+      } else if (levelDifference < -2) {
+        levelModifier = 1.5 // 50% бонус за сложных мобов
+      }
+      
+      experienceGained = Math.floor(baseExperience * levelModifier)
       goldGained = Math.floor(mob.gold_reward * (1 + Math.random() * 0.3))
       damageTaken = Math.floor(mob.attack_damage * 0.3)
       

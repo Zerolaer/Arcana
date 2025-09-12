@@ -1,68 +1,41 @@
--- ИСПРАВЛЕНИЕ ОПЫТА МОБОВ
--- Снижаем опыт чтобы прокачка была медленнее
+-- ================================================
+-- ИСПРАВЛЕНИЕ НАГРАД МОБОВ - СБАЛАНСИРОВАННЫЙ ОПЫТ
+-- ================================================
 
--- 1. Обновляем опыт мобов (снижаем в 5-10 раз)
-UPDATE mobs 
-SET 
-    experience_reward = CASE 
-        WHEN level = 1 THEN 5      -- Было 15, стало 5
-        WHEN level = 3 THEN 8      -- Было 35, стало 8  
-        WHEN level = 5 THEN 12     -- Было 55, стало 12
-        WHEN level = 8 THEN 18     -- Было 85, стало 18
-        WHEN level = 10 THEN 22    -- Было 65, стало 22
-        WHEN level = 15 THEN 35    -- Было 150, стало 35
-        WHEN level = 18 THEN 45    -- Было 180, стало 45
-        WHEN level = 20 THEN 55    -- Было 200, стало 55
-        WHEN level = 25 THEN 75    -- Было 280, стало 75
-        WHEN level = 30 THEN 95    -- Было 400, стало 95
-        ELSE experience_reward     -- Остальные не трогаем
-    END
-WHERE level BETWEEN 1 AND 30;
+-- Обновляем награды мобов для более сбалансированной прокачки
+-- Теперь нужно 8-12 мобов для повышения уровня на начальных уровнях
 
--- 2. Проверяем результат
-SELECT 
-    '=== ОБНОВЛЕННЫЕ НАГРАДЫ МОБОВ ===' as info;
+UPDATE mobs SET experience_reward = 7 WHERE name = 'Лесной Слизень';
+UPDATE mobs SET experience_reward = 9 WHERE name = 'Дикий Кролик';
+UPDATE mobs SET experience_reward = 12 WHERE name = 'Молодой Волк';
+UPDATE mobs SET experience_reward = 15 WHERE name = 'Гигантский Паук';
+UPDATE mobs SET experience_reward = 18 WHERE name = 'Лесной Страж';
 
-SELECT 
-    name,
-    level,
-    experience_reward,
-    gold_reward,
-    'XP за убийство' as description
+UPDATE mobs SET experience_reward = 22 WHERE name = 'Теневой Волк';
+UPDATE mobs SET experience_reward = 26 WHERE name = 'Злобный Орк';
+UPDATE mobs SET experience_reward = 30 WHERE name = 'Лесная Ведьма';
+UPDATE mobs SET experience_reward = 34 WHERE name = 'Древний Ent';
+UPDATE mobs SET experience_reward = 38 WHERE name = 'Король Медведь';
+
+UPDATE mobs SET experience_reward = 42 WHERE name = 'Горный Тролль';
+UPDATE mobs SET experience_reward = 46 WHERE name = 'Ледяной Элементаль';
+UPDATE mobs SET experience_reward = 50 WHERE name = 'Грифон';
+UPDATE mobs SET experience_reward = 54 WHERE name = 'Каменный Голем';
+UPDATE mobs SET experience_reward = 58 WHERE name = 'Драконенок';
+
+UPDATE mobs SET experience_reward = 62 WHERE name = 'Скелет-Воин';
+UPDATE mobs SET experience_reward = 66 WHERE name = 'Призрак';
+UPDATE mobs SET experience_reward = 70 WHERE name = 'Мумия';
+UPDATE mobs SET experience_reward = 74 WHERE name = 'Лич';
+UPDATE mobs SET experience_reward = 78 WHERE name = 'Древний Дракон';
+
+-- Проверяем результат
+SELECT name, level, experience_reward, 
+       CASE 
+         WHEN level <= 5 THEN '8-12 мобов для повышения уровня'
+         WHEN level <= 10 THEN '6-8 мобов для повышения уровня'
+         WHEN level <= 15 THEN '5-6 мобов для повышения уровня'
+         ELSE '4-5 мобов для повышения уровня'
+       END as progression_note
 FROM mobs 
-WHERE level BETWEEN 1 AND 30
 ORDER BY level;
-
--- 3. Показываем сколько мобов нужно для уровня
-SELECT 
-    '=== МОБОВ НУЖНО ДЛЯ УРОВНЯ ===' as info;
-
-SELECT 
-    1 as level,
-    105 as xp_required,
-    5 as xp_per_mob,
-    CEIL(105.0 / 5.0) as mobs_needed,
-    'Слайм 1 уровня' as mob_type
-UNION ALL
-SELECT 
-    2 as level,
-    120 as xp_required,
-    8 as xp_per_mob,
-    CEIL(120.0 / 8.0) as mobs_needed,
-    'Волк 3 уровня' as mob_type
-UNION ALL
-SELECT 
-    3 as level,
-    140 as xp_required,
-    12 as xp_per_mob,
-    CEIL(140.0 / 12.0) as mobs_needed,
-    'Паук 5 уровня' as mob_type
-UNION ALL
-SELECT 
-    5 as level,
-    180 as xp_required,
-    18 as xp_per_mob,
-    CEIL(180.0 / 18.0) as mobs_needed,
-    'Орк 8 уровня' as mob_type;
-
-SELECT '✅ ОПЫТ МОБОВ СБАЛАНСИРОВАН! Теперь нужно убивать больше мобов для уровня.' as result;
