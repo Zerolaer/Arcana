@@ -10,7 +10,7 @@ interface SpotInfoModalProps {
   character: Character
   isOpen: boolean
   onClose: () => void
-  onStartFarming: (spot: FarmSpot, activeSkills: string[]) => Promise<void>
+  onStartFarming: (spot: FarmSpot, activeSkills: string[], isAutoFarming?: boolean) => Promise<void>
   activeSkills: string[]
 }
 
@@ -99,20 +99,23 @@ export default function SpotInfoModal({
     setIsAutoFarming(true)
     autoFarmingRef.current = true
     
-    let iterationCount = 0
-    const maxIterations = 10 // Ограничиваем количество итераций
-    
     const autoFarmLoop = async () => {
       try {
-        while (autoFarmingRef.current && iterationCount < maxIterations) {
-          iterationCount++
-          console.log(`🔄 Автофарм: запускаем бой ${iterationCount}/${maxIterations}...`)
+        while (autoFarmingRef.current) {
+          // Проверяем здоровье персонажа
+          if (character.health <= 0) {
+            console.log('💀 Автофарм: персонаж умер, останавливаем')
+            break
+          }
+          
+          console.log('🔄 Автофарм: запускаем бой...')
           
           try {
-            await onStartFarming(spot, activeSkills)
-            console.log(`✅ Автофарм: бой ${iterationCount} завершен успешно`)
+            // Запускаем бой БЕЗ закрытия попапа
+            await onStartFarming(spot, activeSkills, true) // true = isAutoFarming
+            console.log('✅ Автофарм: бой завершен успешно')
           } catch (farmingError) {
-            console.error(`❌ Автофарм: ошибка в бою ${iterationCount}:`, farmingError)
+            console.error('❌ Автофарм: ошибка в бою:', farmingError)
             // Продолжаем следующий бой, не останавливаем весь цикл
           }
           
@@ -123,13 +126,10 @@ export default function SpotInfoModal({
           }
           
           // Небольшая пауза между боями
-          console.log('⏱️ Автофарм: пауза 2 секунды...')
-          await new Promise(resolve => setTimeout(resolve, 2000))
+          console.log('⏱️ Автофарм: пауза 1 секунда...')
+          await new Promise(resolve => setTimeout(resolve, 1000))
         }
         
-        if (iterationCount >= maxIterations) {
-          console.log('⏹️ Автофарм: достигнут лимит итераций')
-        }
         console.log('⏹️ Автофарм: цикл завершен')
       } catch (error) {
         console.error('Ошибка во время автофарма:', error)
@@ -147,6 +147,16 @@ export default function SpotInfoModal({
     console.log('⏹️ Останавливаем автофарм...')
     autoFarmingRef.current = false
     setIsAutoFarming(false)
+  }
+
+  // Обработчик закрытия попапа - останавливает автофарм
+  const handleClose = () => {
+    if (isAutoFarming) {
+      console.log('⏹️ Закрытие попапа - останавливаем автофарм')
+      autoFarmingRef.current = false
+      setIsAutoFarming(false)
+    }
+    onClose()
   }
 
   const totalExperience = spot.mobs.reduce((sum, mob) => sum + mob.experience_reward, 0)
@@ -168,7 +178,7 @@ export default function SpotInfoModal({
             </div>
           </div>
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="text-gray-400 hover:text-white transition-colors"
           >
             <X className="w-6 h-6" />

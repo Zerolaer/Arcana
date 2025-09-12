@@ -164,7 +164,7 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
   }
 
   // Начало фарма
-  const handleStartFarming = async (spot: FarmSpot, skills: string[]) => {
+  const handleStartFarming = async (spot: FarmSpot, skills: string[], isAutoFarming: boolean = false) => {
     console.log('🚀 Начинаем фарм спота:', spot.name, 'с скиллами:', skills)
     
     // Проверяем, есть ли активные скиллы
@@ -218,8 +218,11 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
       console.error('Ошибка во время фарма:', error)
     }
     
-    setShowSpotInfo(false)
-    setClickedSpot(null)
+    // Закрываем попап только если это НЕ автофарм
+    if (!isAutoFarming) {
+      setShowSpotInfo(false)
+      setClickedSpot(null)
+    }
   }
 
   // Рендер континентов на карте мира
