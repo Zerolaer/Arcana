@@ -269,7 +269,7 @@ export default function WorldMapNew({ character, onUpdateCharacter }: WorldMapPr
     const availableZones = getAvailableZones(character.level)
 
     return (
-      <div className="relative w-full h-full bg-gradient-to-br from-gray-900/40 to-gray-800/30 rounded-lg border border-primary-400/30">
+      <div className="relative w-full h-full bg-gradient-to-br from-gray-900/40 to-gray-800/30 rounded-lg border border-primary-400/30 flex flex-col">
         {/* Заголовок */}
         <div className="absolute top-4 left-4 z-10 flex items-center space-x-2">
           <button
@@ -284,7 +284,7 @@ export default function WorldMapNew({ character, onUpdateCharacter }: WorldMapPr
         </div>
 
         {/* Сетка зон */}
-        <div className="absolute inset-0 p-8 pt-16">
+        <div className="flex-1 p-8 pt-16">
           <div className="grid grid-cols-3 gap-6 h-full">
             {selectedContinent.zones.map((zone, index) => {
               const isAvailable = availableZones.includes(zone)
@@ -322,6 +322,14 @@ export default function WorldMapNew({ character, onUpdateCharacter }: WorldMapPr
             })}
           </div>
         </div>
+
+        {/* Панель скиллов в футере континента */}
+        <div className="p-4 border-t border-primary-400/30 bg-dark-100/50">
+          <MapFooter 
+            character={character}
+            onUpdateCharacter={onUpdateCharacter}
+          />
+        </div>
       </div>
     )
   }
@@ -333,7 +341,7 @@ export default function WorldMapNew({ character, onUpdateCharacter }: WorldMapPr
     const gridSize = Math.ceil(Math.sqrt(selectedZone.farm_spots.length))
 
     return (
-      <div className="relative w-full h-full bg-gradient-to-br from-green-900/20 to-brown-900/20 rounded-lg border border-primary-400/30">
+      <div className="relative w-full h-full bg-gradient-to-br from-green-900/20 to-brown-900/20 rounded-lg border border-primary-400/30 flex flex-col">
         {/* Заголовок */}
         <div className="absolute top-4 left-4 z-10 flex items-center space-x-2">
           <button
@@ -354,7 +362,7 @@ export default function WorldMapNew({ character, onUpdateCharacter }: WorldMapPr
         </div>
 
         {/* Сетка фарм спотов */}
-        <div className="absolute inset-0 p-8 pt-16">
+        <div className="flex-1 p-8 pt-16">
           <div 
             className="grid gap-2 h-full"
             style={{ gridTemplateColumns: `repeat(${gridSize}, 1fr)` }}
@@ -420,6 +428,14 @@ export default function WorldMapNew({ character, onUpdateCharacter }: WorldMapPr
               </div>
             ))}
           </div>
+        </div>
+
+        {/* Панель скиллов в футере зоны */}
+        <div className="p-4 border-t border-primary-400/30 bg-dark-100/50">
+          <MapFooter 
+            character={character}
+            onUpdateCharacter={onUpdateCharacter}
+          />
         </div>
       </div>
     )
