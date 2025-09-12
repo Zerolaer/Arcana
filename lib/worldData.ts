@@ -2,7 +2,16 @@ import { Continent, Zone, FarmSpot, Mob } from '@/types/world'
 
 // Разнообразные мобы для разных уровней
 const createMobs = (baseLevel: number): Mob[] => {
-  const mobTemplates = [
+  const mobTemplates: Array<{
+    name: string
+    icon: string
+    rarity: 'common' | 'uncommon' | 'rare' | 'elite' | 'boss'
+    healthMultiplier: number
+    attackMultiplier: number
+    defenseMultiplier: number
+    expMultiplier: number
+    goldMultiplier: number
+  }> = [
     // Начальные мобы (1-20 уровень)
     {
       name: 'Лесной Слизень',
@@ -119,7 +128,7 @@ const createMobs = (baseLevel: number): Mob[] => {
     {
       name: 'Древний Лич',
       icon: '👑',
-      rarity: 'epic',
+      rarity: 'elite',
       healthMultiplier: 80,
       attackMultiplier: 12,
       defenseMultiplier: 6,
@@ -129,7 +138,7 @@ const createMobs = (baseLevel: number): Mob[] => {
     {
       name: 'Огненный Элементаль',
       icon: '🔥',
-      rarity: 'epic',
+      rarity: 'elite',
       healthMultiplier: 70,
       attackMultiplier: 11,
       defenseMultiplier: 4,
@@ -139,7 +148,7 @@ const createMobs = (baseLevel: number): Mob[] => {
     {
       name: 'Лавовый Голем',
       icon: '🌋',
-      rarity: 'epic',
+      rarity: 'elite',
       healthMultiplier: 100,
       attackMultiplier: 14,
       defenseMultiplier: 10,
@@ -149,7 +158,7 @@ const createMobs = (baseLevel: number): Mob[] => {
     {
       name: 'Огненный Дракон',
       icon: '🐉',
-      rarity: 'legendary',
+      rarity: 'boss',
       healthMultiplier: 150,
       attackMultiplier: 18,
       defenseMultiplier: 8,
