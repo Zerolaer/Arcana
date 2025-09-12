@@ -1,47 +1,202 @@
 import { Continent, Zone, FarmSpot, Mob } from '@/types/world'
 
-// Моковые мобы для разных уровней
-const createMobs = (baseLevel: number): Mob[] => [
-  {
-    id: `goblin_${baseLevel}`,
-    name: 'Гоблин',
-    level: baseLevel,
-    health: baseLevel * 20,
-    attack: baseLevel * 3,
-    defense: baseLevel * 2,
-    experience_reward: Math.max(12, baseLevel * 8 + Math.floor(baseLevel * baseLevel * 0.5)),
-    gold_reward: baseLevel * 2,
-    icon: '👹',
-    rarity: 'common',
-    loot_table: [] // Нет предметов в игре
-  },
-  {
-    id: `orc_${baseLevel}`,
-    name: 'Орк',
-    level: baseLevel + 2,
-    health: (baseLevel + 2) * 25,
-    attack: (baseLevel + 2) * 4,
-    defense: (baseLevel + 2) * 3,
-    experience_reward: Math.max(26, (baseLevel + 2) * 8 + Math.floor((baseLevel + 2) * (baseLevel + 2) * 0.5)),
-    gold_reward: (baseLevel + 2) * 3,
-    icon: '🧌',
-    rarity: 'uncommon',
-    loot_table: [] // Нет предметов в игре
-  },
-  {
-    id: `troll_${baseLevel}`,
-    name: 'Тролль',
-    level: baseLevel + 5,
-    health: (baseLevel + 5) * 40,
-    attack: (baseLevel + 5) * 6,
-    defense: (baseLevel + 5) * 5,
-    experience_reward: Math.max(48, (baseLevel + 5) * 8 + Math.floor((baseLevel + 5) * (baseLevel + 5) * 0.5)),
-    gold_reward: (baseLevel + 5) * 5,
-    icon: '🧟',
-    rarity: 'rare',
-    loot_table: [] // Нет предметов в игре
+// Разнообразные мобы для разных уровней
+const createMobs = (baseLevel: number): Mob[] => {
+  const mobTemplates = [
+    // Начальные мобы (1-20 уровень)
+    {
+      name: 'Лесной Слизень',
+      icon: '🟢',
+      rarity: 'common',
+      healthMultiplier: 15,
+      attackMultiplier: 2,
+      defenseMultiplier: 1,
+      expMultiplier: 0.8,
+      goldMultiplier: 1.5
+    },
+    {
+      name: 'Дикий Кролик',
+      icon: '🐰',
+      rarity: 'common',
+      healthMultiplier: 12,
+      attackMultiplier: 1.5,
+      defenseMultiplier: 0.5,
+      expMultiplier: 0.6,
+      goldMultiplier: 1
+    },
+    {
+      name: 'Дикий Волк',
+      icon: '🐺',
+      rarity: 'common',
+      healthMultiplier: 20,
+      attackMultiplier: 3,
+      defenseMultiplier: 2,
+      expMultiplier: 1.2,
+      goldMultiplier: 2
+    },
+    {
+      name: 'Гигантский Паук',
+      icon: '🕷️',
+      rarity: 'uncommon',
+      healthMultiplier: 25,
+      attackMultiplier: 4,
+      defenseMultiplier: 3,
+      expMultiplier: 1.5,
+      goldMultiplier: 2.5
+    },
+    {
+      name: 'Лесной Страж',
+      icon: '🌳',
+      rarity: 'uncommon',
+      healthMultiplier: 30,
+      attackMultiplier: 3.5,
+      defenseMultiplier: 4,
+      expMultiplier: 1.8,
+      goldMultiplier: 3
+    },
+    {
+      name: 'Лесной Орк',
+      icon: '👹',
+      rarity: 'uncommon',
+      healthMultiplier: 35,
+      attackMultiplier: 5,
+      defenseMultiplier: 3,
+      expMultiplier: 2.2,
+      goldMultiplier: 4
+    },
+    // Средние мобы (21-40 уровень)
+    {
+      name: 'Пещерная Летучая Мышь',
+      icon: '🦇',
+      rarity: 'common',
+      healthMultiplier: 22,
+      attackMultiplier: 4,
+      defenseMultiplier: 2,
+      expMultiplier: 1.8,
+      goldMultiplier: 2.5
+    },
+    {
+      name: 'Каменный Голем',
+      icon: '🗿',
+      rarity: 'rare',
+      healthMultiplier: 60,
+      attackMultiplier: 6,
+      defenseMultiplier: 8,
+      expMultiplier: 3.5,
+      goldMultiplier: 6
+    },
+    {
+      name: 'Теневой Убийца',
+      icon: '🥷',
+      rarity: 'rare',
+      healthMultiplier: 40,
+      attackMultiplier: 8,
+      defenseMultiplier: 4,
+      expMultiplier: 4.2,
+      goldMultiplier: 7
+    },
+    // Высокие мобы (41+ уровень)
+    {
+      name: 'Скелет-Воин',
+      icon: '💀',
+      rarity: 'uncommon',
+      healthMultiplier: 45,
+      attackMultiplier: 7,
+      defenseMultiplier: 5,
+      expMultiplier: 3.8,
+      goldMultiplier: 6.5
+    },
+    {
+      name: 'Некромант',
+      icon: '🧙‍♂️',
+      rarity: 'rare',
+      healthMultiplier: 50,
+      attackMultiplier: 9,
+      defenseMultiplier: 3,
+      expMultiplier: 4.5,
+      goldMultiplier: 8
+    },
+    {
+      name: 'Древний Лич',
+      icon: '👑',
+      rarity: 'epic',
+      healthMultiplier: 80,
+      attackMultiplier: 12,
+      defenseMultiplier: 6,
+      expMultiplier: 6.5,
+      goldMultiplier: 12
+    },
+    {
+      name: 'Огненный Элементаль',
+      icon: '🔥',
+      rarity: 'epic',
+      healthMultiplier: 70,
+      attackMultiplier: 11,
+      defenseMultiplier: 4,
+      expMultiplier: 6.0,
+      goldMultiplier: 10
+    },
+    {
+      name: 'Лавовый Голем',
+      icon: '🌋',
+      rarity: 'epic',
+      healthMultiplier: 100,
+      attackMultiplier: 14,
+      defenseMultiplier: 10,
+      expMultiplier: 7.5,
+      goldMultiplier: 15
+    },
+    {
+      name: 'Огненный Дракон',
+      icon: '🐉',
+      rarity: 'legendary',
+      healthMultiplier: 150,
+      attackMultiplier: 18,
+      defenseMultiplier: 8,
+      expMultiplier: 10.0,
+      goldMultiplier: 25
+    }
+  ]
+
+  // Выбираем мобов в зависимости от уровня
+  let selectedMobs = []
+  
+  if (baseLevel <= 20) {
+    // Начальные мобы
+    selectedMobs = mobTemplates.slice(0, 6)
+  } else if (baseLevel <= 40) {
+    // Средние мобы
+    selectedMobs = mobTemplates.slice(3, 9)
+  } else {
+    // Высокие мобы
+    selectedMobs = mobTemplates.slice(6)
   }
-]
+
+  return selectedMobs.map((template, index) => {
+    const level = baseLevel + index
+    const health = Math.floor(template.healthMultiplier * level)
+    const attack = Math.floor(template.attackMultiplier * level)
+    const defense = Math.floor(template.defenseMultiplier * level)
+    
+    // Сбалансированные награды опыта (8-12 мобов для повышения уровня)
+    const experience_reward = Math.max(7, Math.floor(template.expMultiplier * level * 0.8))
+    const gold_reward = Math.floor(template.goldMultiplier * level)
+
+    return {
+      id: `${template.name.toLowerCase().replace(/\s+/g, '_')}_${level}`,
+      name: template.name,
+      level,
+      health,
+      attack,
+      defense,
+      experience_reward,
+      gold_reward,
+      icon: template.icon,
+      rarity: template.rarity,
+      loot_table: [] // Нет предметов в игре
+    }
+  })
+}
 
 // Создание фарм спотов для зоны
 const createFarmSpots = (zoneId: string, baseLevel: number, gridSize: number = 4): FarmSpot[] => {
