@@ -174,19 +174,29 @@ export default function WorldMapNew({ character, onUpdateCharacter }: WorldMapPr
         // Обновляем персонажа с полученным опытом и золотом
         const xpResult = processXpGain(character.level, character.experience, result.experience)
         
+        // Применяем урон и расход маны
+        const newHealth = Math.max(1, character.health - result.damageTaken)
+        const newMana = Math.max(0, character.mana - result.manaUsed)
+        
         await onUpdateCharacter({
           level: xpResult.newLevel,
           experience: xpResult.newXpProgress,
           stat_points: character.stat_points + xpResult.totalStatPointsGained,
           max_health: 100 + (character.endurance * 15) + (xpResult.totalStatPointsGained * 5),
           max_mana: 50 + (character.intelligence * 8) + (xpResult.totalStatPointsGained * 3),
-          health: Math.min(character.max_health, character.health),
-          mana: Math.min(character.max_mana, character.mana),
+          health: newHealth,
+          mana: newMana,
           gold: character.gold + result.gold,
           experience_to_next: xpResult.xpToNext
         })
         
-        console.log('✅ Фарм завершен успешно!', result)
+        console.log('✅ Фарм завершен успешно!', {
+          ...result,
+          newHealth,
+          newMana,
+          healthLost: result.damageTaken,
+          manaUsed: result.manaUsed
+        })
       } else {
         console.log('❌ Фарм не завершен')
       }

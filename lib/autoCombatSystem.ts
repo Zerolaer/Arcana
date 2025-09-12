@@ -11,6 +11,8 @@ export interface CombatResult {
   mobsDefeated: number
   totalDamage: number
   skillsUsed: string[]
+  damageTaken: number
+  manaUsed: number
 }
 
 export interface AutoCombatOptions {
@@ -52,7 +54,9 @@ export class AutoCombatSystem {
       items: [],
       mobsDefeated: 0,
       totalDamage: 0,
-      skillsUsed: []
+      skillsUsed: [],
+      damageTaken: 0,
+      manaUsed: 0
     }
 
     let currentMobs = [...this.spot.mobs]
@@ -82,17 +86,20 @@ export class AutoCombatSystem {
         currentHealth = Math.max(0, currentHealth - skillResult.damageTaken)
         currentMana = Math.max(0, currentMana - skillResult.manaUsed)
         result.totalDamage += skillResult.damageDealt
+        result.damageTaken += skillResult.damageTaken
+        result.manaUsed += skillResult.manaUsed
         result.skillsUsed.push(skillToUse)
         
-        console.log(`⚔️ Использован скилл ${skillToUse}, урон: ${skillResult.damageDealt}`)
+        console.log(`⚔️ Использован скилл ${skillToUse}, урон: ${skillResult.damageDealt}, получен урон: ${skillResult.damageTaken}`)
       } else {
         // Базовая атака
         const basicAttack = this.basicAttack(currentMobs)
         currentMobs = basicAttack.remainingMobs
         currentHealth = Math.max(0, currentHealth - basicAttack.damageTaken)
         result.totalDamage += basicAttack.damageDealt
+        result.damageTaken += basicAttack.damageTaken
         
-        console.log(`👊 Базовая атака, урон: ${basicAttack.damageDealt}`)
+        console.log(`👊 Базовая атака, урон: ${basicAttack.damageDealt}, получен урон: ${basicAttack.damageTaken}`)
       }
 
       // Удаляем мертвых мобов
@@ -133,14 +140,16 @@ export class AutoCombatSystem {
 
   // Получение доступных скиллов
   private getAvailableSkills(): ActiveSkill[] {
-    const classMapping: { [key: string]: string } = {
-      '1': 'archer',
-      '2': 'mage', 
-      '3': 'berserker',
-      '4': 'assassin'
-    }
+    // Временное решение - используем имя персонажа для определения класса
+    // Это нужно будет исправить, получив название класса из базы данных
+    const name = this.character.name?.toLowerCase() || ''
+    let className = 'archer' // fallback
     
-    const className = classMapping[this.character.class_id] || 'archer'
+    if (name.includes('лучник') || name.includes('archer')) className = 'archer'
+    else if (name.includes('маг') || name.includes('mage')) className = 'mage'
+    else if (name.includes('берсерк') || name.includes('berserker')) className = 'berserker'
+    else if (name.includes('ассасин') || name.includes('assassin')) className = 'assassin'
+    
     return getAvailableSkills(className, this.character.level)
   }
 

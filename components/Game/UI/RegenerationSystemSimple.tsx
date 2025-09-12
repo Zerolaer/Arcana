@@ -38,6 +38,7 @@ export default function RegenerationSystemSimple({
       const needsHealthRegen = character.health < calculatedStats.max_health
       const needsManaRegen = character.mana < calculatedStats.max_mana
 
+
       if (!needsHealthRegen && !needsManaRegen) {
         return
       }
