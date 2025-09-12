@@ -465,6 +465,6 @@ export function getAvailableSkills(className: string, level: number): ActiveSkil
   const skills = getClassSkills(className)
   return skills.map(skill => ({
     ...skill,
-    is_learned: skill.level_requirement <= level ? skill.is_learned : false
+    is_learned: skill.level_requirement <= level
   }))
 }

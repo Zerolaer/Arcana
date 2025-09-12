@@ -274,6 +274,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, character, onC
       `• Вся экипировка\n` +
       `• Уровень и опыт\n` +
       `• Все очки характеристик\n` +
+      `• Все изученные навыки\n` +
       `• Золото (останется только базовое)\n\n` +
       `Это действие НЕОБРАТИМО! Продолжить?`
     );
@@ -356,7 +357,17 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, character, onC
       if (characterError) throw characterError;
       console.log('✅ Персонаж сброшен к начальному состоянию');
 
-      // 4. Синхронизируем статы
+      // 4. Сбрасываем навыки
+      const { data: skillsResetData, error: skillsResetError } = await (supabase as any)
+        .rpc('reset_character_skills', { p_character_id: character.id });
+      
+      if (skillsResetError) {
+        console.error('Ошибка сброса навыков:', skillsResetError);
+        throw skillsResetError;
+      }
+      console.log('✅ Навыки сброшены');
+
+      // 5. Синхронизируем статы
       const resetCharacter = {
         ...character,
         level: 1,
@@ -602,7 +613,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ isOpen, onClose, character, onC
             
             <div className="space-y-3">
               <p className="text-red-300 text-sm">
-                Полностью обнуляет персонажа, удаляя все предметы, уровень и статы.
+                Полностью обнуляет персонажа, удаляя все предметы, уровень, статы и навыки.
               </p>
               
               <button

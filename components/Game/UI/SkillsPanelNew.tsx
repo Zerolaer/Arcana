@@ -198,7 +198,16 @@ export default function SkillsPanelNew({ character, onUpdateCharacter, isLoading
           console.log('Навык уже был изучен ранее')
         }
         
-        // Перезагружаем навыки из БД (только для класса персонажа)
+        // Обновляем локальное состояние сразу
+        setAvailableActiveSkills(prevSkills => 
+          prevSkills.map(s => 
+            s.id === skill.id 
+              ? { ...s, is_learned: true }
+              : s
+          )
+        )
+        
+        // Перезагружаем навыки из БД для синхронизации
         const { data: skillsData } = await (supabase as any)
           .rpc('get_character_class_skills', { p_character_id: character.id })
         
