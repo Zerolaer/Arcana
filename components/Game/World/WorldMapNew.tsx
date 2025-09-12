@@ -503,6 +503,14 @@ export default function WorldMapNew({ character, onUpdateCharacter }: WorldMapPr
               </div>
             ))}
           </div>
+
+          {/* Панель скиллов в футере правой панели */}
+          <div className="mt-4 pt-4 border-t border-dark-300/30">
+            <MapFooter 
+              character={character}
+              onUpdateCharacter={onUpdateCharacter}
+            />
+          </div>
         </div>
       </div>
 
@@ -594,12 +602,6 @@ export default function WorldMapNew({ character, onUpdateCharacter }: WorldMapPr
           activeSkills={getActiveSkills()}
         />
       )}
-
-      {/* Футер с панелью скиллов */}
-      <MapFooter 
-        character={character}
-        onUpdateCharacter={onUpdateCharacter}
-      />
     </div>
   )
 }
