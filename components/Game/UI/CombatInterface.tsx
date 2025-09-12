@@ -5,6 +5,7 @@ import { Character, Mob, CombatLog } from '@/types/game'
 import { Sword, Shield, Zap, Target, Clock, Award, Heart, Activity } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'react-hot-toast'
+import { processXpGain } from '@/lib/levelSystemV2'
 
 interface CombatInterfaceProps {
   character: Character
@@ -230,16 +231,46 @@ export default function CombatInterface({ character, onUpdateCharacter, isLoadin
       lastAttack: 0
     })
 
-    // Update character status
-    await onUpdateCharacter({
-      is_in_combat: false,
-      experience: character.experience + experienceGained,
-      gold: character.gold + goldGained
-    })
-
     if (victory) {
+      // Используем новую систему уровней
+      const xpResult = processXpGain(character.level, character.experience, experienceGained)
+      const newGold = character.gold + goldGained
+      
+      let updates: any = {
+        is_in_combat: false,
+        experience: xpResult.newXpProgress,
+        gold: newGold
+      }
+      
+      // Если повышение уровня
+      if (xpResult.levelsGained > 0) {
+        const newLevel = xpResult.newLevel
+        const newStatPoints = character.stat_points + xpResult.totalStatPointsGained
+        
+        // Увеличиваем базовые характеристики
+        const newMaxHealth = character.max_health + (20 * xpResult.levelsGained)
+        const newMaxMana = character.max_mana + (10 * xpResult.levelsGained)
+        
+        updates = {
+          ...updates,
+          level: newLevel,
+          experience_to_next: xpResult.xpToNext,
+          stat_points: newStatPoints,
+          max_health: newMaxHealth,
+          max_mana: newMaxMana,
+          health: newMaxHealth, // Полное восстановление при повышении уровня
+          mana: newMaxMana
+        }
+        
+        toast.success(`Поздравляем! Вы достигли ${newLevel} уровня!`, { duration: 5000 })
+      }
+      
+      await onUpdateCharacter(updates)
       toast.success(`Победа! Получено: ${experienceGained} опыта, ${goldGained} золота`)
     } else {
+      await onUpdateCharacter({
+        is_in_combat: false
+      })
       toast.error('Поражение!')
     }
 

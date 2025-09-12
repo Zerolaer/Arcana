@@ -7,6 +7,7 @@ import { WORLD_DATA, getAvailableContinents, getAvailableZones } from '@/lib/wor
 import { Map, Sword, Users, Trophy, Lock, ChevronRight } from 'lucide-react'
 import MobAttackModal from './MobAttackModal'
 import { CombatSystem } from '@/lib/combatSystem'
+import { processXpGain } from '@/lib/levelSystemV2'
 
 interface WorldMapProps {
   character: Character
@@ -92,23 +93,37 @@ export default function WorldMapNew({ character, onUpdateCharacter }: WorldMapPr
       const result = await CombatSystem.simulateCombat(character, mob)
       
       if (result) {
-        // Обновляем персонажа локально
-        const updates: any = {
-          experience: character.experience + result.experience,
-          gold: character.gold + result.gold,
+        // Используем новую систему уровней
+        const xpResult = processXpGain(character.level, character.experience, result.experience)
+        const newGold = character.gold + result.gold
+        
+        let updates: any = {
+          experience: xpResult.newXpProgress,
+          gold: newGold,
           health: Math.max(1, character.health - Math.floor(Math.random() * 20)), // Потеря здоровья в бою
         }
         
-        if (result.level_up) {
-          updates.level = character.level + 1
-          updates.stat_points = character.stat_points + 5
-          // Убрали skill_points из новой системы
-          updates.max_health = character.max_health + 20
-          updates.max_mana = character.max_mana + 10
-          updates.health = updates.max_health // Полное восстановление при повышении уровня
-          updates.mana = updates.max_mana
+        // Если повышение уровня
+        if (xpResult.levelsGained > 0) {
+          const newLevel = xpResult.newLevel
+          const newStatPoints = character.stat_points + xpResult.totalStatPointsGained
           
-          console.log(`🎉 Повышение уровня! Теперь ${updates.level} уровень!`)
+          // Увеличиваем базовые характеристики
+          const newMaxHealth = character.max_health + (20 * xpResult.levelsGained)
+          const newMaxMana = character.max_mana + (10 * xpResult.levelsGained)
+          
+          updates = {
+            ...updates,
+            level: newLevel,
+            experience_to_next: xpResult.xpToNext,
+            stat_points: newStatPoints,
+            max_health: newMaxHealth,
+            max_mana: newMaxMana,
+            health: newMaxHealth, // Полное восстановление при повышении уровня
+            mana: newMaxMana
+          }
+          
+          console.log(`🎉 Повышение уровня! Теперь ${newLevel} уровень! (+${xpResult.levelsGained} уровней)`)
         }
         
         await onUpdateCharacter(updates)
