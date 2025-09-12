@@ -250,6 +250,14 @@ export default function WorldMapNew({ character, onUpdateCharacter }: WorldMapPr
             })}
           </div>
         </div>
+
+        {/* Панель скиллов в футере карты мира */}
+        <div className="p-4 border-t border-primary-400/30 bg-dark-100/50">
+          <MapFooter 
+            character={character}
+            onUpdateCharacter={onUpdateCharacter}
+          />
+        </div>
       </div>
     )
   }
