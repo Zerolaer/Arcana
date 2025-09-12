@@ -293,5 +293,6 @@ export function getAvailableZones(level: number): Zone[] {
     allZones.push(...continent.zones)
   })
   
-  return allZones.filter(zone => level >= zone.level_range.min && level <= zone.level_range.max)
+  // Зоны остаются доступными навсегда после достижения минимального уровня
+  return allZones.filter(zone => level >= zone.level_range.min)
 }
