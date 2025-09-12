@@ -1,6 +1,7 @@
 import { Character } from '@/types/game'
 import { Mob, CombatRewards, CombatLogEntry } from '@/types/world'
 import { supabase } from '@/lib/supabase'
+import { processXpGain } from './levelSystemV2'
 
 // Система боя
 export class CombatSystem {
@@ -158,10 +159,9 @@ export class CombatSystem {
     experience = Math.floor(experience * randomFactor)
     gold = Math.floor(gold * randomFactor)
     
-    // Проверяем повышение уровня
-    const newExperience = character.experience + experience
-    const experienceToNext = character.experience_to_next
-    const levelUp = newExperience >= experienceToNext
+    // Проверяем повышение уровня с помощью новой системы
+    const xpResult = processXpGain(character.level, character.experience, experience)
+    const levelUp = xpResult.levelsGained > 0
     
     // Получаем добычу предметов из базы данных
     const lootedItems = await this.getMobLoot(mob.id)
@@ -180,39 +180,38 @@ export class CombatSystem {
   // Обновление игрока после победы
   static async updatePlayerAfterVictory(character: Character, rewards: CombatRewards, remainingHealth: number) {
     try {
-      const newExperience = character.experience + rewards.experience
       const newGold = character.gold + rewards.gold
       
+      // Используем новую систему уровней
+      const xpResult = processXpGain(character.level, character.experience, rewards.experience)
+      
       let updates: any = {
-        experience: newExperience,
+        experience: xpResult.newXpProgress,
         gold: newGold,
         health: Math.max(1, remainingHealth) // Минимум 1 HP
       }
       
       // Если повышение уровня
-      if (rewards.level_up) {
-        const newLevel = character.level + 1
-        const newExperienceToNext = this.calculateExperienceToNextLevel(newLevel)
-        const newStatPoints = character.stat_points + 5 // 5 очков за уровень
-        // Убрали skill_points из новой системы
+      if (xpResult.levelsGained > 0) {
+        const newLevel = xpResult.newLevel
+        const newStatPoints = character.stat_points + xpResult.totalStatPointsGained
         
         // Увеличиваем базовые характеристики
-        const newMaxHealth = character.max_health + 20 // +20 HP за уровень
-        const newMaxMana = character.max_mana + 10 // +10 MP за уровень
+        const newMaxHealth = character.max_health + (20 * xpResult.levelsGained) // +20 HP за каждый уровень
+        const newMaxMana = character.max_mana + (10 * xpResult.levelsGained) // +10 MP за каждый уровень
         
         updates = {
           ...updates,
           level: newLevel,
-          experience_to_next: newExperienceToNext,
+          experience_to_next: xpResult.xpToNext,
           stat_points: newStatPoints,
-          // Убрали skill_points из новой системы
           max_health: newMaxHealth,
           max_mana: newMaxMana,
           health: newMaxHealth, // Полное восстановление при повышении уровня
           mana: newMaxMana
         }
         
-        console.log(`📈 Новый уровень: ${newLevel}, новый макс HP: ${newMaxHealth}`)
+        console.log(`📈 Новый уровень: ${newLevel} (+${xpResult.levelsGained}), новый макс HP: ${newMaxHealth}, очков характеристик: +${xpResult.totalStatPointsGained}`)
       }
       
       // Обновляем в базе данных
@@ -261,11 +260,6 @@ export class CombatSystem {
     }
   }
 
-  // Расчет опыта до следующего уровня
-  static calculateExperienceToNextLevel(level: number): number {
-    // Прогрессивная формула: каждый уровень требует больше опыта
-    return Math.floor(100 * Math.pow(1.2, level - 1))
-  }
 
   // Получение лута моба из базы данных
   static async getMobLoot(mobId: string): Promise<any[]> {
