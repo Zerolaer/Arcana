@@ -21,6 +21,7 @@ export default function SkillsPanelNew({ character, onUpdateCharacter, isLoading
   const [showPurchaseModal, setShowPurchaseModal] = useState(false)
   const [className, setClassName] = useState<string>('')
   const [skillsLoading, setSkillsLoading] = useState(true)
+  const [learnedSkills, setLearnedSkills] = useState<string[]>([])
 
   useEffect(() => {
     const loadSkills = async () => {
@@ -31,6 +32,44 @@ export default function SkillsPanelNew({ character, onUpdateCharacter, isLoading
         // Загружаем только из базы данных
         console.log('Загружаем навыки из базы данных')
         
+        // Загружаем изученные активные скиллы
+        console.log('🔍 Загружаем изученные активные скиллы для персонажа:', character.id)
+        const { data: characterSkillsData, error: characterSkillsError } = await supabase
+          .from('character_skills')
+          .select('skill_id')
+          .eq('character_id', character.id)
+
+        let currentLearnedSkills: string[] = []
+        if (characterSkillsError) {
+          console.error('Error fetching character skills:', characterSkillsError)
+        } else {
+          console.log('🔍 Найдены записи в character_skills:', characterSkillsData)
+          
+          if (characterSkillsData && characterSkillsData.length > 0) {
+            const skillIds = characterSkillsData.map((row: any) => row.skill_id)
+            console.log('🔍 Skill IDs:', skillIds)
+
+            const { data: skillsData, error: skillsError } = await supabase
+              .from('skills')
+              .select('id, skill_key')
+              .in('id', skillIds)
+
+            if (skillsError) {
+              console.error('Error fetching skills:', skillsError)
+            } else {
+              console.log('🔍 Skills data:', skillsData)
+              currentLearnedSkills = skillsData
+                ?.map((skill: any) => skill.skill_key)
+                .filter(Boolean) || []
+              console.log('🔍 Загружены изученные скиллы:', currentLearnedSkills)
+              setLearnedSkills(currentLearnedSkills)
+            }
+          } else {
+            console.log('🔍 Нет изученных скиллов')
+            setLearnedSkills([])
+          }
+        }
+
         // Активные навыки - загружаем название класса по UUID
         try {
           const { data: classData, error: classError } = await (supabase as any)
@@ -56,7 +95,8 @@ export default function SkillsPanelNew({ character, onUpdateCharacter, isLoading
             
             if (classNameKey) {
               setClassName(classNameKey)
-              const activeSkills = getAvailableSkills(classNameKey, character.level)
+              // Используем currentLearnedSkills которые загрузились выше
+              const activeSkills = getAvailableSkills(classNameKey, character.level, currentLearnedSkills)
               console.log('Активные навыки:', activeSkills)
               console.log('Количество активных навыков:', activeSkills.length)
               setAvailableActiveSkills(activeSkills)
@@ -68,7 +108,7 @@ export default function SkillsPanelNew({ character, onUpdateCharacter, isLoading
         } catch (error) {
           console.error('Ошибка при загрузке класса:', error)
         }
-        
+
         // Загружаем пассивные навыки из базы данных
         const { data: passiveSkillsData, error: passiveError } = await (supabase as any)
           .rpc('get_character_passive_skills', { p_character_id: character.id })
@@ -140,6 +180,9 @@ export default function SkillsPanelNew({ character, onUpdateCharacter, isLoading
             : s
         )
       )
+      
+      // Обновляем learnedSkills
+      setLearnedSkills(prev => [...prev, skill.id])
       
       setShowPurchaseModal(false)
       alert(`Навык "${skill.name}" изучен!`)
