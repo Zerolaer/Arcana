@@ -28,12 +28,12 @@ BEGIN
         WHEN 'Лучник' THEN
             SELECT json_agg(
                 json_build_object(
-                    'id', skill_id,
+                    'skill_key', skill_id,
                     'name', skill_name,
                     'description', skill_description,
                     'level_requirement', level_req,
                     'icon', skill_icon,
-                    'stat_bonuses', stat_bonuses,
+                    'stat_bonuses', stat_bonuses::json,
                     'is_learned', level_req <= v_character.level,
                     'class_requirements', ARRAY['Лучник']
                 )
@@ -50,12 +50,12 @@ BEGIN
         WHEN 'Маг' THEN
             SELECT json_agg(
                 json_build_object(
-                    'id', skill_id,
+                    'skill_key', skill_id,
                     'name', skill_name,
                     'description', skill_description,
                     'level_requirement', level_req,
                     'icon', skill_icon,
-                    'stat_bonuses', stat_bonuses,
+                    'stat_bonuses', stat_bonuses::json,
                     'is_learned', level_req <= v_character.level,
                     'class_requirements', ARRAY['Маг']
                 )
@@ -72,12 +72,12 @@ BEGIN
         WHEN 'Берсерк' THEN
             SELECT json_agg(
                 json_build_object(
-                    'id', skill_id,
+                    'skill_key', skill_id,
                     'name', skill_name,
                     'description', skill_description,
                     'level_requirement', level_req,
                     'icon', skill_icon,
-                    'stat_bonuses', stat_bonuses,
+                    'stat_bonuses', stat_bonuses::json,
                     'is_learned', level_req <= v_character.level,
                     'class_requirements', ARRAY['Берсерк']
                 )
@@ -94,12 +94,12 @@ BEGIN
         WHEN 'Ассасин' THEN
             SELECT json_agg(
                 json_build_object(
-                    'id', skill_id,
+                    'skill_key', skill_id,
                     'name', skill_name,
                     'description', skill_description,
                     'level_requirement', level_req,
                     'icon', skill_icon,
-                    'stat_bonuses', stat_bonuses,
+                    'stat_bonuses', stat_bonuses::json,
                     'is_learned', level_req <= v_character.level,
                     'class_requirements', ARRAY['Ассасин']
                 )

@@ -91,8 +91,8 @@ export default function SkillsPanelNew({ character, onUpdateCharacter, isLoading
             name: skill.name,
             description: skill.description,
             level_requirement: skill.level_requirement,
-            icon: '⭐',
-            stat_bonuses: {},
+            icon: skill.icon || '⭐',
+            stat_bonuses: skill.stat_bonuses || {},
             is_learned: skill.is_learned
           }))
           setAvailablePassiveSkills(formattedPassiveSkills)
