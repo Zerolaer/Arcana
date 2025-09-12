@@ -3,11 +3,15 @@
 import { useState, useEffect } from 'react'
 import { Character } from '@/types/game'
 import { Continent, Zone, FarmSpot, Mob } from '@/types/world'
-import { WORLD_DATA, getAvailableContinents, getAvailableZones } from '@/lib/worldData'
+import { WORLD_DATA, getAvailableContinents, getAvailableZones } from '@/lib/balancedWorldData'
 import { Map, Sword, Users, Trophy, Lock, ChevronRight } from 'lucide-react'
 import MobAttackModal from './MobAttackModal'
+import SpotInfoModal from './SpotInfoModal'
 import { CombatSystem } from '@/lib/combatSystem'
 import { processXpGain } from '@/lib/levelSystemV2'
+import { useActiveSkills } from '@/lib/useActiveSkills'
+import { AutoCombatSystem } from '@/lib/autoCombatSystem'
+import MapFooter from '../UI/MapFooter'
 
 interface WorldMapProps {
   character: Character
@@ -26,6 +30,8 @@ export default function WorldMapNew({ character, onUpdateCharacter }: WorldMapPr
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [clickedSpot, setClickedSpot] = useState<FarmSpot | null>(null)
   const [showMobSelector, setShowMobSelector] = useState(false)
+  const [showSpotInfo, setShowSpotInfo] = useState(false)
+  const { getActiveSkills } = useActiveSkills()
 
   // Получаем доступные континенты для текущего уровня игрока
   const availableContinents = getAvailableContinents(character.level)
@@ -68,15 +74,8 @@ export default function WorldMapNew({ character, onUpdateCharacter }: WorldMapPr
 
   // Клик по ячейке на карте
   const handleSpotClick = (spot: FarmSpot) => {
-    if (spot.mobs.length === 1) {
-      // Если в ячейке один моб, сразу атакуем
-      setSelectedMob(spot.mobs[0])
-      setIsModalOpen(true)
-    } else if (spot.mobs.length > 1) {
-      // Если несколько мобов, показываем селектор
-      setClickedSpot(spot)
-      setShowMobSelector(true)
-    }
+    setClickedSpot(spot)
+    setShowSpotInfo(true)
   }
 
   // Выбор моба из селектора
@@ -157,6 +156,48 @@ export default function WorldMapNew({ character, onUpdateCharacter }: WorldMapPr
     setClickedSpot(null)
   }
 
+  // Закрытие информации о споте
+  const handleCloseSpotInfo = () => {
+    setShowSpotInfo(false)
+    setClickedSpot(null)
+  }
+
+  // Начало фарма
+  const handleStartFarming = async (spot: FarmSpot, skills: string[]) => {
+    console.log('Начинаем фарм спота:', spot.name, 'с скиллами:', skills)
+    
+    try {
+      const autoCombat = new AutoCombatSystem(character, spot, skills)
+      const result = await autoCombat.executeCombat()
+      
+      if (result.success) {
+        // Обновляем персонажа с полученным опытом и золотом
+        const xpResult = processXpGain(character.level, character.experience, result.experience)
+        
+        await onUpdateCharacter({
+          level: xpResult.newLevel,
+          experience: xpResult.newXpProgress,
+          stat_points: character.stat_points + xpResult.totalStatPointsGained,
+          max_health: 100 + (character.endurance * 15) + (xpResult.totalStatPointsGained * 5),
+          max_mana: 50 + (character.intelligence * 8) + (xpResult.totalStatPointsGained * 3),
+          health: Math.min(character.max_health, character.health),
+          mana: Math.min(character.max_mana, character.mana),
+          gold: character.gold + result.gold,
+          experience_to_next: xpResult.xpToNext
+        })
+        
+        console.log('✅ Фарм завершен успешно!', result)
+      } else {
+        console.log('❌ Фарм не завершен')
+      }
+    } catch (error) {
+      console.error('Ошибка во время фарма:', error)
+    }
+    
+    setShowSpotInfo(false)
+    setClickedSpot(null)
+  }
+
   // Рендер континентов на карте мира
   const renderWorldMap = () => {
     return (
@@ -217,7 +258,7 @@ export default function WorldMapNew({ character, onUpdateCharacter }: WorldMapPr
   const renderContinentMap = () => {
     if (!selectedContinent) return null
 
-    const availableZones = getAvailableZones(selectedContinent.id, character.level)
+    const availableZones = getAvailableZones(character.level)
 
     return (
       <div className="relative w-full h-full bg-gradient-to-br from-gray-900/40 to-gray-800/30 rounded-lg border border-primary-400/30">
@@ -416,7 +457,7 @@ export default function WorldMapNew({ character, onUpdateCharacter }: WorldMapPr
               </div>
             ))}
 
-            {viewMode === 'continent' && selectedContinent && getAvailableZones(selectedContinent.id, character.level).map((zone) => (
+            {viewMode === 'continent' && selectedContinent && getAvailableZones(character.level).map((zone) => (
               <div
                 key={zone.id}
                 className="p-3 bg-dark-200/30 border border-dark-300/50 rounded cursor-pointer hover:bg-dark-200/50 hover:border-purple-400/50 transition-all"
@@ -541,6 +582,24 @@ export default function WorldMapNew({ character, onUpdateCharacter }: WorldMapPr
           </div>
         </div>
       )}
+
+      {/* Модал информации о споте */}
+      {clickedSpot && (
+        <SpotInfoModal
+          spot={clickedSpot}
+          character={character}
+          isOpen={showSpotInfo}
+          onClose={handleCloseSpotInfo}
+          onStartFarming={handleStartFarming}
+          activeSkills={getActiveSkills()}
+        />
+      )}
+
+      {/* Футер с панелью скиллов */}
+      <MapFooter 
+        character={character}
+        onUpdateCharacter={onUpdateCharacter}
+      />
     </div>
   )
 }

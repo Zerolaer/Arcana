@@ -61,7 +61,7 @@ export interface GameItem {
 
 interface ItemTooltipProps {
   item: GameItem
-  children: ReactNode
+  children?: ReactNode
   className?: string
   onUse?: () => void
   onEquip?: () => void
@@ -69,6 +69,11 @@ interface ItemTooltipProps {
   onClose?: () => void
   showActions?: boolean
   isEquipped?: boolean
+  // Новые пропсы для скиллов
+  showActivateButton?: boolean
+  isActive?: boolean
+  onActivate?: () => void
+  position?: { x: number; y: number }
 }
 
 const rarityColors = {
@@ -122,7 +127,11 @@ export default function ItemTooltip({
   onUnequip, 
   onClose,
   showActions = false,
-  isEquipped = false
+  isEquipped = false,
+  showActivateButton = false,
+  isActive = false,
+  onActivate,
+  position
 }: ItemTooltipProps) {
   const renderStats = () => {
     if (!item.stats || typeof item.stats !== 'object') return null
@@ -345,11 +354,48 @@ export default function ItemTooltip({
               )
             })()}
             
+            {/* Кнопка активации для скиллов */}
+            {showActivateButton && onActivate && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  e.preventDefault()
+                  onActivate()
+                  if (onClose) onClose()
+                }}
+                className={`w-full px-3 py-2 text-white text-sm rounded-md transition-colors flex items-center justify-center space-x-2 ${
+                  isActive 
+                    ? 'bg-yellow-600 hover:bg-yellow-700' 
+                    : 'bg-green-600 hover:bg-green-700'
+                }`}
+                style={{ pointerEvents: 'auto', zIndex: 10000 }}
+              >
+                <span>{isActive ? '⏸️' : '▶️'}</span>
+                <span>{isActive ? 'Деактивировать' : 'Активировать'}</span>
+              </button>
+            )}
+            
           </div>
         </div>
       )}
     </div>
   )
+
+  // Если есть позиция, рендерим как абсолютно позиционированный элемент
+  if (position) {
+    return (
+      <div
+        className="fixed z-50 pointer-events-none"
+        style={{
+          left: position.x,
+          top: position.y,
+          transform: 'translate(-50%, -100%)'
+        }}
+      >
+        {tooltipContent}
+      </div>
+    )
+  }
 
   return (
     <Tooltip 
