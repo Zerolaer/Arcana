@@ -1,5 +1,5 @@
 import { Character } from '@/types/game'
-import { calculatePassiveSkillBonuses } from '@/lib/passiveSkills'
+import { calculatePassiveSkillBonuses, getClassNameById } from '@/lib/passiveSkills'
 
 /**
  * Единая система расчета характеристик персонажа
@@ -115,8 +115,9 @@ export function calculateCharacterStats(character: Character, equipmentBonuses: 
     strength, endurance, armor, stealth 
   } = character
   
-  // Получаем бонусы от пассивных навыков
-  const passiveSkillBonuses = calculatePassiveSkillBonuses(character.level)
+  // Получаем бонусы от пассивных навыков по классу
+  const className = getClassNameById(character.class_id)
+  const passiveSkillBonuses = calculatePassiveSkillBonuses(className, character.level)
   
   // Добавляем бонусы от экипировки и пассивных навыков к базовым характеристикам
   const totalAgility = agility + equipmentBonuses.agility + (passiveSkillBonuses.agility || 0)

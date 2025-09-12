@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Character } from '@/types/game'
 import { PassiveSkill } from '@/types/skills'
-import { getAvailablePassiveSkills, getLearnedPassiveSkills } from '@/lib/passiveSkills'
+import { getAvailablePassiveSkills, getLearnedPassiveSkills, getClassNameById } from '@/lib/passiveSkills'
 import { getAvailableSkills, ActiveSkill } from '@/lib/activeSkills'
 import { supabase } from '@/lib/supabase'
 import { BookOpen, Sword, Sparkles, Zap, Coins } from 'lucide-react'
@@ -30,7 +30,8 @@ export default function SkillsPanelNew({ character, onUpdateCharacter, isLoading
         console.log('Используем статические данные навыков')
         
         // Пассивные навыки
-        const passiveSkills = getAvailablePassiveSkills(character.level)
+        const className = getClassNameById(character.class_id)
+        const passiveSkills = getAvailablePassiveSkills(className, character.level)
         console.log('Пассивные навыки:', passiveSkills)
         setAvailablePassiveSkills(passiveSkills)
         
@@ -79,7 +80,8 @@ export default function SkillsPanelNew({ character, onUpdateCharacter, isLoading
         if (passiveError) {
           console.error('Ошибка загрузки пассивных навыков:', passiveError)
           // Fallback на статические данные
-          const passiveSkills = getAvailablePassiveSkills(character.level)
+          const className = getClassNameById(character.class_id)
+          const passiveSkills = getAvailablePassiveSkills(className, character.level)
           setAvailablePassiveSkills(passiveSkills)
         } else {
           console.log('Пассивные навыки из БД:', passiveSkillsData)

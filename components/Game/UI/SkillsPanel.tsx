@@ -2,6 +2,7 @@
 
 import { Character } from '@/types/game'
 import { Zap, Target, Layers } from 'lucide-react'
+import { getAvailablePassiveSkills, getClassNameById } from '@/lib/passiveSkills'
 
 interface SkillsPanelProps {
   character: Character
@@ -10,12 +11,20 @@ interface SkillsPanelProps {
 }
 
 export default function SkillsPanel({ character, onUpdateCharacter, isLoading }: SkillsPanelProps) {
+  // Получаем пассивные навыки для класса персонажа
+  const className = getClassNameById(character.class_id)
+  const passiveSkills = getAvailablePassiveSkills(className, character.level)
+
   return (
     <div className="flex-1 game-content p-4 space-y-4">
-      <div className="flex items-center justify-end mb-4">
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h1 className="text-2xl font-bold text-white">Навыки</h1>
+          <p className="text-dark-400">Класс: {className}</p>
+        </div>
         <div className="text-right">
-          <div className="text-sm text-dark-400">Очков навыков:</div>
-          <div className="text-xl font-bold text-purple-400">0</div>
+          <div className="text-sm text-dark-400">Уровень:</div>
+          <div className="text-xl font-bold text-purple-400">{character.level}</div>
         </div>
       </div>
 
@@ -78,41 +87,60 @@ export default function SkillsPanel({ character, onUpdateCharacter, isLoading }:
           </h2>
 
           <div className="space-y-3">
-            <div className="p-4 bg-dark-200/30 rounded border border-dark-300/30 opacity-50">
-              <div className="flex items-center space-x-3 mb-2">
-                <div className="w-10 h-10 bg-dark-300/30 rounded border border-dark-300/50 flex items-center justify-center text-xl">
-                  🛡️
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center space-x-2">
-                    <span className="font-semibold text-white">Закалка</span>
-                    <span className="text-xs px-2 py-1 bg-gray-500/20 text-gray-400 rounded">
-                      Заблокировано
-                    </span>
+            {passiveSkills.map((skill) => (
+              <div
+                key={skill.id}
+                className={`p-4 rounded border ${
+                  skill.is_learned 
+                    ? 'bg-green-500/10 border-green-400/30' 
+                    : 'bg-dark-200/30 border-dark-300/30 opacity-50'
+                }`}
+              >
+                <div className="flex items-center space-x-3 mb-2">
+                  <div className={`w-10 h-10 rounded border flex items-center justify-center text-xl ${
+                    skill.is_learned 
+                      ? 'bg-green-500/20 border-green-400/50' 
+                      : 'bg-dark-300/30 border-dark-300/50'
+                  }`}>
+                    {skill.icon}
                   </div>
-                  <div className="text-sm text-dark-400">Увеличивает защиту на 10%</div>
+                  <div className="flex-1">
+                    <div className="flex items-center space-x-2">
+                      <span className="font-semibold text-white">{skill.name}</span>
+                      <span className={`text-xs px-2 py-1 rounded ${
+                        skill.is_learned 
+                          ? 'bg-green-500/20 text-green-300' 
+                          : 'bg-gray-500/20 text-gray-400'
+                      }`}>
+                        {skill.is_learned ? 'Изучен' : `Ур. ${skill.level_requirement}`}
+                      </span>
+                    </div>
+                    <div className="text-sm text-dark-400">{skill.description}</div>
+                  </div>
                 </div>
-              </div>
-              <div className="text-xs text-dark-600">Требуется: уровень 5</div>
-            </div>
 
-            <div className="p-4 bg-dark-200/30 rounded border border-dark-300/30 opacity-50">
-              <div className="flex items-center space-x-3 mb-2">
-                <div className="w-10 h-10 bg-dark-300/30 rounded border border-dark-300/50 flex items-center justify-center text-xl">
-                  💨
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-center space-x-2">
-                    <span className="font-semibold text-white">Быстрота</span>
-                    <span className="text-xs px-2 py-1 bg-gray-500/20 text-gray-400 rounded">
-                      Заблокировано
-                    </span>
+                {skill.is_learned && (
+                  <div className="mt-3 space-y-1">
+                    <div className="text-xs text-green-400 font-semibold">Бонусы:</div>
+                    <div className="flex flex-wrap gap-2">
+                      {Object.entries(skill.stat_bonuses).map(([stat, value]) => (
+                        value > 0 && (
+                          <div key={stat} className="text-xs px-2 py-1 bg-green-500/20 text-green-300 rounded border border-green-400/30">
+                            +{value} {stat}
+                          </div>
+                        )
+                      ))}
+                    </div>
                   </div>
-                  <div className="text-sm text-dark-400">Увеличивает скорость атаки на 15%</div>
-                </div>
+                )}
+
+                {!skill.is_learned && (
+                  <div className="text-xs text-dark-600">
+                    Требуется: уровень {skill.level_requirement}
+                  </div>
+                )}
               </div>
-              <div className="text-xs text-dark-600">Требуется: уровень 8</div>
-            </div>
+            ))}
           </div>
         </div>
       </div>
