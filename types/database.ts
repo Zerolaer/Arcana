@@ -48,6 +48,12 @@ export interface Database {
           mana_regen_rate: number
         }
       }
+      get_character_learned_skills: {
+        Args: {
+          p_character_id: string
+        }
+        Returns: string[]
+      }
     }
     Tables: {
       players: {

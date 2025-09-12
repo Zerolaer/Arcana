@@ -68,7 +68,10 @@ export default function MapFooter({ character, onUpdateCharacter, activeSkills: 
       try {
         const { data, error } = await supabase
           .from('character_skills')
-          .select('skill_id')
+          .select(`
+            skill_id,
+            skills!inner(skill_key)
+          `)
           .eq('character_id', character.id)
 
         if (error) {
@@ -77,8 +80,11 @@ export default function MapFooter({ character, onUpdateCharacter, activeSkills: 
         }
 
         if (data) {
-          const skillIds = data.map((row: any) => row.skill_id)
-          setLearnedSkills(skillIds)
+          const skillKeys = data
+            .map((row: any) => row.skills?.skill_key)
+            .filter(Boolean)
+          console.log('🔍 Загружены изученные скиллы:', skillKeys)
+          setLearnedSkills(skillKeys)
         }
       } catch (error) {
         console.error('Error fetching learned skills:', error)

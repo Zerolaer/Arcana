@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { Character } from '@/types/game'
 import { FarmSpot, Mob } from '@/types/world'
 import { X, Sword, Shield, Heart, Zap, Trophy, Coins, Package, Users, Target } from 'lucide-react'
@@ -24,6 +24,7 @@ export default function SpotInfoModal({
 }: SpotInfoModalProps) {
   const [isFarming, setIsFarming] = useState(false)
   const [isAutoFarming, setIsAutoFarming] = useState(false)
+  const autoFarmingRef = useRef(false)
 
   // Отладочная информация
   console.log('🔍 SpotInfoModal Debug:', {
@@ -94,21 +95,26 @@ export default function SpotInfoModal({
       return
     }
 
-    setIsAutoFarming(true)
     console.log('🤖 Начинаем автофарм спота:', spot.name)
+    setIsAutoFarming(true)
+    autoFarmingRef.current = true
     
     const autoFarmLoop = async () => {
       try {
-        while (isAutoFarming) {
+        while (autoFarmingRef.current) {
+          console.log('🔄 Автофарм: запускаем бой...')
           await onStartFarming(spot, activeSkills)
           
           // Небольшая пауза между боями
+          console.log('⏱️ Автофарм: пауза 1 секунда...')
           await new Promise(resolve => setTimeout(resolve, 1000))
         }
+        console.log('⏹️ Автофарм: цикл завершен')
       } catch (error) {
         console.error('Ошибка во время автофарма:', error)
       } finally {
         setIsAutoFarming(false)
+        autoFarmingRef.current = false
       }
     }
     
@@ -117,8 +123,9 @@ export default function SpotInfoModal({
   }
 
   const handleStopAutoFarming = () => {
+    console.log('⏹️ Останавливаем автофарм...')
+    autoFarmingRef.current = false
     setIsAutoFarming(false)
-    console.log('⏹️ Автофарм остановлен')
   }
 
   const totalExperience = spot.mobs.reduce((sum, mob) => sum + mob.experience_reward, 0)
@@ -317,7 +324,10 @@ export default function SpotInfoModal({
           {/* Кнопка автофарма */}
           {!isAutoFarming ? (
             <button
-              onClick={handleAutoFarming}
+              onClick={() => {
+                console.log('🔘 Нажата кнопка автофарма, активных скиллов:', activeSkills.length)
+                handleAutoFarming()
+              }}
               disabled={activeSkills.length === 0}
               className={`px-6 py-2 rounded-lg transition-colors flex items-center space-x-2 ${
                 activeSkills.length === 0
