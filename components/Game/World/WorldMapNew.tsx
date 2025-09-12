@@ -201,7 +201,7 @@ export default function WorldMapNew({ character, onUpdateCharacter }: WorldMapPr
   // Рендер континентов на карте мира
   const renderWorldMap = () => {
     return (
-      <div className="relative w-full h-full bg-gradient-to-br from-blue-900/20 to-green-900/20 rounded-lg border border-primary-400/30">
+      <div className="relative w-full h-full bg-gradient-to-br from-blue-900/20 to-green-900/20 rounded-lg border border-primary-400/30 flex flex-col">
         {/* Заголовок карты */}
         <div className="absolute top-4 left-4 z-10">
           <h2 className="text-2xl font-bold text-white flex items-center space-x-2">
@@ -211,7 +211,7 @@ export default function WorldMapNew({ character, onUpdateCharacter }: WorldMapPr
         </div>
 
         {/* Сетка континентов 3x2 */}
-        <div className="absolute inset-0 p-8 pt-16">
+        <div className="flex-1 p-8 pt-16">
           <div className="grid grid-cols-3 grid-rows-2 gap-8 h-full">
             {Array.from({ length: 6 }, (_, index) => {
               const continent = availableContinents[index]
@@ -504,13 +504,6 @@ export default function WorldMapNew({ character, onUpdateCharacter }: WorldMapPr
             ))}
           </div>
 
-          {/* Панель скиллов в футере правой панели */}
-          <div className="mt-4 pt-4 border-t border-dark-300/30">
-            <MapFooter 
-              character={character}
-              onUpdateCharacter={onUpdateCharacter}
-            />
-          </div>
         </div>
       </div>
 
