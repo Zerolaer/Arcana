@@ -254,7 +254,7 @@ export default function CombatPanel({ character, onUpdateCharacter, isLoading }:
 
     // Update character
     const newHealth = Math.max(1, character.health - damageTaken)
-    const newExperience = character.experience + experienceGained
+    const newTotalExperience = character.experience + experienceGained
     const newGold = character.gold + goldGained
 
     // Используем новую систему прогрессии V2
@@ -268,7 +268,7 @@ export default function CombatPanel({ character, onUpdateCharacter, isLoading }:
 
     const updates = {
       health: newHealth,
-      experience: newXpProgress, // Теперь это прогресс до следующего уровня
+      experience: newTotalExperience, // Общий накопленный опыт
       gold: newGold,
       is_in_combat: false,
       ...(levelUp && {

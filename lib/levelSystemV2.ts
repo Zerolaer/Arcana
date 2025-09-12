@@ -148,18 +148,22 @@ export function getLevelProgressInfo(character: { level: number; experience: num
   const levelData = getLevelData(character.level)
   const xpToNext = calculateXpToNext(character.level)
   
+  // Рассчитываем прогресс до следующего уровня
+  const totalXpForCurrentLevel = calculateTotalXpForLevel(character.level)
+  const currentLevelProgress = character.experience - totalXpForCurrentLevel
+  
   // Прогресс в процентах (0-100%)
-  const progressPercent = xpToNext > 0 ? (character.experience / xpToNext) * 100 : 0
+  const progressPercent = xpToNext > 0 ? (currentLevelProgress / xpToNext) * 100 : 0
   
   return {
     level: character.level,
-    experience: character.experience,
+    experience: currentLevelProgress, // Прогресс до следующего уровня
     experienceToNext: xpToNext,
     experienceRequired: xpToNext,
     progressPercent: Math.min(100, Math.max(0, progressPercent)),
     statPointsReward: levelData.statPointsReward,
     isMilestone: levelData.isMilestone,
-    totalExperience: character.experience
+    totalExperience: character.experience // Общий накопленный опыт
   }
 }
 
