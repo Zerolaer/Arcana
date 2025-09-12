@@ -13,9 +13,13 @@ export default function CharacterFooter({ character }: CharacterFooterProps) {
   // Используем рассчитанные характеристики
   const calculatedStats = calculateCharacterStats(character)
   
-  // Calculate percentages
-  const healthPercent = (character.health / calculatedStats.max_health) * 100
-  const manaPercent = (character.mana / calculatedStats.max_mana) * 100
+  // Безопасные значения - не превышаем максимум
+  const safeHealth = Math.min(character.health, calculatedStats.max_health)
+  const safeMana = Math.min(character.mana, calculatedStats.max_mana)
+  
+  // Calculate percentages using safe values
+  const healthPercent = (safeHealth / calculatedStats.max_health) * 100
+  const manaPercent = (safeMana / calculatedStats.max_mana) * 100
   
   // Используем новую систему прогрессии
   const progressInfo = getLevelProgressInfo(character)
@@ -66,7 +70,7 @@ export default function CharacterFooter({ character }: CharacterFooterProps) {
                 <div className="absolute inset-0 bg-gradient-to-r from-red-500/30 via-transparent to-transparent animate-pulse" />
               </div>
               <div className="text-xs text-gray-300 mt-1 flex items-center justify-between">
-                <span>{Math.floor(character.health)} / {Math.floor(calculatedStats.max_health)}</span>
+                <span>{Math.floor(safeHealth)} / {Math.floor(calculatedStats.max_health)}</span>
                 {calculatedStats.health_regen && character.health < calculatedStats.max_health && !character.is_in_combat && (
                   <span className="text-green-400 text-xs">
                     +{Math.round(calculatedStats.health_regen)}/сек
@@ -88,7 +92,7 @@ export default function CharacterFooter({ character }: CharacterFooterProps) {
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-500/30 via-transparent to-transparent animate-pulse" />
               </div>
               <div className="text-xs text-gray-300 mt-1 flex items-center justify-between">
-                <span>{Math.floor(character.mana)} / {Math.floor(calculatedStats.max_mana)}</span>
+                <span>{Math.floor(safeMana)} / {Math.floor(calculatedStats.max_mana)}</span>
                 {calculatedStats.mana_regen && character.mana < calculatedStats.max_mana && !character.is_in_combat && (
                   <span className="text-blue-400 text-xs">
                     +{Math.round(calculatedStats.mana_regen)}/сек

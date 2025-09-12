@@ -17,8 +17,12 @@ export default function GameHeader({ character, user, onLogout }: GameHeaderProp
   // Используем рассчитанные характеристики для консистентности
   const calculatedStats = calculateCharacterStats(character)
   
-  const healthPercentage = (character.health / calculatedStats.max_health) * 100
-  const manaPercentage = (character.mana / calculatedStats.max_mana) * 100
+  // Безопасные значения - не превышаем максимум
+  const safeHealth = Math.min(character.health, calculatedStats.max_health)
+  const safeMana = Math.min(character.mana, calculatedStats.max_mana)
+  
+  const healthPercentage = (safeHealth / calculatedStats.max_health) * 100
+  const manaPercentage = (safeMana / calculatedStats.max_mana) * 100
   // Используем новую систему прогрессии
   const progressInfo = getLevelProgressInfo(character)
   const expPercentage = progressInfo.progressPercent
@@ -56,7 +60,7 @@ export default function GameHeader({ character, user, onLogout }: GameHeaderProp
                   />
                 </div>
                 <span className="text-xs text-red-300 w-16 text-right">
-                  {formatNumber(character.health)}/{formatNumber(calculatedStats.max_health)}
+                  {formatNumber(safeHealth)}/{formatNumber(calculatedStats.max_health)}
                 </span>
               </div>
 
@@ -70,7 +74,7 @@ export default function GameHeader({ character, user, onLogout }: GameHeaderProp
                   />
                 </div>
                 <span className="text-xs text-blue-300 w-16 text-right">
-                  {formatNumber(character.mana)}/{formatNumber(calculatedStats.max_mana)}
+                  {formatNumber(safeMana)}/{formatNumber(calculatedStats.max_mana)}
                 </span>
               </div>
             </div>

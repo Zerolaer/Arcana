@@ -14,11 +14,15 @@ export default function ResourceBars({ character, showLabels = true, className =
   // Используем рассчитанные характеристики
   const calculatedStats = calculateCharacterStats(character)
   
+  // Безопасные значения - не превышаем максимум
+  const safeHealth = Math.min(character.health, calculatedStats.max_health)
+  const safeMana = Math.min(character.mana, calculatedStats.max_mana)
+  
   const resources = [
     {
       name: 'Здоровье',
       icon: <Heart className="w-4 h-4 text-red-500" />,
-      current: character.health,
+      current: safeHealth,
       max: calculatedStats.max_health,
       color: 'from-red-500 to-red-600',
       bgColor: 'bg-red-500/20',
@@ -27,7 +31,7 @@ export default function ResourceBars({ character, showLabels = true, className =
     {
       name: 'Мана',
       icon: <Zap className="w-4 h-4 text-blue-500" />,
-      current: character.mana,
+      current: safeMana,
       max: calculatedStats.max_mana,
       color: 'from-blue-500 to-blue-600',
       bgColor: 'bg-blue-500/20',

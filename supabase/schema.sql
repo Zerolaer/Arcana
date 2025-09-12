@@ -272,8 +272,9 @@ BEGIN
     NEW.attack_speed = 100.0 + (NEW.agility * 1.2);
     NEW.accuracy = 85.0 + (NEW.precision * 1.0);
     
-    NEW.health_regen = 1.0 + (NEW.endurance * 0.05);
-    NEW.mana_regen = 1.0 + (NEW.intelligence * 0.1);
+    -- Регенерация с правильным округлением
+    NEW.health_regen = ROUND(1.0 + (NEW.endurance * 0.1));
+    NEW.mana_regen = ROUND(1.0 + (NEW.intelligence * 0.1));
     
     RETURN NEW;
 END;
