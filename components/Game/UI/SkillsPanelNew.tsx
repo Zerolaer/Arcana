@@ -189,7 +189,7 @@ export default function SkillsPanelNew({ character, onUpdateCharacter, isLoading
       
       // Сохраняем в БД
       const { data, error } = await (supabase as any)
-        .rpc('learn_active_skill', { 
+        .rpc('learn_character_skill', { 
           p_character_id: character.id, 
           p_skill_key: skill.id 
         })
