@@ -254,10 +254,33 @@ CREATE TRIGGER update_character_skills_updated_at BEFORE UPDATE ON character_ski
 CREATE TRIGGER update_character_inventory_updated_at BEFORE UPDATE ON character_inventory FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 CREATE TRIGGER update_items_updated_at BEFORE UPDATE ON items FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
--- Function to calculate character stats
+-- Function to calculate character stats with passive skills
 CREATE OR REPLACE FUNCTION update_character_calculated_stats()
 RETURNS TRIGGER AS $$
+DECLARE
+    v_class_name TEXT;
+    v_passive_bonuses JSON;
 BEGIN
+    -- Получаем название класса
+    SELECT cc.name INTO v_class_name
+    FROM character_classes cc
+    WHERE cc.id = NEW.class_id;
+    
+    -- Получаем бонусы от пассивных навыков
+    SELECT calculate_passive_skill_bonuses(NEW.id) INTO v_passive_bonuses;
+    
+    -- Применяем бонусы от пассивных навыков к базовым характеристикам
+    NEW.agility = NEW.agility + COALESCE((v_passive_bonuses->>'agility')::INTEGER, 0);
+    NEW.precision = NEW.precision + COALESCE((v_passive_bonuses->>'precision')::INTEGER, 0);
+    NEW.evasion = NEW.evasion + COALESCE((v_passive_bonuses->>'evasion')::INTEGER, 0);
+    NEW.intelligence = NEW.intelligence + COALESCE((v_passive_bonuses->>'intelligence')::INTEGER, 0);
+    NEW.spell_power = NEW.spell_power + COALESCE((v_passive_bonuses->>'spell_power')::INTEGER, 0);
+    NEW.resistance = NEW.resistance + COALESCE((v_passive_bonuses->>'resistance')::INTEGER, 0);
+    NEW.strength = NEW.strength + COALESCE((v_passive_bonuses->>'strength')::INTEGER, 0);
+    NEW.endurance = NEW.endurance + COALESCE((v_passive_bonuses->>'endurance')::INTEGER, 0);
+    NEW.armor = NEW.armor + COALESCE((v_passive_bonuses->>'armor')::INTEGER, 0);
+    NEW.stealth = NEW.stealth + COALESCE((v_passive_bonuses->>'stealth')::INTEGER, 0);
+    
     -- Calculate derived stats based on base stats
     NEW.max_health = 100 + (NEW.endurance * 15);
     NEW.max_mana = 50 + (NEW.intelligence * 8);
