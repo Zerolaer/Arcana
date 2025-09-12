@@ -1,12 +1,13 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Character } from '@/types/game'
 import { ActiveSkill } from '@/types/skills'
 import { getAvailableSkills } from '@/lib/activeSkills'
 import { useActiveSkills } from '@/lib/useActiveSkills'
 import { Heart, Zap, FlaskConical } from 'lucide-react'
 import ItemTooltip from '../../UI/ItemTooltip'
+import { supabase } from '@/lib/supabase'
 
 interface MapFooterProps {
   character: Character
@@ -17,19 +18,48 @@ export default function MapFooter({ character, onUpdateCharacter }: MapFooterPro
   const { activeSkills, toggleSkill, getActiveSkills } = useActiveSkills()
   const [hoveredSkill, setHoveredSkill] = useState<ActiveSkill | null>(null)
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 })
+  const [className, setClassName] = useState<string>('archer')
+  const [loading, setLoading] = useState(true)
 
-  // Получаем доступные скиллы для класса
-  const getClassNameById = (classId: string) => {
-    const classMapping: { [key: string]: string } = {
-      '1': 'archer',
-      '2': 'mage', 
-      '3': 'berserker',
-      '4': 'assassin'
+  // Получаем название класса из базы данных
+  useEffect(() => {
+    const fetchClassName = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('character_classes')
+          .select('name')
+          .eq('id', character.class_id)
+          .single()
+
+        if (error) {
+          console.error('Error fetching class name:', error)
+          return
+        }
+
+        if (data && 'name' in data) {
+          // Преобразуем название класса в ключ для скиллов
+          const classKey = (data as any).name.toLowerCase()
+          let skillKey = 'archer' // fallback
+          
+          if (classKey.includes('лучник')) skillKey = 'archer'
+          else if (classKey.includes('маг')) skillKey = 'mage'
+          else if (classKey.includes('берсерк')) skillKey = 'berserker'
+          else if (classKey.includes('ассасин')) skillKey = 'assassin'
+          
+          setClassName(skillKey)
+        }
+      } catch (error) {
+        console.error('Error fetching class:', error)
+      } finally {
+        setLoading(false)
+      }
     }
-    return classMapping[classId] || 'archer'
-  }
 
-  const className = getClassNameById(character.class_id)
+    if (character.class_id) {
+      fetchClassName()
+    }
+  }, [character.class_id])
+
   const availableSkills = getAvailableSkills(className, character.level)
 
   // Обработка активации/деактивации скилла
@@ -57,6 +87,16 @@ export default function MapFooter({ character, onUpdateCharacter }: MapFooterPro
   // Расчет процентов для баров
   const healthPercent = (character.health / character.max_health) * 100
   const manaPercent = (character.mana / character.max_mana) * 100
+
+  if (loading) {
+    return (
+      <div className="bg-dark-100 border border-dark-300 rounded-lg p-4">
+        <div className="flex items-center justify-center">
+          <div className="text-white">Загрузка скиллов...</div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="bg-dark-100 border border-dark-300 rounded-lg p-4">
