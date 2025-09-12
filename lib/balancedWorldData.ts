@@ -281,7 +281,8 @@ export const WORLD_DATA: Continent[] = [
 ]
 
 export function getAvailableContinents(level: number): Continent[] {
-  return WORLD_DATA.filter(continent => level >= continent.level_range.min && level <= continent.level_range.max)
+  // Континенты остаются доступными навсегда после достижения минимального уровня
+  return WORLD_DATA.filter(continent => level >= continent.level_range.min)
 }
 
 export function getAvailableZones(level: number): Zone[] {

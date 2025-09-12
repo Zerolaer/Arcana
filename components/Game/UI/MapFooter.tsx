@@ -143,8 +143,8 @@ export default function MapFooter({ character, onUpdateCharacter, activeSkills: 
 
   if (loading) {
     return (
-      <div className="bg-dark-100 border border-dark-300 rounded-lg p-4">
-        <div className="flex items-center justify-center">
+      <div className="bg-dark-100 border border-dark-300 rounded-lg p-4 h-20">
+        <div className="flex items-center justify-center h-full">
           <div className="text-white">Загрузка скиллов...</div>
         </div>
       </div>
@@ -152,8 +152,8 @@ export default function MapFooter({ character, onUpdateCharacter, activeSkills: 
   }
 
   return (
-    <div className="bg-dark-100 border border-dark-300 rounded-lg p-4">
-      <div className="flex items-center justify-between">
+    <div className="bg-dark-100 border border-dark-300 rounded-lg p-4 h-20 min-h-20">
+      <div className="flex items-center justify-between h-full">
         {/* Левая часть - Бары ХП/МП */}
         <div className="flex items-center space-x-6">
           {/* Бар ХП */}
