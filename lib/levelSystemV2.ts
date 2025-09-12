@@ -150,7 +150,16 @@ export function getLevelProgressInfo(character: { level: number; experience: num
   
   // Рассчитываем прогресс до следующего уровня
   const totalXpForCurrentLevel = calculateTotalXpForLevel(character.level)
-  const currentLevelProgress = character.experience - totalXpForCurrentLevel
+  
+  // Рассчитываем прогресс до следующего уровня
+  // Если персонаж имеет меньше опыта, чем нужно для текущего уровня,
+  // значит он только что повысился и у него 0 опыта на новом уровне
+  let currentLevelProgress = character.experience
+  if (character.experience >= totalXpForCurrentLevel) {
+    // Персонаж накопил опыт сверх необходимого для текущего уровня
+    currentLevelProgress = character.experience - totalXpForCurrentLevel
+  }
+  // Иначе персонаж только что повысился, у него 0 опыта на новом уровне
   
   // Прогресс в процентах (0-100%)
   const progressPercent = xpToNext > 0 ? (currentLevelProgress / xpToNext) * 100 : 0
