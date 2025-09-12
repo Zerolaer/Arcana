@@ -461,10 +461,12 @@ export function getClassSkills(className: string): ActiveSkill[] {
 }
 
 // Функция для получения доступных навыков по уровню
-export function getAvailableSkills(className: string, level: number): ActiveSkill[] {
+export function getAvailableSkills(className: string, level: number, learnedSkills: string[] = []): ActiveSkill[] {
   const skills = getClassSkills(className)
   return skills.map(skill => ({
     ...skill,
-    is_learned: skill.level_requirement <= level
+    // Только первый скил (уровень 1) изучается автоматически
+    // Остальные скиллы должны быть куплены
+    is_learned: skill.level_requirement === 1 || learnedSkills.includes(skill.id)
   }))
 }

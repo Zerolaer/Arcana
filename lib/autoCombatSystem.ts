@@ -26,6 +26,7 @@ export class AutoCombatSystem {
   private character: Character
   private spot: FarmSpot
   private activeSkills: string[]
+  private skillCooldowns: Map<string, number>
   private options: AutoCombatOptions
 
   constructor(
@@ -42,6 +43,7 @@ export class AutoCombatSystem {
     this.character = character
     this.spot = spot
     this.activeSkills = activeSkills
+    this.skillCooldowns = new Map()
     this.options = options
   }
 
@@ -59,12 +61,18 @@ export class AutoCombatSystem {
       manaUsed: 0
     }
 
+    // Проверяем, есть ли активные скиллы
+    if (this.activeSkills.length === 0) {
+      console.log('❌ Нет активных скиллов для боя!')
+      return result
+    }
+
     let currentMobs = [...this.spot.mobs]
     let currentHealth = this.character.health
     let currentMana = this.character.mana
     let round = 0
 
-    console.log(`🤖 Начинаем автоматический бой с ${currentMobs.length} мобами`)
+    console.log(`🤖 Начинаем автоматический бой с ${currentMobs.length} мобами, активных скиллов: ${this.activeSkills.length}`)
 
     while (currentMobs.length > 0 && round < this.options.maxRounds) {
       round++
@@ -90,7 +98,10 @@ export class AutoCombatSystem {
         result.manaUsed += skillResult.manaUsed
         result.skillsUsed.push(skillToUse)
         
-        console.log(`⚔️ Использован скилл ${skillToUse}, урон: ${skillResult.damageDealt}, получен урон: ${skillResult.damageTaken}`)
+        // Обновляем кулдаун скилла
+        this.markSkillUsed(skillToUse)
+        
+        console.log(`⚔️ Использован скилл ${skillToUse}, урон: ${skillResult.damageDealt}, получен урон: ${skillResult.damageTaken}, мана: ${skillResult.manaUsed}`)
       } else {
         // Базовая атака
         const basicAttack = this.basicAttack(currentMobs)
@@ -130,12 +141,29 @@ export class AutoCombatSystem {
     
     for (const skillId of this.activeSkills) {
       const skill = availableSkills.find(s => s.id === skillId)
-      if (skill && currentMana >= skill.mana_cost) {
+      if (skill && currentMana >= skill.mana_cost && this.isSkillReady(skillId)) {
         return skillId
       }
     }
     
     return null
+  }
+
+  // Проверка готовности скилла (кулдаун)
+  private isSkillReady(skillId: string): boolean {
+    const skillData = this.getAvailableSkills().find(s => s.id === skillId)
+    if (!skillData) return false
+    
+    const lastUsed = this.skillCooldowns.get(skillId) || 0
+    const now = Date.now()
+    const timeSinceLastUse = now - lastUsed
+    
+    return timeSinceLastUse >= skillData.cooldown * 1000
+  }
+
+  // Использование скилла (обновление кулдауна)
+  private markSkillUsed(skillId: string): void {
+    this.skillCooldowns.set(skillId, Date.now())
   }
 
   // Получение доступных скиллов
@@ -150,7 +178,9 @@ export class AutoCombatSystem {
     else if (name.includes('берсерк') || name.includes('berserker')) className = 'berserker'
     else if (name.includes('ассасин') || name.includes('assassin')) className = 'assassin'
     
-    return getAvailableSkills(className, this.character.level)
+    // Пока используем только первый скил (автоматически изученный)
+    // В будущем нужно будет получать изученные скиллы из базы данных
+    return getAvailableSkills(className, this.character.level, [])
   }
 
   // Использование скилла

@@ -12,14 +12,16 @@ import { supabase } from '@/lib/supabase'
 interface MapFooterProps {
   character: Character
   onUpdateCharacter: (updates: Partial<Character>) => Promise<boolean>
+  activeSkills: ReturnType<typeof useActiveSkills>
 }
 
-export default function MapFooter({ character, onUpdateCharacter }: MapFooterProps) {
-  const { activeSkills, toggleSkill, getActiveSkills } = useActiveSkills()
+export default function MapFooter({ character, onUpdateCharacter, activeSkills: activeSkillsHook }: MapFooterProps) {
+  const { activeSkills, toggleSkill, getActiveSkills } = activeSkillsHook
   const [hoveredSkill, setHoveredSkill] = useState<ActiveSkill | null>(null)
   const [tooltipPosition, setTooltipPosition] = useState({ x: 0, y: 0 })
   const [className, setClassName] = useState<string>('archer')
   const [loading, setLoading] = useState(true)
+  const [learnedSkills, setLearnedSkills] = useState<string[]>([])
 
   // Получаем название класса из базы данных
   useEffect(() => {
@@ -60,7 +62,58 @@ export default function MapFooter({ character, onUpdateCharacter }: MapFooterPro
     }
   }, [character.class_id])
 
-  const availableSkills = getAvailableSkills(className, character.level)
+  // Получаем изученные скиллы персонажа
+  useEffect(() => {
+    const fetchLearnedSkills = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('character_skills')
+          .select('skill_id')
+          .eq('character_id', character.id)
+
+        if (error) {
+          console.error('Error fetching learned skills:', error)
+          return
+        }
+
+        if (data) {
+          const skillIds = data.map((row: any) => row.skill_id)
+          setLearnedSkills(skillIds)
+        }
+      } catch (error) {
+        console.error('Error fetching learned skills:', error)
+      }
+    }
+
+    if (character.id) {
+      fetchLearnedSkills()
+    }
+  }, [character.id])
+
+  const availableSkills = getAvailableSkills(className, character.level, learnedSkills)
+  
+  // Отладочная информация
+  useEffect(() => {
+    console.log('🔍 MapFooter Debug:', {
+      loading,
+      availableSkills: availableSkills.length,
+      learnedSkills: learnedSkills.length,
+      activeSkillsCount: Array.from(activeSkills.values()).filter(s => s.isActive).length,
+      activeSkills: Array.from(activeSkills.values()).filter(s => s.isActive).map(s => s.id)
+    })
+  }, [loading, availableSkills, learnedSkills, activeSkills])
+
+  // Автоматически активируем первый скил при загрузке
+  useEffect(() => {
+    if (!loading && availableSkills.length > 0) {
+      const firstSkill = availableSkills[0]
+      const isAlreadyActive = activeSkills.has(firstSkill.id) && activeSkills.get(firstSkill.id)?.isActive
+      if (firstSkill && firstSkill.is_learned && !isAlreadyActive) {
+        toggleSkill(firstSkill.id, firstSkill.cooldown)
+        console.log(`🎯 Автоматически активирован первый скил: ${firstSkill.name}`)
+      }
+    }
+  }, [loading, availableSkills, activeSkills, toggleSkill])
 
   // Обработка активации/деактивации скилла
   const handleSkillToggle = (skillId: string) => {

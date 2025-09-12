@@ -16,6 +16,7 @@ import WorldMapNew from './World/WorldMapNew'
 import SkillsPanelNew from './UI/SkillsPanelNew'
 import RegenerationSystemSimple from './UI/RegenerationSystemSimple'
 import AdminPanel from './Admin/AdminPanel'
+import { useActiveSkills } from '@/lib/useActiveSkills'
 
 interface GameInterfaceProps {
   character: Character
@@ -44,6 +45,7 @@ export default function GameInterface({ character: initialCharacter, user, onLog
   })
   const [isLoading, setIsLoading] = useState(false)
   const [isAdminPanelOpen, setIsAdminPanelOpen] = useState(false)
+  const activeSkills = useActiveSkills()
 
   // Функция для сохранения активной панели в localStorage
   const handlePanelChange = (panel: ActivePanel) => {
@@ -198,6 +200,7 @@ export default function GameInterface({ character: initialCharacter, user, onLog
           <WorldMapNew
             character={character}
             onUpdateCharacter={updateCharacterData}
+            activeSkills={activeSkills}
           />
         )
       default:

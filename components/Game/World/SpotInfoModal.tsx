@@ -24,6 +24,12 @@ export default function SpotInfoModal({
 }: SpotInfoModalProps) {
   const [isFarming, setIsFarming] = useState(false)
 
+  // Отладочная информация
+  console.log('🔍 SpotInfoModal Debug:', {
+    activeSkills: activeSkills.length,
+    activeSkillsList: activeSkills
+  })
+
   if (!isOpen) return null
 
   // Группируем мобов по типам
@@ -249,13 +255,22 @@ export default function SpotInfoModal({
           
           <button
             onClick={handleStartFarming}
-            disabled={isFarming}
-            className="px-6 py-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-600 text-white rounded-lg transition-colors flex items-center space-x-2"
+            disabled={isFarming || activeSkills.length === 0}
+            className={`px-6 py-2 rounded-lg transition-colors flex items-center space-x-2 ${
+              isFarming || activeSkills.length === 0
+                ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                : 'bg-green-600 hover:bg-green-700 text-white'
+            }`}
           >
             {isFarming ? (
               <>
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
                 <span>Фарм...</span>
+              </>
+            ) : activeSkills.length === 0 ? (
+              <>
+                <Sword className="w-4 h-4" />
+                <span>Нет активных скиллов</span>
               </>
             ) : (
               <>

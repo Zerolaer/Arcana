@@ -16,11 +16,12 @@ import MapFooter from '../UI/MapFooter'
 interface WorldMapProps {
   character: Character
   onUpdateCharacter: (updates: Partial<Character>) => Promise<boolean>
+  activeSkills: ReturnType<typeof useActiveSkills>
 }
 
 type ViewMode = 'world' | 'continent' | 'zone'
 
-export default function WorldMapNew({ character, onUpdateCharacter }: WorldMapProps) {
+export default function WorldMapNew({ character, onUpdateCharacter, activeSkills }: WorldMapProps) {
   const [viewMode, setViewMode] = useState<ViewMode>('world')
   const [selectedContinent, setSelectedContinent] = useState<Continent | null>(null)
   const [selectedZone, setSelectedZone] = useState<Zone | null>(null)
@@ -31,7 +32,7 @@ export default function WorldMapNew({ character, onUpdateCharacter }: WorldMapPr
   const [clickedSpot, setClickedSpot] = useState<FarmSpot | null>(null)
   const [showMobSelector, setShowMobSelector] = useState(false)
   const [showSpotInfo, setShowSpotInfo] = useState(false)
-  const { getActiveSkills } = useActiveSkills()
+  const { getActiveSkills } = activeSkills
 
   // Получаем доступные континенты для текущего уровня игрока
   const availableContinents = getAvailableContinents(character.level)
@@ -164,7 +165,14 @@ export default function WorldMapNew({ character, onUpdateCharacter }: WorldMapPr
 
   // Начало фарма
   const handleStartFarming = async (spot: FarmSpot, skills: string[]) => {
-    console.log('Начинаем фарм спота:', spot.name, 'с скиллами:', skills)
+    console.log('🚀 Начинаем фарм спота:', spot.name, 'с скиллами:', skills)
+    
+    // Проверяем, есть ли активные скиллы
+    if (skills.length === 0) {
+      console.log('❌ Нет активных скиллов для боя!')
+      alert('❌ Нет активных скиллов для боя! Активируйте хотя бы один скил в панели внизу.')
+      return
+    }
     
     try {
       const autoCombat = new AutoCombatSystem(character, spot, skills)
@@ -266,6 +274,7 @@ export default function WorldMapNew({ character, onUpdateCharacter }: WorldMapPr
           <MapFooter 
             character={character}
             onUpdateCharacter={onUpdateCharacter}
+            activeSkills={activeSkills}
           />
         </div>
       </div>
@@ -338,6 +347,7 @@ export default function WorldMapNew({ character, onUpdateCharacter }: WorldMapPr
           <MapFooter 
             character={character}
             onUpdateCharacter={onUpdateCharacter}
+            activeSkills={activeSkills}
           />
         </div>
       </div>
@@ -445,6 +455,7 @@ export default function WorldMapNew({ character, onUpdateCharacter }: WorldMapPr
           <MapFooter 
             character={character}
             onUpdateCharacter={onUpdateCharacter}
+            activeSkills={activeSkills}
           />
         </div>
       </div>
@@ -626,7 +637,11 @@ export default function WorldMapNew({ character, onUpdateCharacter }: WorldMapPr
           isOpen={showSpotInfo}
           onClose={handleCloseSpotInfo}
           onStartFarming={handleStartFarming}
-          activeSkills={getActiveSkills()}
+          activeSkills={(() => {
+            const skills = getActiveSkills()
+            console.log('🔍 WorldMapNew передает активные скиллы:', skills)
+            return skills
+          })()}
         />
       )}
     </div>
