@@ -20,20 +20,16 @@ export default function SkillsPanelNew({ character, onUpdateCharacter, isLoading
   const [selectedSkill, setSelectedSkill] = useState<ActiveSkill | null>(null)
   const [showPurchaseModal, setShowPurchaseModal] = useState(false)
   const [className, setClassName] = useState<string>('')
+  const [skillsLoading, setSkillsLoading] = useState(true)
 
   useEffect(() => {
     const loadSkills = async () => {
       try {
+        setSkillsLoading(true)
         console.log('Загружаем навыки для персонажа:', character.id, 'уровень:', character.level, 'класс:', character.class_id)
         
-        // Временно используем только статические данные для отладки
-        console.log('Используем статические данные навыков')
-        
-        // Пассивные навыки
-        const className = getClassNameById(character.class_id)
-        const passiveSkills = getAvailablePassiveSkills(className, character.level)
-        console.log('Пассивные навыки:', passiveSkills)
-        setAvailablePassiveSkills(passiveSkills)
+        // Загружаем только из базы данных
+        console.log('Загружаем навыки из базы данных')
         
         // Активные навыки - загружаем название класса по UUID
         try {
@@ -144,8 +140,10 @@ export default function SkillsPanelNew({ character, onUpdateCharacter, isLoading
           console.log('Форматированные активные навыки:', formattedActiveSkills)
           setAvailableActiveSkills(formattedActiveSkills)
         }
+        setSkillsLoading(false)
       } catch (error) {
         console.error('Ошибка загрузки навыков:', error)
+        setSkillsLoading(false)
       }
     }
 
@@ -250,6 +248,17 @@ export default function SkillsPanelNew({ character, onUpdateCharacter, isLoading
     } else {
       alert(`Требуется ${skill.level_requirement} уровень для изучения этого навыка`)
     }
+  }
+
+  if (skillsLoading) {
+    return (
+      <div className="flex-1 game-content p-4 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-400 mx-auto mb-4"></div>
+          <p className="text-white">Загрузка навыков...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
