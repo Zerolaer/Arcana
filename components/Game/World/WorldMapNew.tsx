@@ -870,12 +870,12 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
               ) : (
                 <>
                   {/* Лог боя */}
-                  <div className="bg-dark-200/50 rounded-lg p-4 mb-4 flex-1 min-h-0">
+                  <div className="bg-dark-200/50 rounded-lg p-4 mb-4 flex-1 min-h-0 flex flex-col">
                     <div className="text-white font-semibold mb-3">📝 Лог боя</div>
-                    <div className="h-full overflow-y-auto space-y-2">
+                    <div className="flex-1 overflow-y-auto space-y-2 max-h-64">
                       {combatState.battleLog.length > 0 ? (
-                        combatState.battleLog.map((logEntry, index) => (
-                          <div key={index} className="bg-dark-300/30 rounded p-3">
+                        [...combatState.battleLog].reverse().map((logEntry, index) => (
+                          <div key={combatState.battleLog.length - index - 1} className="bg-dark-300/30 rounded p-3">
                             <div className="text-gray-300 text-sm">
                               {logEntry}
                             </div>
@@ -1066,62 +1066,126 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
                         
                         // Автоматически переходим к следующему ходу игрока через 2 секунды
                         setTimeout(() => {
-                          setCombatState(prev => ({
-                            ...prev,
-                            isPlayerTurn: true,
-                            lastAction: `Ваш ход! Выберите скилл для атаки`
-                          }))
+                          setCombatState(prev => {
+                            // Проверяем, не закончился ли бой
+                            const aliveMobs = prev.currentMobs.filter(mob => mob.health > 0)
+                            
+                            if (aliveMobs.length === 0) {
+                              // Победа
+                              const result = {
+                                success: true,
+                                experience: currentBattleSpot.mobs.reduce((sum, mob) => sum + mob.experience_reward, 0),
+                                gold: currentBattleSpot.mobs.reduce((sum, mob) => sum + mob.gold_reward, 0),
+                                finalHealth: prev.currentHealth,
+                                finalMana: prev.currentMana,
+                                damageTaken: character.health - prev.currentHealth,
+                                manaUsed: character.mana - prev.currentMana,
+                                mobsDefeated: currentBattleSpot.mobs.length
+                              }
+                              
+                              const victoryLog = `🎉 Победа! Вы получили ${result.experience} опыта и ${result.gold} золота!`
+                              
+                              setBattleEnded(true)
+                              setBattleResult(result)
+                              handleCombatEnd(result)
+                              
+                              return {
+                                ...prev,
+                                battleLog: [...prev.battleLog, victoryLog]
+                              }
+                            } else if (prev.currentHealth <= 0) {
+                              // Поражение
+                              const result = {
+                                success: false,
+                                experience: 0,
+                                gold: 0,
+                                finalHealth: 0,
+                                finalMana: prev.currentMana,
+                                damageTaken: character.health,
+                                manaUsed: character.mana - prev.currentMana,
+                                mobsDefeated: currentBattleSpot.mobs.length - aliveMobs.length
+                              }
+                              
+                              const defeatLog = `💀 Поражение! Вы погибли в бою...`
+                              
+                              setBattleEnded(true)
+                              setBattleResult(result)
+                              handleCombatEnd(result)
+                              
+                              return {
+                                ...prev,
+                                battleLog: [...prev.battleLog, defeatLog]
+                              }
+                            }
+                            
+                            return {
+                              ...prev,
+                              isPlayerTurn: true,
+                              lastAction: `Ваш ход! Выберите скилл для атаки`
+                            }
+                          })
                         }, 2000)
                       }, 1000)
                     }
 
                   // Проверяем условия окончания боя
                   setTimeout(() => {
-                    if (combatState.currentMobs.length === 0) {
-                      // Победа
-                      const result = {
-                        success: true,
-                        experience: currentBattleSpot.mobs.reduce((sum, mob) => sum + mob.experience_reward, 0),
-                        gold: currentBattleSpot.mobs.reduce((sum, mob) => sum + mob.gold_reward, 0),
-                        finalHealth: combatState.currentHealth,
-                        finalMana: combatState.currentMana,
-                        damageTaken: character.health - combatState.currentHealth,
-                        manaUsed: character.mana - combatState.currentMana,
-                        mobsDefeated: currentBattleSpot.mobs.length
+                    // Используем актуальное состояние
+                    setCombatState(prev => {
+                      const aliveMobs = prev.currentMobs.filter(mob => mob.health > 0)
+                      
+                      if (aliveMobs.length === 0) {
+                        // Победа
+                        const result = {
+                          success: true,
+                          experience: currentBattleSpot.mobs.reduce((sum, mob) => sum + mob.experience_reward, 0),
+                          gold: currentBattleSpot.mobs.reduce((sum, mob) => sum + mob.gold_reward, 0),
+                          finalHealth: prev.currentHealth,
+                          finalMana: prev.currentMana,
+                          damageTaken: character.health - prev.currentHealth,
+                          manaUsed: character.mana - prev.currentMana,
+                          mobsDefeated: currentBattleSpot.mobs.length
+                        }
+                        
+                        // Добавляем запись о победе в лог
+                        const victoryLog = `🎉 Победа! Вы получили ${result.experience} опыта и ${result.gold} золота!`
+                        
+                        setBattleEnded(true)
+                        setBattleResult(result)
+                        handleCombatEnd(result)
+                        
+                        return {
+                          ...prev,
+                          battleLog: [...prev.battleLog, victoryLog]
+                        }
+                      } else if (prev.currentHealth <= 0) {
+                        // Поражение
+                        const result = {
+                          success: false,
+                          experience: 0,
+                          gold: 0,
+                          finalHealth: 0,
+                          finalMana: prev.currentMana,
+                          damageTaken: character.health,
+                          manaUsed: character.mana - prev.currentMana,
+                          mobsDefeated: currentBattleSpot.mobs.length - aliveMobs.length
+                        }
+                        
+                        // Добавляем запись о поражении в лог
+                        const defeatLog = `💀 Поражение! Вы погибли в бою...`
+                        
+                        setBattleEnded(true)
+                        setBattleResult(result)
+                        handleCombatEnd(result)
+                        
+                        return {
+                          ...prev,
+                          battleLog: [...prev.battleLog, defeatLog]
+                        }
                       }
                       
-                      // Добавляем запись о победе в лог
-                      setCombatState(prev => ({
-                        ...prev,
-                        battleLog: [...prev.battleLog, `🎉 Победа! Вы получили ${result.experience} опыта и ${result.gold} золота!`]
-                      }))
-                      
-                      setBattleEnded(true)
-                      setBattleResult(result)
-                      handleCombatEnd(result)
-                    } else if (combatState.currentHealth <= 0) {
-                      // Поражение
-                      const result = {
-                        success: false,
-                        experience: 0,
-                        gold: 0,
-                        finalHealth: 0,
-                        finalMana: combatState.currentMana,
-                        damageTaken: character.health,
-                        manaUsed: character.mana - combatState.currentMana,
-                        mobsDefeated: currentBattleSpot.mobs.length - combatState.currentMobs.length
-                      }
-                      
-                      // Добавляем запись о поражении в лог
-                      setCombatState(prev => ({
-                        ...prev,
-                        battleLog: [...prev.battleLog, `💀 Поражение! Вы погибли в бою...`]
-                      }))
-                      
-                      setBattleEnded(true)
-                      setBattleResult(result)
-                      handleCombatEnd(result)
-                    }
+                      return prev
+                    })
                   }, 1000)
                 }}
               >
