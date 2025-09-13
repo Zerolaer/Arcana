@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { Character } from '@/types/game'
 import { FarmSpot, Mob } from '@/types/world'
 import { X, Sword, Shield, Heart, Zap, Trophy, Coins, Package, Users, Target } from 'lucide-react'
@@ -114,6 +114,9 @@ export default function SpotInfoModal({
             // Запускаем бой БЕЗ закрытия попапа
             await onStartFarming(spot, activeSkills, true) // true = isAutoFarming
             console.log('✅ Автофарм: бой завершен успешно')
+            
+            // Небольшая пауза для обновления UI
+            await new Promise(resolve => setTimeout(resolve, 500))
           } catch (farmingError) {
             console.error('❌ Автофарм: ошибка в бою:', farmingError)
             // Продолжаем следующий бой, не останавливаем весь цикл
@@ -158,6 +161,20 @@ export default function SpotInfoModal({
     }
     onClose()
   }
+
+  // Обработчик закрытия по Escape
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        handleClose()
+      }
+    }
+
+    if (isOpen) {
+      document.addEventListener('keydown', handleEscape)
+      return () => document.removeEventListener('keydown', handleEscape)
+    }
+  }, [isOpen, isAutoFarming])
 
   const totalExperience = spot.mobs.reduce((sum, mob) => sum + mob.experience_reward, 0)
   const totalGold = spot.mobs.reduce((sum, mob) => sum + mob.gold_reward, 0)

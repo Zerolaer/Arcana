@@ -226,7 +226,7 @@ export class AutoCombatSystem {
       if (mob.health > 0) {
         const mobDamage = this.calculateMobDamage(mob)
         totalDamageTaken += mobDamage
-        console.log(`👹 ${mob.name} наносит урон: ${mobDamage} (атака: ${mob.attack}, защита: ${this.character.defense})`)
+        console.log(`👹 ${mob.name} наносит урон: ${mobDamage} (атака: ${mob.attack}, защита персонажа: ${this.character.defense})`)
       }
     }
 
@@ -263,7 +263,7 @@ export class AutoCombatSystem {
       if (mob.health > 0) {
         const mobDamage = this.calculateMobDamage(mob)
         totalDamageTaken += mobDamage
-        console.log(`👹 ${mob.name} наносит урон (базовая атака): ${mobDamage} (атака: ${mob.attack}, защита: ${this.character.defense})`)
+        console.log(`👹 ${mob.name} наносит урон (базовая атака): ${mobDamage} (атака: ${mob.attack}, защита персонажа: ${this.character.defense})`)
       }
     }
 

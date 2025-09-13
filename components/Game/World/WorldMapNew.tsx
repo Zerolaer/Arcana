@@ -184,6 +184,7 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
         
         console.log(`📊 Опыт получен: ${result.experience}, текущий уровень: ${character.level}, новый уровень: ${xpResult.newLevel}`)
         console.log(`💰 Золото получено: ${result.gold}, текущее: ${character.gold}, новое: ${character.gold + result.gold}`)
+        console.log(`🔄 Обновляем персонажа в базе данных...`)
         
         // Применяем урон и расход маны
         // Используем текущие значения здоровья и маны, а не исходные
@@ -206,6 +207,8 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
           gold: character.gold + result.gold,
           experience_to_next: xpResult.xpToNext
         })
+        
+        console.log(`✅ Персонаж обновлен в базе данных! Новый уровень: ${xpResult.newLevel}, HP: ${newHealth}, MP: ${newMana}`)
         
         console.log('✅ Фарм завершен успешно!', {
           ...result,
