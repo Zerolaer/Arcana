@@ -12,7 +12,6 @@ import { processXpGain } from '@/lib/levelSystemV2'
 import { useActiveSkills } from '@/lib/useActiveSkills'
 import { AutoCombatSystem } from '@/lib/autoCombatSystem'
 import MapFooter from '../UI/MapFooter'
-import CombatDisplay from '../UI/CombatDisplay'
 
 interface WorldMapProps {
   character: Character
@@ -35,6 +34,16 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
   const [showSpotInfo, setShowSpotInfo] = useState(false)
   const [showCombat, setShowCombat] = useState(false)
   const [currentCombatSpot, setCurrentCombatSpot] = useState<FarmSpot | null>(null)
+  const [combatState, setCombatState] = useState({
+    currentMobs: [] as Mob[],
+    currentHealth: 0,
+    currentMana: 0,
+    round: 0,
+    isPlayerTurn: true,
+    lastAction: '',
+    lastDamage: 0,
+    lastMobDamage: 0
+  })
   const { getActiveSkills } = activeSkills
 
   // Получаем доступные континенты для текущего уровня игрока
@@ -176,6 +185,18 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
       alert('❌ Нет активных скиллов для боя! Активируйте хотя бы один скил в панели внизу.')
       return
     }
+    
+    // Инициализируем состояние боя
+    setCombatState({
+      currentMobs: [...spot.mobs],
+      currentHealth: character.health,
+      currentMana: character.mana,
+      round: 0,
+      isPlayerTurn: true,
+      lastAction: '',
+      lastDamage: 0,
+      lastMobDamage: 0
+    })
     
     // Запускаем новый бой
     setCurrentCombatSpot(spot)
@@ -645,13 +666,167 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
       )}
 
       {/* Компонент боя */}
-      {currentCombatSpot && (
-        <CombatDisplay
-          character={character}
-          mobs={currentCombatSpot.mobs}
-          isVisible={showCombat}
-          onCombatEnd={handleCombatEnd}
-        />
+      {showCombat && currentCombatSpot && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
+          <div className="bg-dark-800 rounded-lg p-6 w-full max-w-2xl mx-4">
+            {/* Заголовок */}
+            <div className="text-center mb-6">
+              <h2 className="text-2xl font-bold text-white mb-2">⚔️ Бой</h2>
+              <div className="text-sm text-gray-400">
+                Раунд {combatState.round} • {combatState.isPlayerTurn ? 'Ваш ход' : 'Ход мобов'}
+              </div>
+            </div>
+
+            {/* Статы персонажа */}
+            <div className="grid grid-cols-2 gap-4 mb-6">
+              <div className="bg-dark-700 rounded-lg p-4">
+                <div className="text-white font-semibold mb-2">👤 Вы</div>
+                <div className="space-y-1 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-300">HP:</span>
+                    <span className="text-red-400">{combatState.currentHealth}/{character.max_health}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-300">MP:</span>
+                    <span className="text-blue-400">{combatState.currentMana}/{character.max_mana}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-dark-700 rounded-lg p-4">
+                <div className="text-white font-semibold mb-2">👹 Мобы</div>
+                <div className="space-y-1 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-300">Осталось:</span>
+                    <span className="text-orange-400">{combatState.currentMobs.length}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-300">Всего было:</span>
+                    <span className="text-gray-400">{currentCombatSpot.mobs.length}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Последнее действие */}
+            {combatState.lastAction && (
+              <div className="bg-dark-700 rounded-lg p-4 mb-6">
+                <div className="text-white font-semibold mb-2">📝 Последнее действие</div>
+                <div className="text-gray-300">
+                  {combatState.lastAction}
+                  {combatState.lastDamage > 0 && (
+                    <span className="text-red-400 ml-2">(-{combatState.lastDamage} HP)</span>
+                  )}
+                  {combatState.lastMobDamage > 0 && (
+                    <span className="text-orange-400 ml-2">(-{combatState.lastMobDamage} HP)</span>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Список мобов */}
+            <div className="space-y-2 mb-6">
+              <div className="text-white font-semibold mb-2">👹 Противники</div>
+              {combatState.currentMobs.map((mob, index) => (
+                <div key={mob.id} className="bg-dark-700 rounded-lg p-3 flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <span className="text-2xl">{mob.icon}</span>
+                    <div>
+                      <div className="text-white font-medium">{mob.name}</div>
+                      <div className="text-sm text-gray-400">Уровень {mob.level}</div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-red-400 font-semibold">{mob.health} HP</div>
+                    <div className="text-sm text-gray-400">Атака: {mob.attack}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Кнопка для продолжения боя */}
+            <div className="text-center">
+              <button
+                onClick={() => {
+                  // Простая логика боя
+                  if (combatState.isPlayerTurn) {
+                    // Ход игрока - атакуем первого моба
+                    const target = combatState.currentMobs[0]
+                    if (target) {
+                      const damage = Math.max(1, character.attack_damage - target.defense)
+                      const newMobs = [...combatState.currentMobs]
+                      const targetIndex = newMobs.findIndex(m => m.id === target.id)
+                      
+                      if (targetIndex !== -1) {
+                        newMobs[targetIndex].health = Math.max(0, newMobs[targetIndex].health - damage)
+                      }
+
+                      setCombatState(prev => ({
+                        ...prev,
+                        currentMobs: newMobs.filter(mob => mob.health > 0),
+                        round: prev.round + 1,
+                        isPlayerTurn: false,
+                        lastAction: `Вы атакуете ${target.name}`,
+                        lastDamage: damage
+                      }))
+                    }
+                  } else {
+                    // Ход мобов - все мобы атакуют игрока
+                    let totalMobDamage = 0
+                    const aliveMobs = combatState.currentMobs.filter(mob => mob.health > 0)
+                    
+                    for (const mob of aliveMobs) {
+                      const mobDamage = Math.max(1, mob.attack - Math.floor(character.defense * 0.5))
+                      totalMobDamage += mobDamage
+                    }
+
+                    setCombatState(prev => ({
+                      ...prev,
+                      currentHealth: Math.max(0, prev.currentHealth - totalMobDamage),
+                      isPlayerTurn: true,
+                      lastAction: `Мобы атакуют вас`,
+                      lastMobDamage: totalMobDamage
+                    }))
+                  }
+
+                  // Проверяем условия окончания боя
+                  setTimeout(() => {
+                    if (combatState.currentMobs.length === 0) {
+                      // Победа
+                      const result = {
+                        success: true,
+                        experience: currentCombatSpot.mobs.reduce((sum, mob) => sum + mob.experience_reward, 0),
+                        gold: currentCombatSpot.mobs.reduce((sum, mob) => sum + mob.gold_reward, 0),
+                        finalHealth: combatState.currentHealth,
+                        finalMana: combatState.currentMana,
+                        damageTaken: character.health - combatState.currentHealth,
+                        manaUsed: character.mana - combatState.currentMana,
+                        mobsDefeated: currentCombatSpot.mobs.length
+                      }
+                      handleCombatEnd(result)
+                    } else if (combatState.currentHealth <= 0) {
+                      // Поражение
+                      const result = {
+                        success: false,
+                        experience: 0,
+                        gold: 0,
+                        finalHealth: 0,
+                        finalMana: combatState.currentMana,
+                        damageTaken: character.health,
+                        manaUsed: character.mana - combatState.currentMana,
+                        mobsDefeated: currentCombatSpot.mobs.length - combatState.currentMobs.length
+                      }
+                      handleCombatEnd(result)
+                    }
+                  }, 1000)
+                }}
+                className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+              >
+                {combatState.isPlayerTurn ? 'Атаковать' : 'Продолжить'}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )
