@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react'
 import { Character } from '@/types/game'
 import { ActiveSkill } from '@/types/skills'
 import { getActiveSkillData } from '@/lib/activeSkills'
-import { Sword, Zap, Shield, Target, Clock, Droplets } from 'lucide-react'
+import { supabase } from '@/lib/supabase'
+import { Sword, Zap, Shield, Target, Clock, Droplets, Lock } from 'lucide-react'
 
 interface CombatSkillPanelProps {
   character: Character
@@ -48,277 +49,152 @@ export default function CombatSkillPanel({
         setIsLoading(true)
         
         // Получаем изученные скиллы из базы данных
-        const { supabase } = await import('@/lib/supabase')
         const { data, error } = await (supabase as any).rpc('get_character_learned_skills', {
           p_character_id: character.id
         })
-        
+
         if (error) {
-          console.error('Ошибка загрузки скиллов из БД:', error)
-          
-          // Fallback: используем хардкод скиллы
-          const className = getClassNameFromCharacter(character)
-          const fallbackSkill = getActiveSkillData('', className)
-          
-          if (fallbackSkill) {
-            const learned: LearnedSkill[] = [{
-              ...fallbackSkill,
-              isLearned: true,
-              isOnCooldown: false,
-              cooldownRemaining: 0
-            }]
-            setLearnedSkills(learned)
-          } else {
-            setLearnedSkills([])
-          }
+          console.error('Ошибка загрузки скиллов:', error)
           return
         }
-        
-        if (data && Array.isArray(data)) {
-          const learned: LearnedSkill[] = data.map((skillData: any) => ({
-            id: skillData.id,
-            name: skillData.name,
-            description: skillData.description || 'Описание недоступно',
-            icon: skillData.icon || '⚔️',
-            skill_type: skillData.skill_type || 'active',
-            damage_type: skillData.damage_type || 'physical',
-            base_damage: skillData.base_damage || 0,
-            mana_cost: skillData.mana_cost || 0,
-            cooldown: skillData.cooldown || 0,
-            scaling_stat: skillData.scaling_stat || 'strength',
-            scaling_ratio: skillData.scaling_ratio || 0,
-            level_requirement: skillData.level_requirement || 1,
-            class_requirements: skillData.class_requirements || [],
-            cost_to_learn: skillData.cost_to_learn || 0,
+
+        if (data && data.length > 0) {
+          const skills: LearnedSkill[] = data.map((skill: any) => ({
+            id: skill.id,
+            name: skill.name,
+            description: skill.description,
+            icon: skill.icon,
+            skill_type: skill.skill_type,
+            base_damage: skill.base_damage,
+            mana_cost: skill.mana_cost,
+            cooldown: skill.cooldown,
+            scaling_ratio: skill.scaling_ratio,
+            level_requirement: skill.level_requirement,
+            class_requirement: skill.class_requirement,
+            damage_type: skill.damage_type,
+            scaling_stat: skill.scaling_stat,
+            cost_to_learn: skill.cost_to_learn,
             is_learned: true,
-            nodes: [],
             isLearned: true,
             isOnCooldown: false,
-            cooldownRemaining: 0
+            cooldownRemaining: 0,
+            nodes: skill.nodes || []
           }))
-          setLearnedSkills(learned)
+          
+          setLearnedSkills(skills)
         } else {
+          // Если нет изученных скиллов, показываем пустые ячейки
           setLearnedSkills([])
         }
       } catch (error) {
         console.error('Ошибка загрузки скиллов:', error)
-        setLearnedSkills([])
       } finally {
         setIsLoading(false)
       }
     }
 
     loadLearnedSkills()
-  }, [character.id, character.level])
-
-  // Получаем иконку для типа скилла
-  const getSkillTypeIcon = (skillType: string) => {
-    switch (skillType) {
-      case 'active': return <Sword className="w-4 h-4" />
-      case 'aoe': return <Target className="w-4 h-4" />
-      case 'buff': return <Zap className="w-4 h-4" />
-      case 'barrier': return <Shield className="w-4 h-4" />
-      case 'ultimate': return <Zap className="w-4 h-4" />
-      default: return <Sword className="w-4 h-4" />
-    }
-  }
-
-  // Получаем цвет для типа скилла
-  const getSkillTypeColor = (skillType: string) => {
-    switch (skillType) {
-      case 'active': return 'text-red-400'
-      case 'aoe': return 'text-green-400'
-      case 'buff': return 'text-blue-400'
-      case 'barrier': return 'text-purple-400'
-      case 'ultimate': return 'text-yellow-400'
-      default: return 'text-gray-400'
-    }
-  }
-
-  // Проверяем, можно ли использовать скилл
-  const canUseSkill = (skill: LearnedSkill) => {
-    if (!skill.isLearned) return false
-    if (skill.isOnCooldown) return false
-    if (currentMana < skill.mana_cost) return false
-    return true
-  }
+  }, [character.id])
 
   // Обработчик выбора скилла
-  const handleSkillClick = (skill: LearnedSkill) => {
-    if (canUseSkill(skill)) {
-      setSelectedSkillId(skill.id)
-      onSkillSelect(skill.id)
-    }
+  const handleSkillClick = (skillId: string) => {
+    setSelectedSkillId(skillId)
+    onSkillSelect(skillId)
   }
 
-  // Обработчик выбора базовой атаки
-  const handleBasicAttack = () => {
-    setSelectedSkillId('basic_attack')
-    onSkillSelect('basic_attack')
+  // Создаем массив из 6 ячеек (изученные скиллы + пустые ячейки)
+  const createSkillSlots = () => {
+    const slots: (LearnedSkill | null)[] = []
+    
+    // Добавляем изученные скиллы
+    for (let i = 0; i < 6; i++) {
+      if (i < learnedSkills.length) {
+        slots.push(learnedSkills[i])
+      } else {
+        slots.push(null)
+      }
+    }
+    
+    return slots
   }
+
+  const skillSlots = createSkillSlots()
 
   if (isLoading) {
     return (
       <div className={`bg-dark-200/50 rounded-lg p-4 ${className}`}>
-        <div className="text-center text-gray-400">
-          Загрузка скиллов...
-        </div>
+        <div className="text-white font-semibold mb-3">⚔️ Панель скиллов</div>
+        <div className="text-gray-400 text-center py-8">Загрузка скиллов...</div>
       </div>
     )
   }
 
   return (
     <div className={`bg-dark-200/50 rounded-lg p-4 ${className}`}>
-      <h3 className="text-lg font-bold text-white mb-4 flex items-center space-x-2">
-        <Sword className="w-5 h-5 text-yellow-400" />
-        <span>Панель скиллов</span>
-      </h3>
+      <div className="text-white font-semibold mb-3">⚔️ Панель скиллов</div>
       
-      {/* Сетка скиллов */}
-      <div className="grid grid-cols-4 gap-2 mb-4">
-        {learnedSkills.map((skill) => {
-          const canUse = canUseSkill(skill)
-          const isNotEnoughMana = currentMana < skill.mana_cost
-          const isSelected = selectedSkillId === skill.id
-          
-          return (
-            <div key={skill.id} className="relative group">
-              <button
-                onClick={() => handleSkillClick(skill)}
-                disabled={!canUse}
-                className={`
-                  relative w-16 h-16 rounded-lg border-2 transition-all duration-200 flex flex-col items-center justify-center
-                  ${isSelected 
-                    ? 'border-green-400 bg-green-400/20' 
-                    : canUse 
-                      ? 'border-yellow-400/50 bg-yellow-400/10 hover:border-yellow-400 hover:bg-yellow-400/20 cursor-pointer' 
-                      : 'border-gray-600/30 bg-gray-800/20 cursor-not-allowed opacity-50'
-                  }
-                  ${isNotEnoughMana ? 'border-red-400/30 bg-red-400/5' : ''}
-                `}
-              >
+      {/* Сетка 2x3 для 6 ячеек скиллов */}
+      <div className="grid grid-cols-3 gap-3">
+        {skillSlots.map((skill, index) => (
+          <div
+            key={index}
+            className={`
+              relative w-16 h-16 rounded-lg border-2 flex items-center justify-center cursor-pointer transition-all duration-200
+              ${skill 
+                ? selectedSkillId === skill.id
+                  ? 'border-yellow-400 bg-yellow-400/20' 
+                  : currentMana >= skill.mana_cost
+                    ? 'border-gray-500 bg-gray-700/50 hover:border-gray-400 hover:bg-gray-600/50'
+                    : 'border-red-400 bg-red-400/10 opacity-50 cursor-not-allowed'
+                : 'border-gray-600 bg-gray-800/50 cursor-not-allowed'
+              }
+            `}
+            onClick={() => skill && currentMana >= skill.mana_cost && handleSkillClick(skill.id)}
+            title={skill ? `${skill.name}\n${skill.description}\nУрон: ${skill.base_damage}\nМана: ${skill.mana_cost}\nПерезарядка: ${skill.cooldown}с` : 'Пустая ячейка'}
+          >
+            {skill ? (
+              <>
                 {/* Иконка скилла */}
-                <span className="text-2xl mb-1">{skill.icon}</span>
+                <div className="text-2xl">{skill.icon}</div>
                 
-                {/* Стоимость маны */}
+                {/* Индикатор маны */}
                 {skill.mana_cost > 0 && (
-                  <div className="flex items-center space-x-1 text-xs">
-                    <Droplets className="w-3 h-3 text-blue-400" />
-                    <span className={`font-semibold ${isNotEnoughMana ? 'text-red-400' : 'text-blue-400'}`}>
-                      {skill.mana_cost}
-                    </span>
+                  <div className="absolute top-1 right-1 bg-blue-600 text-white text-xs px-1 rounded">
+                    {skill.mana_cost}
                   </div>
                 )}
                 
-                {/* Индикаторы состояния */}
-                {skill.isOnCooldown && (
-                  <div className="absolute top-1 right-1 bg-red-500 text-white text-xs px-1 py-0.5 rounded text-[10px]">
-                    CD
+                {/* Индикатор перезарядки */}
+                {skill.cooldown > 0 && (
+                  <div className="absolute bottom-1 right-1 bg-orange-600 text-white text-xs px-1 rounded">
+                    {skill.cooldown}с
                   </div>
                 )}
-                
-                {isNotEnoughMana && (
-                  <div className="absolute bottom-1 right-1 bg-red-500 text-white text-xs px-1 py-0.5 rounded text-[10px]">
-                    MP
-                  </div>
-                )}
-              </button>
-              
-              {/* Тултип с подробной информацией */}
-              <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 border border-gray-600 rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-10 w-64">
-                <div className="text-white font-semibold text-sm mb-1">{skill.name}</div>
-                <div className="text-gray-300 text-xs mb-2">{skill.description}</div>
-                
-                <div className="space-y-1 text-xs">
-                  {skill.base_damage > 0 && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Урон:</span>
-                      <span className="text-red-400 font-semibold">{skill.base_damage}</span>
-                    </div>
-                  )}
-                  
-                  {skill.mana_cost > 0 && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Мана:</span>
-                      <span className="text-blue-400 font-semibold">{skill.mana_cost}</span>
-                    </div>
-                  )}
-                  
-                  {skill.cooldown > 0 && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Кулдаун:</span>
-                      <span className="text-gray-400">{skill.cooldown}с</span>
-                    </div>
-                  )}
-                  
-                  {skill.scaling_ratio > 0 && (
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Масштаб:</span>
-                      <span className="text-yellow-400">{(skill.scaling_ratio * 100).toFixed(0)}%</span>
-                    </div>
-                  )}
-                </div>
-                
-                {/* Стрелка тултипа */}
-                <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-600"></div>
-              </div>
-            </div>
-          )
-        })}
+              </>
+            ) : (
+              <Lock className="w-6 h-6 text-gray-500" />
+            )}
+          </div>
+        ))}
       </div>
       
       {/* Базовая атака */}
-      <div className="pt-4 border-t border-gray-600/30">
-        <div className="text-center text-gray-400 text-sm mb-2">Базовая атака</div>
-        <div className="flex justify-center">
-          <div className="relative group">
-            <button
-              onClick={handleBasicAttack}
-              className={`
-                w-16 h-16 rounded-lg border-2 transition-all duration-200 flex flex-col items-center justify-center
-                ${selectedSkillId === 'basic_attack' 
-                  ? 'border-green-400 bg-green-400/20' 
-                  : 'border-gray-500/50 bg-gray-800/20 hover:border-gray-400 hover:bg-gray-800/40'
-                }
-              `}
-            >
-              <Sword className="w-6 h-6 text-gray-400 mb-1" />
-              <span className="text-xs text-gray-400">Атака</span>
-            </button>
-            
-            {/* Тултип для базовой атаки */}
-            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 border border-gray-600 rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-10 w-48">
-              <div className="text-white font-semibold text-sm mb-1">Базовая атака</div>
-              <div className="text-gray-300 text-xs mb-2">Стандартная атака без затрат маны</div>
-              
-              <div className="space-y-1 text-xs">
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Урон:</span>
-                  <span className="text-red-400 font-semibold">100% от атаки</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Мана:</span>
-                  <span className="text-green-400 font-semibold">0</span>
-                </div>
-              </div>
-              
-              <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-600"></div>
-            </div>
-          </div>
+      <div className="mt-4 pt-4 border-t border-dark-300/50">
+        <div className="text-gray-400 text-sm mb-2">Базовая атака</div>
+        <div
+          className={`
+            relative w-full h-12 rounded-lg border-2 flex items-center justify-center cursor-pointer transition-all duration-200
+            ${selectedSkillId === 'basic_attack'
+              ? 'border-yellow-400 bg-yellow-400/20' 
+              : 'border-green-400 bg-green-400/10 hover:border-green-300 hover:bg-green-400/20'
+            }
+          `}
+          onClick={() => handleSkillClick('basic_attack')}
+          title="Базовая атака\nУрон: 100%\nМана: 0\nПерезарядка: 0с"
+        >
+          <Sword className="w-6 h-6 text-green-400 mr-2" />
+          <span className="text-green-400 font-semibold">Базовая атака</span>
         </div>
-      </div>
-
-      {/* Сообщение о выборе скилла */}
-      <div className="mt-4 text-center">
-        {selectedSkillId ? (
-          <div className="text-green-400 text-sm">
-            ✓ Скилл выбран: {selectedSkillId === 'basic_attack' ? 'Базовая атака' : learnedSkills.find(s => s.id === selectedSkillId)?.name}
-          </div>
-        ) : (
-          <div className="text-yellow-400 text-sm">
-            🎯 Выберите скилл для атаки
-          </div>
-        )}
       </div>
     </div>
   )

@@ -112,6 +112,8 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
     setShowBattleModal(true)
     setBattleStarted(false)
     setSelectedSkillId(null)
+    // Сразу начинаем бой без подтверждения
+    handleStartBattle()
   }
 
   // Выбор моба из селектора
@@ -203,8 +205,7 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
   const handleStartBattle = () => {
     if (!currentBattleSpot) return
     
-    console.log('⚔️ Начинаем бой на споте:', currentBattleSpot.name)
-    setBattleStarted(true)
+    console.log('⚔️ Подготавливаем бой на споте:', currentBattleSpot.name)
     setBattleEnded(false)
     setBattleResult(null)
     
@@ -220,10 +221,10 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
       currentMana: character.mana,
       round: 1,
       isPlayerTurn: true,
-      lastAction: 'Бой начался!',
+      lastAction: 'Выберите скилл для атаки',
       lastDamage: 0,
       lastMobDamage: 0,
-      battleLog: ['Бой начался!']
+      battleLog: ['Бой подготовлен! Выберите скилл для атаки.']
     })
     
     // Обновляем HP/MP в хедере при начале боя
@@ -231,6 +232,16 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
       health: character.health,
       mana: character.mana
     })
+  }
+
+  // Начать бой (когда пользователь нажимает кнопку)
+  const handleStartCombat = () => {
+    setBattleStarted(true)
+    setCombatState(prev => ({
+      ...prev,
+      lastAction: 'Бой начался!',
+      battleLog: [...prev.battleLog, 'Бой начался!']
+    }))
   }
 
   // Начало автофарма
@@ -276,6 +287,19 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
   const handleSkillSelect = (skillId: string) => {
     setSelectedSkillId(skillId)
     console.log('🎯 Выбран скилл:', skillId)
+  }
+
+  // Функция для определения цвета лога
+  const getLogColor = (logEntry: string) => {
+    if (logEntry.includes('наносите') || logEntry.includes('урона!') || logEntry.includes('Победа!') || logEntry.includes('опыта') || logEntry.includes('золота')) {
+      return 'text-green-400' // Зеленый для нанесенного урона и побед
+    } else if (logEntry.includes('атакуют вас') || logEntry.includes('урона!') || logEntry.includes('Поражение!') || logEntry.includes('погибли')) {
+      return 'text-red-400' // Красный для полученного урона и поражений
+    } else if (logEntry.includes('Бой начался') || logEntry.includes('подготовлен') || logEntry.includes('Выберите скилл')) {
+      return 'text-blue-400' // Синий для информационных сообщений
+    } else {
+      return 'text-gray-300' // Серый для остальных
+    }
   }
 
   // Обработчик окончания боя
@@ -741,10 +765,12 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
       {/* Единый модал боя */}
       {showBattleModal && currentBattleSpot && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-dark-100 border border-dark-300 rounded-lg w-full max-w-7xl h-[90vh] flex overflow-hidden">
+          <div className="bg-dark-100 border border-dark-300 rounded-lg w-full max-w-7xl h-[90vh] flex flex-col overflow-hidden">
             
-            {/* Левая панель - информация о бое */}
-            <div className="w-1/3 bg-dark-200/30 border-r border-dark-300/50 p-4 flex flex-col">
+            {/* Основной контент - две панели в ряд */}
+            <div className="flex flex-1 overflow-hidden">
+              {/* Левая панель - информация о бое */}
+              <div className="w-1/3 bg-dark-200/30 border-r border-dark-300/50 p-4 flex flex-col">
               {/* Заголовок */}
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-bold text-white">⚔️ {currentBattleSpot.name}</h2>
@@ -888,19 +914,13 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
             {/* Правая панель - бой и скиллы */}
             <div className="w-2/3 p-4 flex flex-col">
               
-              {/* Кнопка начала боя или лог боя */}
+              {/* Лог боя или панель скиллов */}
               {!battleStarted ? (
                 <div className="bg-dark-200/50 rounded-lg p-6 mb-4 text-center">
-                  <div className="text-white font-semibold mb-4 text-lg">⚔️ Готовы к бою?</div>
+                  <div className="text-white font-semibold mb-4 text-lg">⚔️ Выберите скилл для атаки</div>
                   <div className="text-gray-300 mb-6">
-                    Выберите скиллы и начните сражение с группой мобов
+                    Выберите скилл из панели ниже и нажмите "Начать бой" в футере
                   </div>
-                  <button
-                    onClick={handleStartBattle}
-                    className="game-button px-8 py-3 text-lg"
-                  >
-                    🚀 Начать бой
-                  </button>
                 </div>
               ) : (
                 <>
@@ -911,7 +931,7 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
                       {combatState.battleLog.length > 0 ? (
                         [...combatState.battleLog].reverse().map((logEntry, index) => (
                           <div key={combatState.battleLog.length - index - 1} className="bg-dark-300/30 rounded p-3">
-                            <div className="text-gray-300 text-sm">
+                            <div className={`text-sm ${getLogColor(logEntry)}`}>
                               {logEntry}
                             </div>
                           </div>
@@ -1247,6 +1267,42 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
                   </button>
                 </div>
               )}
+              </div>
+            </div>
+            
+            {/* Общий футер */}
+            <div className="bg-dark-200/50 border-t border-dark-300/50 p-4 flex items-center justify-between">
+              {/* Левая кнопка - Закрыть */}
+              <button
+                onClick={handleCloseBattleModal}
+                className="game-button game-button--secondary px-6 py-2"
+              >
+                ❌ Закрыть
+              </button>
+              
+              {/* Правые кнопки - Начать бой и Авто-бой */}
+              <div className="flex space-x-3">
+                {!battleStarted ? (
+                  <>
+                    <button
+                      onClick={handleStartCombat}
+                      className="game-button px-6 py-2"
+                    >
+                      ⚔️ Начать бой
+                    </button>
+                    <button
+                      onClick={() => {/* TODO: Авто-бой */}}
+                      className="game-button game-button--secondary px-6 py-2"
+                    >
+                      🤖 Авто-бой
+                    </button>
+                  </>
+                ) : (
+                  <div className="text-gray-400 text-sm">
+                    Бой в процессе...
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         </div>
