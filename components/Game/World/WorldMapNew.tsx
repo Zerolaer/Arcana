@@ -269,7 +269,7 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
 
   // Выполнение хода боя
   const executeCombatTurn = () => {
-    if (!battleStarted || !selectedSkillId) return
+    if (!battleStarted || !selectedSkillId || !combatState.isPlayerTurn) return
     
     let damage = 100 // Базовая атака
     let manaCost = 0
