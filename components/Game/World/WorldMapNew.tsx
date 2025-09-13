@@ -1391,6 +1391,7 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
                       let totalDamage = character.attack_damage
                       let manaCost = 0
                       let skillName = 'Базовая атака'
+                      let isAOE = false
                       
                       if (selectedSkillId && selectedSkillId !== 'basic_attack') {
                         // Используем выбранный скилл
@@ -1409,7 +1410,9 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
                             totalDamage = Math.ceil((skillData as any).base_damage + (character.strength * (skillData as any).scaling_ratio))
                             manaCost = (skillData as any).mana_cost
                             skillName = (skillData as any).name
-                            console.log(`💥 Урон скила: ${totalDamage} (базовый: ${(skillData as any).base_damage}, бонус: ${(skillData as any).scaling_ratio})`)
+                            const skillType = (skillData as any).skill_type || 'active'
+                            isAOE = skillType === 'aoe' || skillType === 'ultimate'
+                            console.log(`💥 Урон скила: ${totalDamage} (базовый: ${(skillData as any).base_damage}, бонус: ${(skillData as any).scaling_ratio}), тип: ${skillType}, AOE: ${isAOE}`)
                           } else {
                             // Fallback: используем старую систему
                             const className = getClassNameFromCharacter(character)
@@ -1418,15 +1421,15 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
                               totalDamage = Math.ceil(skillData.base_damage + (character.strength * skillData.scaling_ratio))
                           manaCost = skillData.mana_cost
                               skillName = skillData.name
-                              console.log(`💥 Урон скила (fallback): ${totalDamage}`)
+                              const skillType = skillData.skill_type || 'active'
+                              isAOE = skillType === 'aoe' || skillType === 'ultimate'
+                              console.log(`💥 Урон скила (fallback): ${totalDamage}, тип: ${skillType}, AOE: ${isAOE}`)
                             }
                           }
                         } catch (error) {
                           console.error('Ошибка получения данных скилла:', error)
                         }
                       }
-                      
-                      const finalDamage = Math.max(1, totalDamage - target.defense)
                       
                       // Проверяем, хватает ли маны
                       if (manaCost > 0 && combatState.currentMana < manaCost) {
@@ -1438,16 +1441,43 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
                         }))
                         return
                       }
-                      const newMobs = [...combatState.currentMobs]
-                      const targetIndex = newMobs.findIndex(m => m.id === target.id)
                       
-                      if (targetIndex !== -1) {
-                        newMobs[targetIndex].health = Math.max(0, newMobs[targetIndex].health - finalDamage)
+                      // Логика AOE или одиночной атаки
+                      const newMobs = [...combatState.currentMobs]
+                      let totalDamageDealt = 0
+                      let actionText = ''
+                      
+                      if (isAOE) {
+                        // AOE атака - бьем всех живых мобов
+                        console.log('💥 AOE атака! Бьем всех живых мобов')
+                        const aliveMobsForAOE = newMobs.filter(mob => mob.health > 0)
+                        
+                        aliveMobsForAOE.forEach(mob => {
+                          const finalDamage = Math.max(1, totalDamage - mob.defense)
+                          const mobIndex = newMobs.findIndex(m => m.id === mob.id)
+                          if (mobIndex !== -1) {
+                            newMobs[mobIndex].health = Math.max(0, newMobs[mobIndex].health - finalDamage)
+                            totalDamageDealt += finalDamage
+                            console.log(`💥 ${mob.name}: ${finalDamage} урона (остается ${newMobs[mobIndex].health} HP)`)
+                          }
+                        })
+                        
+                        actionText = `Вы используете "${skillName}" и наносите ${totalDamageDealt} урона всем врагам!`
+                      } else {
+                        // Одиночная атака - бьем одного моба
+                        const finalDamage = Math.max(1, totalDamage - target.defense)
+                        const targetIndex = newMobs.findIndex(m => m.id === target.id)
+                        
+                        if (targetIndex !== -1) {
+                          newMobs[targetIndex].health = Math.max(0, newMobs[targetIndex].health - finalDamage)
+                          totalDamageDealt = finalDamage
+                          console.log(`💥 ${target.name}: ${finalDamage} урона (остается ${newMobs[targetIndex].health} HP)`)
+                        }
+                        
+                        actionText = selectedSkillId && selectedSkillId !== 'basic_attack'
+                          ? `Вы используете "${skillName}" против ${target.name} и наносите ${finalDamage} урона!`
+                          : `Вы атакуете ${target.name} и наносите ${finalDamage} урона!`
                       }
-
-                      const actionText = selectedSkillId && selectedSkillId !== 'basic_attack'
-                        ? `Вы используете "${skillName}" против ${target.name} и наносите ${finalDamage} урона!`
-                        : `Вы атакуете ${target.name} и наносите ${finalDamage} урона!`
                       
                       setCombatState(prev => {
                         const newState = {
@@ -1457,7 +1487,7 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
                         round: prev.round + 1,
                         isPlayerTurn: false,
                           lastAction: actionText,
-                          lastDamage: finalDamage,
+                          lastDamage: totalDamageDealt,
                           battleLog: [...prev.battleLog, actionText]
                         }
                         
