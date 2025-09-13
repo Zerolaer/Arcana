@@ -1379,8 +1379,13 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
                     disabled={!selectedSkillId}
                     className={`game-button w-full ${!selectedSkillId ? 'opacity-50 cursor-not-allowed' : ''}`}
                     onClick={async () => {
-                    // Ход игрока - атакуем первого моба
-                    const target = combatState.currentMobs[0]
+                    // Ход игрока - атакуем первого ЖИВОГО моба
+                    const aliveMobs = combatState.currentMobs.filter(mob => mob.health > 0)
+                    if (aliveMobs.length === 0) {
+                      console.log('❌ Нет живых мобов!')
+                      return
+                    }
+                    const target = aliveMobs[0]
                     if (target) {
                       // Рассчитываем урон с учетом выбранного скилла
                       let totalDamage = character.attack_damage
