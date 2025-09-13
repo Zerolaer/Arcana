@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import { Character } from '@/types/game'
 import { FarmSpot, Mob } from '@/types/world'
 import { X, Sword, Shield, Heart, Zap, Trophy, Coins, Package, Users, Target } from 'lucide-react'
+import CombatDisplay from '../UI/CombatDisplay'
 
 interface SpotInfoModalProps {
   spot: FarmSpot
@@ -24,6 +25,7 @@ export default function SpotInfoModal({
 }: SpotInfoModalProps) {
   const [isFarming, setIsFarming] = useState(false)
   const [isAutoFarming, setIsAutoFarming] = useState(false)
+  const [showCombat, setShowCombat] = useState(false)
   const [currentHealth, setCurrentHealth] = useState(character.health)
   const [currentMana, setCurrentMana] = useState(character.mana)
   const autoFarmingRef = useRef(false)
@@ -81,14 +83,11 @@ export default function SpotInfoModal({
   const winChance = Math.max(10, Math.min(95, 75 - (levelDiff * 10)))
 
   const handleStartFarming = async () => {
-    setIsFarming(true)
-    try {
-      await onStartFarming(spot, activeSkills, false, currentHealth, currentMana)
-    } catch (error) {
-      console.error('Farming error:', error)
-    } finally {
-      setIsFarming(false)
+    if (activeSkills.length === 0) {
+      alert('Нет активных скиллов для боя!')
+      return
     }
+    setShowCombat(true)
   }
 
   const handleAutoFarming = async () => {
@@ -96,60 +95,29 @@ export default function SpotInfoModal({
       alert('Нет активных скиллов для боя!')
       return
     }
+    setShowCombat(true)
+  }
 
-    console.log('🤖 Начинаем автофарм спота:', spot.name)
-    setIsAutoFarming(true)
-    autoFarmingRef.current = true
+  const handleCombatEnd = async (result: any) => {
+    setShowCombat(false)
     
-    const autoFarmLoop = async () => {
-      try {
-        while (autoFarmingRef.current) {
-          // Проверяем здоровье персонажа
-          if (character.health <= 0) {
-            console.log('💀 Автофарм: персонаж умер, останавливаем')
-            break
-          }
-          
-          console.log('🔄 Автофарм: запускаем бой...')
-          
-          try {
-            // Запускаем бой БЕЗ закрытия попапа с текущими значениями HP/MP
-            await onStartFarming(spot, activeSkills, true, currentHealth, currentMana) // true = isAutoFarming
-            console.log('✅ Автофарм: бой завершен успешно')
-            
-            // Обновляем текущие значения после боя
-            setCurrentHealth(character.health)
-            setCurrentMana(character.mana)
-            
-            // Небольшая пауза для обновления UI
-            await new Promise(resolve => setTimeout(resolve, 500))
-          } catch (farmingError) {
-            console.error('❌ Автофарм: ошибка в бою:', farmingError)
-            // Продолжаем следующий бой, не останавливаем весь цикл
-          }
-          
-          // Проверяем, не остановлен ли автофарм
-          if (!autoFarmingRef.current) {
-            console.log('⏹️ Автофарм: остановлен пользователем')
-            break
-          }
-          
-          // Небольшая пауза между боями
-          console.log('⏱️ Автофарм: пауза 1 секунда...')
-          await new Promise(resolve => setTimeout(resolve, 1000))
-        }
-        
-        console.log('⏹️ Автофарм: цикл завершен')
-      } catch (error) {
-        console.error('Ошибка во время автофарма:', error)
-      } finally {
+    if (result.success) {
+      // Обновляем персонажа через onStartFarming
+      await onStartFarming(spot, activeSkills, false, result.finalHealth, result.finalMana)
+      
+      // Если это автофарм, запускаем следующий бой
+      if (isAutoFarming && result.finalHealth > 0) {
+        setTimeout(() => {
+          setShowCombat(true)
+        }, 2000) // Пауза 2 секунды между боями
+      }
+    } else {
+      // Поражение - останавливаем автофарм
+      if (isAutoFarming) {
         setIsAutoFarming(false)
         autoFarmingRef.current = false
       }
     }
-    
-    // Запускаем цикл автофарма
-    autoFarmLoop()
   }
 
   const handleStopAutoFarming = () => {
@@ -192,7 +160,19 @@ export default function SpotInfoModal({
   const totalGold = spot.mobs.reduce((sum, mob) => sum + mob.gold_reward, 0)
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <>
+      {/* Компонент боя */}
+      {showCombat && (
+        <CombatDisplay
+          character={character}
+          mobs={spot.mobs}
+          isVisible={showCombat}
+          onCombatEnd={handleCombatEnd}
+        />
+      )}
+
+      {/* Основной попап */}
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div className="bg-dark-100 border border-dark-300 rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
         
         {/* Заголовок */}
@@ -419,5 +399,6 @@ export default function SpotInfoModal({
         </div>
       </div>
     </div>
+    </>
   )
 }
