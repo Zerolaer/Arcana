@@ -373,7 +373,8 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
         
         return {
           ...mob,
-          health: Math.max(0, mob.health - finalDamage)
+          health: Math.max(0, mob.health - finalDamage),
+          maxHealth: (mob as any).maxHealth || mob.health // Сохраняем maxHealth
         }
       })
       
@@ -397,7 +398,7 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
       // Обновляем состояние (не фильтруем мертвых мобов сразу)
       const newMobs = combatState.currentMobs.map(mob => 
         mob.id === target.id 
-          ? { ...mob, health: Math.max(0, mob.health - finalDamage) }
+          ? { ...mob, health: Math.max(0, mob.health - finalDamage), maxHealth: (mob as any).maxHealth || mob.health }
           : mob
       )
       
@@ -1345,7 +1346,7 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
                             .single()
                           
                           if (skillData && !error) {
-                            totalDamage = (skillData as any).base_damage + (character.strength * (skillData as any).scaling_ratio)
+                            totalDamage = Math.ceil((skillData as any).base_damage + (character.strength * (skillData as any).scaling_ratio))
                             manaCost = (skillData as any).mana_cost
                             skillName = (skillData as any).name
                             console.log(`💥 Урон скила: ${totalDamage} (базовый: ${(skillData as any).base_damage}, бонус: ${(skillData as any).scaling_ratio})`)
@@ -1354,7 +1355,7 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
                             const className = getClassNameFromCharacter(character)
                             const skillData = getActiveSkillData(selectedSkillId, className)
                         if (skillData) {
-                              totalDamage = skillData.base_damage + (character.strength * skillData.scaling_ratio)
+                              totalDamage = Math.ceil(skillData.base_damage + (character.strength * skillData.scaling_ratio))
                           manaCost = skillData.mana_cost
                               skillName = skillData.name
                               console.log(`💥 Урон скила (fallback): ${totalDamage}`)
@@ -1391,7 +1392,7 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
                       setCombatState(prev => {
                         const newState = {
                         ...prev,
-                        currentMobs: newMobs.filter(mob => mob.health > 0),
+                        currentMobs: newMobs, // Не удаляем мертвых мобов - оставляем для отображения
                         currentMana: prev.currentMana - manaCost,
                         round: prev.round + 1,
                         isPlayerTurn: false,
