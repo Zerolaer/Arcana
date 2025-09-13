@@ -297,12 +297,12 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
     
     const finalDamage = Math.max(1, damage - target.defense)
     
-    // Обновляем состояние
+    // Обновляем состояние (не фильтруем мертвых мобов сразу)
     const newMobs = combatState.currentMobs.map(mob => 
       mob.id === target.id 
         ? { ...mob, health: Math.max(0, mob.health - finalDamage) }
         : mob
-    ).filter(mob => mob.health > 0)
+    )
     
     const actionText = selectedSkillId === 'basic_attack'
       ? `Вы атакуете ${target.name} и наносите ${finalDamage} урона!`
@@ -323,8 +323,9 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
       mana: combatState.currentMana - manaCost
     })
     
-    // Проверяем окончание боя
-    if (newMobs.length === 0) {
+    // Проверяем окончание боя (считаем только живых мобов)
+    const aliveMobs = newMobs.filter(mob => mob.health > 0)
+    if (aliveMobs.length === 0) {
       // Победа
       const result = {
         success: true,
@@ -346,11 +347,19 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
     } else {
       // Ход мобов
       setTimeout(() => {
-        const mobDamage = Math.max(1, target.attack - Math.floor(character.defense * 0.5))
-        const mobActionText = `Мобы атакуют вас и наносят ${mobDamage} урона!`
+        // Считаем урон только от живых мобов
+        const aliveMobs = newMobs.filter(mob => mob.health > 0)
+        let totalMobDamage = 0
+        
+        aliveMobs.forEach(mob => {
+          const mobDamage = Math.max(1, mob.attack - Math.floor(character.defense * 0.5))
+          totalMobDamage += mobDamage
+        })
+        
+        const mobActionText = `Мобы атакуют вас и наносят ${totalMobDamage} урона!`
         
         setCombatState(prev => {
-          const newHealth = Math.max(0, prev.currentHealth - mobDamage)
+          const newHealth = Math.max(0, prev.currentHealth - totalMobDamage)
           
           // Обновляем HP в хедере
           onUpdateCharacterStats({
@@ -1030,8 +1039,13 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
             {/* Список мобов */}
               <div className="flex-1 overflow-y-auto">
                 <div className="space-y-3">
-                  {currentBattleSpot.mobs.map((mob, index) => (
-                    <div key={mob.id} className="bg-dark-200/50 rounded-lg p-3">
+                  {currentBattleSpot.mobs.map((mob, index) => {
+                    // Проверяем, жив ли моб
+                    const currentMob = battleStarted ? combatState.currentMobs.find(cm => cm.id === mob.id) : mob
+                    const isDead = battleStarted && currentMob && currentMob.health <= 0
+                    
+                    return (
+                    <div key={mob.id} className={`bg-dark-200/50 rounded-lg p-3 ${isDead ? 'opacity-50 grayscale' : ''}`}>
                       <div className="flex items-center space-x-3 mb-2">
                         <span className="text-3xl">{mob.icon}</span>
                         <div className="flex-1">
@@ -1067,8 +1081,16 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
                           <span className="text-purple-400">{mob.rarity}</span>
                         </div>
                   </div>
+                  
+                  {/* Индикатор смерти */}
+                  {isDead && (
+                    <div className="mt-2 text-center">
+                      <span className="text-red-500 font-bold text-sm">💀 УБИТ</span>
+                    </div>
+                  )}
                 </div>
-              ))}
+                    )
+                  })}
               </div>
             </div>
 
