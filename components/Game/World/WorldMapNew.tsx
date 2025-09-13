@@ -428,98 +428,100 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
       setCombatState(prev => {
         console.log('🔄 Обновляем состояние боя')
         console.log('🔄 Новые мобы:', newMobs.map(mob => ({ name: mob.name, health: mob.health })))
-        return {
-          ...prev,
-          currentMobs: newMobs,
-          currentMana: prev.currentMana - manaCost,
-          lastAction: actionText,
-          lastDamage: finalDamage,
-          battleLog: [...prev.battleLog, actionText]
+        
+        // Проверяем окончание боя ПОСЛЕ обновления (считаем только живых мобов)
+        const aliveMobs = newMobs.filter(mob => mob.health > 0)
+        console.log('🔍 Живые мобы после атаки:', aliveMobs.length)
+        
+        if (aliveMobs.length === 0) {
+          // Победа
+          const result = {
+            success: true,
+            experience: currentBattleSpot?.mobs.reduce((sum, mob) => sum + mob.experience_reward, 0) || 0,
+            gold: currentBattleSpot?.mobs.reduce((sum, mob) => sum + mob.gold_reward, 0) || 0,
+            finalHealth: prev.currentHealth,
+            finalMana: prev.currentMana - manaCost,
+            damageTaken: character.health - prev.currentHealth,
+            manaUsed: character.mana - (prev.currentMana - manaCost),
+            mobsDefeated: currentBattleSpot?.mobs.length || 0
+          }
+          
+          setBattleEnded(true)
+          setBattleResult(result)
+          
+          return {
+            ...prev,
+            currentMobs: newMobs,
+            currentMana: prev.currentMana - manaCost,
+            lastAction: actionText,
+            lastDamage: finalDamage,
+            battleLog: [...prev.battleLog, actionText, `🎉 Победа! Вы получили ${result.experience} опыта и ${result.gold} золота!`]
+          }
+        } else {
+          // Продолжаем бой - ход мобов
+          setTimeout(() => {
+            setCombatState(prevState => {
+              // Считаем урон только от живых мобов
+              const aliveMobs = prevState.currentMobs.filter(mob => mob.health > 0)
+              let totalMobDamage = 0
+              
+              aliveMobs.forEach(mob => {
+                const mobDamage = Math.max(1, Math.ceil(mob.attack - (character.defense * 0.5)))
+                totalMobDamage += mobDamage
+              })
+            
+              const mobActionText = `Мобы атакуют вас и наносят ${totalMobDamage} урона!`
+              const newHealth = Math.max(0, prevState.currentHealth - totalMobDamage)
+              
+              // Обновляем HP в хедере
+              onUpdateCharacterStats({
+                health: newHealth
+              })
+              
+              if (newHealth <= 0) {
+                // Поражение
+                const result = {
+                  success: false,
+                  experience: 0,
+                  gold: 0,
+                  finalHealth: 0,
+                  finalMana: prevState.currentMana,
+                  damageTaken: character.health,
+                  manaUsed: character.mana - prevState.currentMana,
+                  mobsDefeated: (currentBattleSpot?.mobs.length || 0) - aliveMobs.length
+                }
+                
+                setBattleEnded(true)
+                setBattleResult(result)
+                
+                return {
+                  ...prevState,
+                  currentHealth: newHealth,
+                  battleLog: [...prevState.battleLog, mobActionText, `💀 Поражение! Вы погибли в бою...`]
+                }
+              }
+              
+              return {
+                ...prevState,
+                currentHealth: newHealth,
+                lastAction: mobActionText,
+                battleLog: [...prevState.battleLog, mobActionText]
+              }
+            })
+          }, 1000)
+          
+          return {
+            ...prev,
+            currentMobs: newMobs,
+            currentMana: prev.currentMana - manaCost,
+            lastAction: actionText,
+            lastDamage: finalDamage,
+            battleLog: [...prev.battleLog, actionText]
+          }
         }
       })
     }
     
-    // Обновляем HP/MP в хедере
-    onUpdateCharacterStats({
-      health: combatState.currentHealth,
-      mana: combatState.currentMana - manaCost
-    })
-    
-    // Проверяем окончание боя (считаем только живых мобов)
-    const aliveMobs = combatState.currentMobs.filter(mob => mob.health > 0)
-    if (aliveMobs.length === 0) {
-      // Победа
-      const result = {
-        success: true,
-        experience: currentBattleSpot?.mobs.reduce((sum, mob) => sum + mob.experience_reward, 0) || 0,
-        gold: currentBattleSpot?.mobs.reduce((sum, mob) => sum + mob.gold_reward, 0) || 0,
-        finalHealth: combatState.currentHealth,
-        finalMana: combatState.currentMana - manaCost,
-        damageTaken: character.health - combatState.currentHealth,
-        manaUsed: character.mana - (combatState.currentMana - manaCost),
-        mobsDefeated: currentBattleSpot?.mobs.length || 0
-      }
-      
-      setBattleEnded(true)
-      setBattleResult(result)
-      setCombatState(prev => ({
-        ...prev,
-        battleLog: [...prev.battleLog, `🎉 Победа! Вы получили ${result.experience} опыта и ${result.gold} золота!`]
-      }))
-    } else {
-      // Ход мобов
-      setTimeout(() => {
-        setCombatState(prev => {
-          // Считаем урон только от живых мобов
-          const aliveMobs = prev.currentMobs.filter(mob => mob.health > 0)
-          let totalMobDamage = 0
-          
-          aliveMobs.forEach(mob => {
-            const mobDamage = Math.max(1, Math.ceil(mob.attack - (character.defense * 0.5)))
-            totalMobDamage += mobDamage
-          })
-        
-          const mobActionText = `Мобы атакуют вас и наносят ${totalMobDamage} урона!`
-          const newHealth = Math.max(0, prev.currentHealth - totalMobDamage)
-          
-          // Обновляем HP в хедере
-          onUpdateCharacterStats({
-            health: newHealth
-          })
-          
-          if (newHealth <= 0) {
-            // Поражение
-            const result = {
-              success: false,
-              experience: 0,
-              gold: 0,
-              finalHealth: 0,
-              finalMana: prev.currentMana,
-              damageTaken: character.health,
-              manaUsed: character.mana - prev.currentMana,
-              mobsDefeated: (currentBattleSpot?.mobs.length || 0) - aliveMobs.length
-            }
-            
-            setBattleEnded(true)
-            setBattleResult(result)
-            
-            return {
-              ...prev,
-              currentHealth: newHealth,
-              battleLog: [...prev.battleLog, mobActionText, `💀 Поражение! Вы погибли в бою...`]
-            }
-          }
-          
-          return {
-            ...prev,
-            currentHealth: newHealth,
-            isPlayerTurn: true,
-            lastAction: `Ваш ход! Выберите скилл для атаки`,
-            battleLog: [...prev.battleLog, mobActionText]
-          }
-        })
-      }, 1000)
-    }
   }
 
   // Начало автофарма
