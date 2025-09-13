@@ -470,3 +470,13 @@ export function getAvailableSkills(className: string, level: number, learnedSkil
     is_learned: skill.level_requirement === 1 || learnedSkills.includes(skill.id)
   }))
 }
+
+// Функция для получения данных конкретного навыка по ID и классу
+export function getActiveSkillData(skillId: string, className: string): ActiveSkill | null {
+  const skills = getClassSkills(className)
+  const skill = skills.find(s => s.id === skillId)
+  
+  if (!skill) return null
+  
+  return skill
+}

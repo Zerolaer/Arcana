@@ -14,6 +14,21 @@ import { AutoCombatSystem } from '@/lib/autoCombatSystem'
 import { getActiveSkillData } from '@/lib/activeSkills'
 import MapFooter from '../UI/MapFooter'
 
+// Временная функция для определения класса персонажа
+// TODO: Получать название класса из базы данных
+function getClassNameFromCharacter(character: Character): string {
+  // Fallback: определяем класс по имени персонажа
+  const name = character.name?.toLowerCase() || ''
+  
+  if (name.includes('лучник') || name.includes('archer')) return 'archer'
+  else if (name.includes('маг') || name.includes('mage')) return 'mage'
+  else if (name.includes('берсерк') || name.includes('berserker')) return 'berserker'
+  else if (name.includes('ассасин') || name.includes('assassin')) return 'assassin'
+  
+  // По умолчанию возвращаем лучника
+  return 'archer'
+}
+
 interface WorldMapProps {
   character: Character
   onUpdateCharacter: (updates: Partial<Character>) => Promise<boolean>
@@ -812,11 +827,14 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
                         console.log('🎯 Используем скил:', skill)
                         
                         // Получаем данные скила из activeSkills.ts
-                        const skillData = getActiveSkillData(skill, character.class_name)
+                        // Временно используем fallback для определения класса
+                        // TODO: Получать название класса из базы данных
+                        const className = getClassNameFromCharacter(character)
+                        const skillData = getActiveSkillData(skill, className)
                         if (skillData) {
-                          totalDamage = skillData.base_damage + (character.attack_damage * skillData.stat_bonus)
+                          totalDamage = skillData.base_damage + (character.attack_damage * skillData.scaling_ratio)
                           manaCost = skillData.mana_cost
-                          console.log(`💥 Урон скила: ${totalDamage} (базовый: ${skillData.base_damage}, бонус: ${skillData.stat_bonus})`)
+                          console.log(`💥 Урон скила: ${totalDamage} (базовый: ${skillData.base_damage}, бонус: ${skillData.scaling_ratio})`)
                         }
                       }
                       
