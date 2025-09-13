@@ -649,8 +649,8 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
         </div>
       )}
 
-      {/* Модал информации о споте */}
-      {clickedSpot && (
+      {/* Модал информации о споте - скрываем во время боя */}
+      {clickedSpot && !showCombat && (
         <SpotInfoModal
           spot={clickedSpot}
           character={character}
@@ -670,11 +670,22 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
           <div className="bg-dark-800 rounded-lg p-6 w-full max-w-2xl mx-4">
             {/* Заголовок */}
-            <div className="text-center mb-6">
-              <h2 className="text-2xl font-bold text-white mb-2">⚔️ Бой</h2>
-              <div className="text-sm text-gray-400">
-                Раунд {combatState.round} • {combatState.isPlayerTurn ? 'Ваш ход' : 'Ход мобов'}
+            <div className="flex items-center justify-between mb-6">
+              <div className="text-center flex-1">
+                <h2 className="text-2xl font-bold text-white mb-2">⚔️ Бой</h2>
+                <div className="text-sm text-gray-400">
+                  Раунд {combatState.round} • {combatState.isPlayerTurn ? 'Ваш ход' : 'Ход мобов'}
+                </div>
               </div>
+              <button
+                onClick={() => {
+                  setShowCombat(false)
+                  setCurrentCombatSpot(null)
+                }}
+                className="text-gray-400 hover:text-white transition-colors"
+              >
+                ✕
+              </button>
             </div>
 
             {/* Статы персонажа */}
