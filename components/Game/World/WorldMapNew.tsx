@@ -390,20 +390,29 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
       }))
     } else {
       // Обычная атака - бьем первого живого моба
-      const target = combatState.currentMobs.find(mob => mob.health > 0)
+      const aliveMobs = combatState.currentMobs.filter(mob => mob.health > 0)
+      console.log('🎯 Живые мобы:', aliveMobs.map(mob => ({ name: mob.name, health: mob.health })))
+      
+      if (aliveMobs.length === 0) return
+      
+      const target = aliveMobs[0] // Берем первого живого моба
       console.log('🎯 Цель атаки:', target)
-      console.log('🎯 Все мобы:', combatState.currentMobs.map(mob => ({ name: mob.name, health: mob.health })))
-      if (!target) return
       
       const finalDamage = Math.max(1, damage - target.defense)
       console.log('💥 Урон по цели:', finalDamage, 'HP до:', target.health, 'HP после:', Math.max(0, target.health - finalDamage))
       
-      // Обновляем состояние (не фильтруем мертвых мобов сразу)
-      const newMobs = combatState.currentMobs.map(mob => 
-        mob.id === target.id 
-          ? { ...mob, health: Math.max(0, mob.health - finalDamage), maxHealth: (mob as any).maxHealth || mob.health }
-          : mob
-      )
+      // Обновляем состояние - находим моба по индексу в исходном массиве
+      const targetIndex = combatState.currentMobs.findIndex(mob => mob.id === target.id)
+      console.log('🎯 Индекс цели:', targetIndex)
+      
+      const newMobs = [...combatState.currentMobs]
+      if (targetIndex !== -1) {
+        newMobs[targetIndex] = {
+          ...newMobs[targetIndex],
+          health: Math.max(0, newMobs[targetIndex].health - finalDamage),
+          maxHealth: (newMobs[targetIndex] as any).maxHealth || newMobs[targetIndex].health
+        } as any
+      }
       
       const actionText = selectedSkillId === 'basic_attack'
         ? `Вы атакуете ${target.name} и наносите ${finalDamage} урона!`
