@@ -202,8 +202,15 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
     
     console.log('⚔️ Начинаем бой на споте:', currentBattleSpot.name)
     setBattleStarted(true)
+    
+    // Создаем копии мобов с сохранением максимального HP
+    const mobsWithMaxHealth = currentBattleSpot.mobs.map(mob => ({
+      ...mob,
+      maxHealth: mob.health // Сохраняем максимальное HP
+    }))
+    
     setCombatState({
-      currentMobs: [...currentBattleSpot.mobs],
+      currentMobs: mobsWithMaxHealth,
       currentHealth: character.health,
       currentMana: character.mana,
       round: 1,
@@ -806,7 +813,7 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
                         <div className="flex justify-between">
                           <span className="text-gray-400">HP:</span>
                           <span className="text-red-400 font-semibold">
-                            {battleStarted ? mob.health : mob.health}/{mob.health}
+                            {mob.health}/{(mob as any).maxHealth || mob.health}
                           </span>
                         </div>
                         <div className="flex justify-between">
@@ -827,20 +834,6 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
                 </div>
               </div>
 
-              {/* Статистика боя */}
-              <div className="bg-dark-200/50 rounded-lg p-3 mt-4">
-                <div className="text-white font-semibold mb-2 text-sm">📊 Статистика</div>
-                <div className="space-y-1 text-xs">
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Осталось мобов:</span>
-                    <span className="text-orange-400">{combatState.currentMobs.length}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Всего было:</span>
-                    <span className="text-gray-400">{currentBattleSpot.mobs.length}</span>
-                  </div>
-                </div>
-              </div>
             </div>
 
             {/* Правая панель - бой и скиллы */}
@@ -897,26 +890,27 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
                     />
                   ) : (
                     <div className="bg-dark-200/50 rounded-lg p-4 mb-4 text-center">
-                      <div className="text-gray-400 mb-2">
+                      <div className="text-orange-400 mb-2 text-lg">
                         ⏳ Ход мобов...
+                      </div>
+                      <div className="text-gray-400 text-sm">
+                        Мобы атакуют автоматически
                       </div>
                     </div>
                   )}
                 </>
               )}
             
-              {/* Кнопка действия */}
-              {battleStarted && (
+              {/* Кнопка действия - только для хода игрока */}
+              {battleStarted && combatState.isPlayerTurn && (
                 <div className="text-center">
                   <button
-                    disabled={combatState.isPlayerTurn && !selectedSkillId}
-                    className={`game-button w-full ${combatState.isPlayerTurn && !selectedSkillId ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    disabled={!selectedSkillId}
+                    className={`game-button w-full ${!selectedSkillId ? 'opacity-50 cursor-not-allowed' : ''}`}
                     onClick={async () => {
-                  // Простая логика боя
-                  if (combatState.isPlayerTurn) {
-                    // Ход игрока - атакуем первого моба
-                    const target = combatState.currentMobs[0]
-                    if (target) {
+                  // Ход игрока - атакуем первого моба
+                  const target = combatState.currentMobs[0]
+                  if (target) {
                       // Рассчитываем урон с учетом выбранного скилла
                       let totalDamage = character.attack_damage
                       let manaCost = 0
@@ -986,25 +980,36 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
                           : `Вы атакуете ${target.name}`,
                         lastDamage: finalDamage
                       }))
-                    }
-                  } else {
-                    // Ход мобов - все мобы атакуют игрока
-                    let totalMobDamage = 0
-                    const aliveMobs = combatState.currentMobs.filter(mob => mob.health > 0)
-                    
-                    for (const mob of aliveMobs) {
-                      const mobDamage = Math.max(1, mob.attack - Math.floor(character.defense * 0.5))
-                      totalMobDamage += mobDamage
-                    }
+                      
+                      // Автоматически переходим к ходу мобов через 1 секунду
+                      setTimeout(() => {
+                        // Ход мобов - все мобы атакуют игрока
+                        let totalMobDamage = 0
+                        const aliveMobs = newMobs.filter(mob => mob.health > 0)
+                        
+                        for (const mob of aliveMobs) {
+                          const mobDamage = Math.max(1, mob.attack - Math.floor(character.defense * 0.5))
+                          totalMobDamage += mobDamage
+                        }
 
-                    setCombatState(prev => ({
-                      ...prev,
-                      currentHealth: Math.max(0, prev.currentHealth - totalMobDamage),
-                      isPlayerTurn: true,
-                      lastAction: `Мобы атакуют вас`,
-                      lastMobDamage: totalMobDamage
-                    }))
-                  }
+                        setCombatState(prev => ({
+                          ...prev,
+                          currentHealth: Math.max(0, prev.currentHealth - totalMobDamage),
+                          isPlayerTurn: true,
+                          lastAction: `Мобы атакуют вас`,
+                          lastMobDamage: totalMobDamage
+                        }))
+                        
+                        // Автоматически переходим к следующему ходу игрока через 2 секунды
+                        setTimeout(() => {
+                          setCombatState(prev => ({
+                            ...prev,
+                            isPlayerTurn: true,
+                            lastAction: `Ваш ход! Выберите скилл для атаки`
+                          }))
+                        }, 2000)
+                      }, 1000)
+                    }
 
                   // Проверяем условия окончания боя
                   setTimeout(() => {
@@ -1038,10 +1043,7 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
                   }, 1000)
                 }}
               >
-                    {combatState.isPlayerTurn 
-                      ? (selectedSkillId ? '⚔️ Использовать скилл' : '🎯 Выберите скилл') 
-                      : '⏭️ Продолжить'
-                    }
+                    {selectedSkillId ? '⚔️ Использовать скилл' : '🎯 Выберите скилл'}
                   </button>
                 </div>
               )}
