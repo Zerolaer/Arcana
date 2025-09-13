@@ -223,10 +223,7 @@ export default function LocationMap({ character, onUpdateCharacter, isLoading = 
                     : 'border-gray-500/50 opacity-50 cursor-not-allowed'
                 }`}
                 style={{ 
-                  backgroundImage: `url(${getLocationBackground(location.name).image})`,
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
-                  backgroundRepeat: 'no-repeat'
+                  background: getLocationBackground(location.name).image
                 }}
               >
                 {/* Полупрозрачный фон для контента */}

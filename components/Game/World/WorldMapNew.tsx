@@ -720,10 +720,7 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
                       : 'border-gray-600/30 bg-gray-800/20'
                   }`}
                   style={continent ? {
-                    backgroundImage: `url(${getContinentBackground(continent.id).image})`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                    backgroundRepeat: 'no-repeat'
+                    background: getContinentBackground(continent.id).image
                   } : undefined}
                   onClick={() => continent && handleContinentSelect(continent)}
                 >
