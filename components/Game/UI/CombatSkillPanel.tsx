@@ -9,7 +9,7 @@ import { Sword, Zap, Shield, Target, Clock, Droplets, Lock } from 'lucide-react'
 
 interface CombatSkillPanelProps {
   character: Character
-  onSkillSelect: (skillId: string) => void
+  onSkillSelect: (skillId: string, skillData?: LearnedSkill) => void
   currentMana: number
   className?: string
   onSkillUsed?: (skillId: string) => void
@@ -117,7 +117,7 @@ const CombatSkillPanel = forwardRef<any, CombatSkillPanelProps>(({
     }
 
     setSelectedSkillId(skillId)
-    onSkillSelect(skillId)
+    onSkillSelect(skillId, skill)
   }
 
   // Функция для запуска кулдауна скилла

@@ -53,6 +53,7 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
   const [battleEnded, setBattleEnded] = useState(false)
   const [battleResult, setBattleResult] = useState<any>(null)
   const [selectedSkillId, setSelectedSkillId] = useState<string | null>(null)
+  const [selectedSkillData, setSelectedSkillData] = useState<any>(null)
   const [skillPanelRef, setSkillPanelRef] = useState<any>(null)
   const [combatState, setCombatState] = useState({
     currentMobs: [] as Mob[],
@@ -277,14 +278,79 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
     
     // Если выбран скилл (не базовая атака)
     if (selectedSkillId !== 'basic_attack') {
-      // Получаем данные скилла
-      const className = getClassNameFromCharacter(character)
-      const skillData = getActiveSkillData(selectedSkillId, className)
-      if (skillData) {
-        damage = Math.ceil(skillData.base_damage + (character.strength * skillData.scaling_ratio))
-        manaCost = skillData.mana_cost
-        cooldown = skillData.cooldown || 0
-        isAOE = skillData.skill_type === 'aoe'
+      // Используем данные скилла из панели скиллов
+      if (selectedSkillData) {
+        // Используем правильную характеристику для скилла
+        let scalingStat = 0
+        switch (selectedSkillData.scaling_stat) {
+          case 'strength':
+            scalingStat = character.strength
+            break
+          case 'agility':
+            scalingStat = character.agility
+            break
+          case 'intelligence':
+            scalingStat = character.intelligence
+            break
+          case 'spell_power':
+            scalingStat = character.spell_power
+            break
+          case 'stealth':
+            scalingStat = character.stealth
+            break
+          case 'endurance':
+            scalingStat = character.endurance
+            break
+          default:
+            scalingStat = character.strength
+        }
+        
+        damage = Math.ceil(selectedSkillData.base_damage + (scalingStat * selectedSkillData.scaling_ratio))
+        manaCost = selectedSkillData.mana_cost
+        cooldown = selectedSkillData.cooldown || 0
+        isAOE = selectedSkillData.skill_type === 'aoe' || selectedSkillData.skill_type === 'ultimate'
+      } else {
+        // Fallback - получаем данные скилла из кода
+        const className = getClassNameFromCharacter(character)
+        const skillData = getActiveSkillData(selectedSkillId, className)
+        
+        if (skillData) {
+          // Используем правильную характеристику для скилла
+          let scalingStat = 0
+          switch (skillData.scaling_stat) {
+            case 'strength':
+              scalingStat = character.strength
+              break
+            case 'agility':
+              scalingStat = character.agility
+              break
+            case 'intelligence':
+              scalingStat = character.intelligence
+              break
+            case 'spell_power':
+              scalingStat = character.spell_power
+              break
+            case 'stealth':
+              scalingStat = character.stealth
+              break
+            case 'endurance':
+              scalingStat = character.endurance
+              break
+            default:
+              scalingStat = character.strength
+          }
+          
+          damage = Math.ceil(skillData.base_damage + (scalingStat * skillData.scaling_ratio))
+          manaCost = skillData.mana_cost
+          cooldown = skillData.cooldown || 0
+          isAOE = skillData.skill_type === 'aoe' || skillData.skill_type === 'ultimate'
+        } else {
+          // Если скилл из базы данных (UUID), используем базовые значения
+          damage = Math.ceil(100 + (character.strength * 1.0))
+          manaCost = 10
+          cooldown = 3
+          isAOE = false
+        }
       }
     }
     
@@ -472,9 +538,10 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
   }
 
   // Обработчик выбора скилла
-  const handleSkillSelect = (skillId: string) => {
+  const handleSkillSelect = (skillId: string, skillData?: any) => {
     setSelectedSkillId(skillId)
-    console.log('🎯 Выбран скилл:', skillId)
+    setSelectedSkillData(skillData)
+    console.log('🎯 Выбран скилл:', skillId, skillData)
   }
 
   // Обработка окончания боя
