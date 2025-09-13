@@ -5,6 +5,7 @@ import { Character } from '@/types/game'
 import { Map, MapPin, Users, Target, TrendingUp, Clock } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'react-hot-toast'
+import { getLocationBackground } from '@/lib/locationBackgrounds'
 
 interface LocationPanelProps {
   character: Character
@@ -150,9 +151,22 @@ export default function LocationPanel({ character, onUpdateCharacter, isLoading 
                 <div
                   key={location.id}
                   onClick={() => isAccessible && !isCurrent && travelToLocation(location)}
-                  className={`p-4 rounded border transition-colors duration-200 ${getLocationStatusColor(location)} 
+                  className={`relative overflow-hidden rounded border transition-colors duration-200 ${getLocationStatusColor(location)} 
                     ${isAccessible && !isCurrent ? 'cursor-pointer' : 'cursor-not-allowed'}`}
+                  style={{ 
+                    background: getLocationBackground(location.name).background 
+                  }}
                 >
+                  {/* Overlay для атмосферы */}
+                  <div 
+                    className="absolute inset-0 pointer-events-none"
+                    style={{ 
+                      background: getLocationBackground(location.name).overlay 
+                    }}
+                  />
+                  
+                  {/* Контент */}
+                  <div className="relative z-10 p-4">
                   <div className="flex items-center justify-between mb-2">
                     <div className="flex items-center space-x-3">
                       <div className="text-2xl">{location.image}</div>
@@ -194,6 +208,7 @@ export default function LocationPanel({ character, onUpdateCharacter, isLoading 
                         +{((location.gold_bonus - 1) * 100).toFixed(0)}% золота
                       </span>
                     </div>
+                  </div>
                   </div>
                 </div>
               )

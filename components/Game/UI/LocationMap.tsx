@@ -5,6 +5,7 @@ import { Character, Location, FarmingSpot, Mob } from '@/types/game'
 import { MapPin, Users, Sword, Star, Clock, Zap, Shield, Target } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'react-hot-toast'
+import { getLocationBackground } from '@/lib/locationBackgrounds'
 
 interface LocationMapProps {
   character: Character
@@ -214,14 +215,27 @@ export default function LocationMap({ character, onUpdateCharacter, isLoading = 
               <div
                 key={location.id}
                 onClick={() => handleLocationSelect(location)}
-                className={`p-4 rounded-lg border-2 cursor-pointer transition-colors duration-200 ${
+                className={`relative overflow-hidden rounded-lg border-2 cursor-pointer transition-colors duration-200 ${
                   selectedLocation?.id === location.id
-                    ? 'border-primary-500 bg-primary-500/10'
+                    ? 'border-primary-500'
                     : canAccessLocation(location)
-                    ? 'border-blue-500/50 bg-blue-500/5'
-                    : 'border-gray-500/50 bg-gray-500/5 opacity-50 cursor-not-allowed'
+                    ? 'border-blue-500/50'
+                    : 'border-gray-500/50 opacity-50 cursor-not-allowed'
                 }`}
+                style={{ 
+                  background: getLocationBackground(location.name).background 
+                }}
               >
+                {/* Overlay для атмосферы */}
+                <div 
+                  className="absolute inset-0 pointer-events-none"
+                  style={{ 
+                    background: getLocationBackground(location.name).overlay 
+                  }}
+                />
+                
+                {/* Контент */}
+                <div className="relative z-10 p-4">
                 <div className="flex items-center justify-between">
                   <h5 className={`font-medium ${getLocationColor(location)}`}>
                     {location.name}
@@ -252,6 +266,7 @@ export default function LocationMap({ character, onUpdateCharacter, isLoading = 
                       Текущая
                     </div>
                   )}
+                </div>
                 </div>
               </div>
             ))}

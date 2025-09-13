@@ -12,6 +12,7 @@ import { useActiveSkills } from '@/lib/useActiveSkills'
 import { AutoCombatSystem } from '@/lib/autoCombatSystem'
 import { getActiveSkillData } from '@/lib/activeSkills'
 import CombatSkillPanel from '../UI/CombatSkillPanel'
+import { getLocationBackground } from '@/lib/locationBackgrounds'
 
 // Временная функция для определения класса персонажа
 // TODO: Получать название класса из базы данных
@@ -694,7 +695,20 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
   // Рендер континентов на карте мира
   const renderWorldMap = () => {
     return (
-      <div className="relative w-full h-full bg-gradient-to-br from-blue-900/20 to-green-900/20 rounded-lg border border-primary-400/30 flex flex-col">
+      <div 
+        className="relative w-full h-full rounded-lg border border-primary-400/30 flex flex-col overflow-hidden"
+        style={{ 
+          background: getLocationBackground('Новичковый лес').background 
+        }}
+      >
+        {/* Overlay для атмосферы */}
+        <div 
+          className="absolute inset-0 pointer-events-none"
+          style={{ 
+            background: getLocationBackground('Новичковый лес').overlay 
+          }}
+        />
+        
         {/* Заголовок карты */}
         <div className="absolute top-4 left-4 z-10">
           <h2 className="text-2xl font-bold text-white flex items-center space-x-2">
@@ -704,7 +718,7 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
         </div>
 
         {/* Сетка континентов 3x2 */}
-        <div className="flex-1 p-8 pt-16">
+        <div className="flex-1 p-8 pt-16 relative z-10">
           <div className="grid grid-cols-3 grid-rows-2 gap-8 h-full">
             {Array.from({ length: 6 }, (_, index) => {
               const continent = availableContinents[index]
@@ -820,7 +834,19 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
     const gridSize = Math.ceil(Math.sqrt(selectedZone.farm_spots.length))
 
     return (
-      <div className="relative w-full h-full bg-gradient-to-br from-green-900/20 to-brown-900/20 rounded-lg border border-primary-400/30 flex flex-col">
+      <div 
+        className="relative w-full h-full rounded-lg border border-primary-400/30 flex flex-col overflow-hidden"
+        style={{ 
+          background: getLocationBackground('Новичковый лес').background 
+        }}
+      >
+        {/* Overlay для атмосферы */}
+        <div 
+          className="absolute inset-0 pointer-events-none"
+          style={{ 
+            background: getLocationBackground('Новичковый лес').overlay 
+          }}
+        />
         {/* Заголовок */}
         <div className="absolute top-4 left-4 z-10 flex items-center space-x-2">
           <button
@@ -841,7 +867,7 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
         </div>
 
         {/* Сетка фарм спотов */}
-        <div className="flex-1 p-8 pt-16">
+        <div className="flex-1 p-8 pt-16 relative z-10">
           <div 
             className="grid gap-2 h-full"
             style={{ gridTemplateColumns: `repeat(${gridSize}, 1fr)` }}
