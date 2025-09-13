@@ -154,7 +154,10 @@ export default function LocationPanel({ character, onUpdateCharacter, isLoading 
                   className={`relative overflow-hidden rounded border transition-colors duration-200 ${getLocationStatusColor(location)} 
                     ${isAccessible && !isCurrent ? 'cursor-pointer' : 'cursor-not-allowed'}`}
                   style={{ 
-                    background: getLocationBackground(location.name).image
+                    backgroundImage: `url(${getLocationBackground(location.name).image})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    backgroundRepeat: 'no-repeat'
                   }}
                 >
                   
