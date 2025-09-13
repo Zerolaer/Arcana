@@ -10,7 +10,7 @@ interface SpotInfoModalProps {
   character: Character
   isOpen: boolean
   onClose: () => void
-  onStartFarming: (spot: FarmSpot, activeSkills: string[], isAutoFarming?: boolean) => Promise<void>
+  onStartFarming: (spot: FarmSpot, activeSkills: string[], isAutoFarming?: boolean, currentHealth?: number, currentMana?: number) => Promise<void>
   activeSkills: string[]
 }
 
@@ -19,11 +19,13 @@ export default function SpotInfoModal({
   character, 
   isOpen, 
   onClose, 
-  onStartFarming,
+  onStartFarming, 
   activeSkills 
 }: SpotInfoModalProps) {
   const [isFarming, setIsFarming] = useState(false)
   const [isAutoFarming, setIsAutoFarming] = useState(false)
+  const [currentHealth, setCurrentHealth] = useState(character.health)
+  const [currentMana, setCurrentMana] = useState(character.mana)
   const autoFarmingRef = useRef(false)
 
   // Отладочная информация
@@ -81,7 +83,7 @@ export default function SpotInfoModal({
   const handleStartFarming = async () => {
     setIsFarming(true)
     try {
-      await onStartFarming(spot, activeSkills)
+      await onStartFarming(spot, activeSkills, false, currentHealth, currentMana)
     } catch (error) {
       console.error('Farming error:', error)
     } finally {
@@ -111,9 +113,13 @@ export default function SpotInfoModal({
           console.log('🔄 Автофарм: запускаем бой...')
           
           try {
-            // Запускаем бой БЕЗ закрытия попапа
-            await onStartFarming(spot, activeSkills, true) // true = isAutoFarming
+            // Запускаем бой БЕЗ закрытия попапа с текущими значениями HP/MP
+            await onStartFarming(spot, activeSkills, true, currentHealth, currentMana) // true = isAutoFarming
             console.log('✅ Автофарм: бой завершен успешно')
+            
+            // Обновляем текущие значения после боя
+            setCurrentHealth(character.health)
+            setCurrentMana(character.mana)
             
             // Небольшая пауза для обновления UI
             await new Promise(resolve => setTimeout(resolve, 500))
@@ -161,6 +167,12 @@ export default function SpotInfoModal({
     }
     onClose()
   }
+
+  // Обновляем текущие значения при изменении персонажа
+  useEffect(() => {
+    setCurrentHealth(character.health)
+    setCurrentMana(character.mana)
+  }, [character.health, character.mana])
 
   // Обработчик закрытия по Escape
   useEffect(() => {

@@ -164,7 +164,7 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
   }
 
   // Начало фарма
-  const handleStartFarming = async (spot: FarmSpot, skills: string[], isAutoFarming: boolean = false) => {
+  const handleStartFarming = async (spot: FarmSpot, skills: string[], isAutoFarming: boolean = false, currentHealth?: number, currentMana?: number) => {
     console.log('🚀 Начинаем фарм спота:', spot.name, 'с скиллами:', skills)
     
     // Проверяем, есть ли активные скиллы
@@ -175,11 +175,15 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
     }
     
     try {
+      // Используем переданные значения или текущие значения персонажа
+      const health = currentHealth !== undefined ? currentHealth : character.health
+      const mana = currentMana !== undefined ? currentMana : character.mana
+      
       // Создаем копию персонажа с текущими значениями HP/MP
       const currentCharacter = {
         ...character,
-        health: character.health,
-        mana: character.mana
+        health: health,
+        mana: mana
       }
       
       console.log(`👤 Текущие статы персонажа: HP ${currentCharacter.health}/${currentCharacter.max_health}, MP ${currentCharacter.mana}/${currentCharacter.max_mana}`)
