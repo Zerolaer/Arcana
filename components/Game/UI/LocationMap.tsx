@@ -331,7 +331,7 @@ export default function LocationMap({ character, onUpdateCharacter, isLoading = 
                             e.stopPropagation()
                             handleOccupySpot(spot)
                           }}
-                          className="w-full mt-3 px-3 py-1 bg-blue-500/20 text-blue-400 rounded text-sm"
+                          className="w-full mt-3 game-button game-button--compact"
                         >
                           Занять спот
                         </button>

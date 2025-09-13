@@ -116,7 +116,7 @@ export default function MobAttackModal({ mob, character, isOpen, onClose, onAtta
 
             <button
               onClick={handleClose}
-              className="w-full bg-primary-500 hover:bg-primary-600 text-white font-semibold py-2 px-4 rounded transition-colors"
+              className="w-full game-button"
             >
               Продолжить
             </button>
@@ -215,14 +215,14 @@ export default function MobAttackModal({ mob, character, isOpen, onClose, onAtta
         <div className="flex space-x-3">
           <button
             onClick={onClose}
-            className="flex-1 bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded transition-colors"
+            className="flex-1 game-button game-button--secondary"
           >
             Отмена
           </button>
           <button
             onClick={handleAttack}
             disabled={isAttacking}
-            className="flex-1 bg-red-500 hover:bg-red-600 disabled:bg-red-500/50 text-white font-semibold py-2 px-4 rounded transition-colors flex items-center justify-center space-x-2"
+            className="flex-1 game-button game-button--danger flex items-center justify-center space-x-2"
           >
             {isAttacking ? (
               <>

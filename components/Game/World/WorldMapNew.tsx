@@ -672,7 +672,7 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
             <div className="mt-4 flex justify-end">
               <button
                 onClick={handleCloseMobSelector}
-                className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded transition-colors"
+                className="game-button game-button--secondary"
               >
                 Отмена
               </button>
@@ -864,7 +864,7 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
                     }
                   }, 1000)
                 }}
-                className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+                className="game-button"
               >
                 {combatState.isPlayerTurn ? 'Атаковать' : 'Продолжить'}
               </button>

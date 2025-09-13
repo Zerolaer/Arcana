@@ -319,7 +319,7 @@ export default function SpotInfoModal({
         <div className="flex justify-end space-x-3">
           <button
             onClick={onClose}
-            className="px-6 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors"
+            className="game-button game-button--secondary"
           >
             Отмена
           </button>
@@ -327,23 +327,10 @@ export default function SpotInfoModal({
           <button
             onClick={handleStartCombat}
             disabled={activeSkills.length === 0}
-            className={`px-6 py-2 rounded-lg transition-colors flex items-center space-x-2 ${
-              activeSkills.length === 0
-                ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
-                : 'bg-green-600 hover:bg-green-700 text-white'
-            }`}
+            className={`game-button ${activeSkills.length === 0 ? 'game-button--secondary' : 'game-button--success'} flex items-center space-x-2`}
           >
-            {activeSkills.length === 0 ? (
-              <>
-                <Sword className="w-4 h-4" />
-                <span>Нет активных скиллов</span>
-              </>
-            ) : (
-              <>
-                <Sword className="w-4 h-4" />
-                <span>Атаковать</span>
-              </>
-            )}
+            <Sword className="w-4 h-4" />
+            <span>{activeSkills.length === 0 ? 'Нет активных скиллов' : 'Атаковать'}</span>
           </button>
           
           {/* Кнопка автофарма */}
@@ -354,28 +341,15 @@ export default function SpotInfoModal({
                 handleAutoFarming()
               }}
               disabled={activeSkills.length === 0}
-              className={`px-6 py-2 rounded-lg transition-colors flex items-center space-x-2 ${
-                activeSkills.length === 0
-                  ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
-                  : 'bg-blue-600 hover:bg-blue-700 text-white'
-              }`}
+              className={`game-button ${activeSkills.length === 0 ? 'game-button--secondary' : ''} flex items-center space-x-2`}
             >
-              {activeSkills.length === 0 ? (
-                <>
-                  <Sword className="w-4 h-4" />
-                  <span>Нет активных скиллов</span>
-                </>
-              ) : (
-                <>
-                  <Sword className="w-4 h-4" />
-                  <span>Авто-фарм</span>
-                </>
-              )}
+              <Sword className="w-4 h-4" />
+              <span>{activeSkills.length === 0 ? 'Нет активных скиллов' : 'Авто-фарм'}</span>
             </button>
           ) : (
             <button
               onClick={handleStopAutoFarming}
-              className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors flex items-center space-x-2"
+              className="game-button game-button--danger flex items-center space-x-2"
             >
               <div className="animate-pulse rounded-full h-4 w-4 bg-white"></div>
               <span>Остановить</span>
