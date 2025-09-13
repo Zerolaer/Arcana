@@ -102,14 +102,38 @@ export default function CombatSkillPanel({
     onSkillSelect(skillId)
   }
 
-  // Создаем массив из 6 ячеек (изученные скиллы + пустые ячейки)
+  // Создаем массив из 6 ячеек (базовая атака + изученные скиллы + пустые ячейки)
   const createSkillSlots = () => {
     const slots: (LearnedSkill | null)[] = []
     
+    // Первая ячейка - базовая атака
+    const basicAttack: LearnedSkill = {
+      id: 'basic_attack',
+      name: 'Базовая атака',
+      description: 'Обычная атака без дополнительных эффектов',
+      icon: '⚔️',
+      skill_type: 'active',
+      base_damage: 1.0,
+      mana_cost: 0,
+      cooldown: 0,
+      scaling_ratio: 1.0,
+      level_requirement: 1,
+      class_requirements: ['all'],
+      damage_type: 'physical',
+      scaling_stat: 'strength',
+      cost_to_learn: 0,
+      is_learned: true,
+      isLearned: true,
+      isOnCooldown: false,
+      cooldownRemaining: 0,
+      nodes: []
+    }
+    slots.push(basicAttack)
+    
     // Добавляем изученные скиллы
-    for (let i = 0; i < 6; i++) {
-      if (i < learnedSkills.length) {
-        slots.push(learnedSkills[i])
+    for (let i = 1; i < 6; i++) {
+      if (i - 1 < learnedSkills.length) {
+        slots.push(learnedSkills[i - 1])
       } else {
         slots.push(null)
       }
@@ -133,8 +157,8 @@ export default function CombatSkillPanel({
     <div className={`bg-dark-200/50 rounded-lg p-4 ${className}`}>
       <div className="text-white font-semibold mb-3">⚔️ Панель скиллов</div>
       
-      {/* Сетка 2x3 для 6 ячеек скиллов */}
-      <div className="grid grid-cols-3 gap-3">
+      {/* Сетка 1x6 для 6 ячеек скиллов в одну строчку */}
+      <div className="grid grid-cols-6 gap-3">
         {skillSlots.map((skill, index) => (
           <div
             key={index}
@@ -176,25 +200,6 @@ export default function CombatSkillPanel({
             )}
           </div>
         ))}
-      </div>
-      
-      {/* Базовая атака */}
-      <div className="mt-4 pt-4 border-t border-dark-300/50">
-        <div className="text-gray-400 text-sm mb-2">Базовая атака</div>
-        <div
-          className={`
-            relative w-full h-12 rounded-lg border-2 flex items-center justify-center cursor-pointer transition-all duration-200
-            ${selectedSkillId === 'basic_attack'
-              ? 'border-yellow-400 bg-yellow-400/20' 
-              : 'border-green-400 bg-green-400/10 hover:border-green-300 hover:bg-green-400/20'
-            }
-          `}
-          onClick={() => handleSkillClick('basic_attack')}
-          title="Базовая атака\nУрон: 100%\nМана: 0\nПерезарядка: 0с"
-        >
-          <Sword className="w-6 h-6 text-green-400 mr-2" />
-          <span className="text-green-400 font-semibold">Базовая атака</span>
-        </div>
       </div>
     </div>
   )

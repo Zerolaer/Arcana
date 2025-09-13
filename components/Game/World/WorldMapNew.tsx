@@ -875,7 +875,7 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
               {/* Список мобов */}
               <div className="flex-1 overflow-y-auto">
                 <div className="space-y-3">
-                  {(battleStarted ? combatState.currentMobs : currentBattleSpot.mobs).map((mob, index) => (
+                  {currentBattleSpot.mobs.map((mob, index) => (
                     <div key={mob.id} className="bg-dark-200/50 rounded-lg p-3">
                       <div className="flex items-center space-x-3 mb-2">
                         <span className="text-3xl">{mob.icon}</span>
@@ -888,7 +888,15 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
                         <div className="flex justify-between">
                           <span className="text-gray-400">HP:</span>
                           <span className="text-red-400 font-semibold">
-                            {mob.health}/{(mob as any).maxHealth || mob.health}
+                            {battleStarted 
+                              ? (() => {
+                                  const currentMob = combatState.currentMobs.find(cm => cm.id === mob.id)
+                                  return currentMob 
+                                    ? `${currentMob.health}/${(currentMob as any).maxHealth || currentMob.health}`
+                                    : `${mob.health}/${mob.health}`
+                                })()
+                              : `${mob.health}/${mob.health}`
+                            }
                           </span>
                         </div>
                         <div className="flex justify-between">
@@ -945,7 +953,14 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
                   </div>
 
                   {/* Панель скиллов */}
-                  {combatState.isPlayerTurn ? (
+                  {!battleStarted ? (
+                    <CombatSkillPanel
+                      character={character}
+                      onSkillSelect={handleSkillSelect}
+                      currentMana={character.mana}
+                      className="mb-4"
+                    />
+                  ) : combatState.isPlayerTurn ? (
                     <CombatSkillPanel
                       character={character}
                       onSkillSelect={handleSkillSelect}
@@ -1043,7 +1058,7 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
                             .single()
                           
                           if (skillData && !error) {
-                            totalDamage = (skillData as any).base_damage + (character.attack_damage * (skillData as any).scaling_ratio)
+                            totalDamage = (skillData as any).base_damage + (character.strength * (skillData as any).scaling_ratio)
                             manaCost = (skillData as any).mana_cost
                             skillName = (skillData as any).name
                             console.log(`💥 Урон скила: ${totalDamage} (базовый: ${(skillData as any).base_damage}, бонус: ${(skillData as any).scaling_ratio})`)
@@ -1052,7 +1067,7 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
                             const className = getClassNameFromCharacter(character)
                             const skillData = getActiveSkillData(selectedSkillId, className)
                             if (skillData) {
-                              totalDamage = skillData.base_damage + (character.attack_damage * skillData.scaling_ratio)
+                              totalDamage = skillData.base_damage + (character.strength * skillData.scaling_ratio)
                               manaCost = skillData.mana_cost
                               skillName = skillData.name
                               console.log(`💥 Урон скила (fallback): ${totalDamage}`)
