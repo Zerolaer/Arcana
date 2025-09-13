@@ -154,16 +154,15 @@ export default function LocationPanel({ character, onUpdateCharacter, isLoading 
                   className={`relative overflow-hidden rounded border transition-colors duration-200 ${getLocationStatusColor(location)} 
                     ${isAccessible && !isCurrent ? 'cursor-pointer' : 'cursor-not-allowed'}`}
                   style={{ 
-                    background: getLocationBackground(location.name).background 
+                    backgroundImage: `url(${getLocationBackground(location.name).image})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    backgroundRepeat: 'no-repeat'
                   }}
                 >
-                  {/* Overlay для атмосферы */}
-                  <div 
-                    className="absolute inset-0 pointer-events-none"
-                    style={{ 
-                      background: getLocationBackground(location.name).overlay 
-                    }}
-                  />
+                  
+                  {/* Полупрозрачный фон для контента */}
+                  <div className="absolute inset-0 bg-black/70 rounded" />
                   
                   {/* Контент */}
                   <div className="relative z-10 p-4">

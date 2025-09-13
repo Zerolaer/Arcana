@@ -223,16 +223,14 @@ export default function LocationMap({ character, onUpdateCharacter, isLoading = 
                     : 'border-gray-500/50 opacity-50 cursor-not-allowed'
                 }`}
                 style={{ 
-                  background: getLocationBackground(location.name).background 
+                  backgroundImage: `url(${getLocationBackground(location.name).image})`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                  backgroundRepeat: 'no-repeat'
                 }}
               >
-                {/* Overlay для атмосферы */}
-                <div 
-                  className="absolute inset-0 pointer-events-none"
-                  style={{ 
-                    background: getLocationBackground(location.name).overlay 
-                  }}
-                />
+                {/* Полупрозрачный фон для контента */}
+                <div className="absolute inset-0 bg-black/70 rounded-lg" />
                 
                 {/* Контент */}
                 <div className="relative z-10 p-4">
