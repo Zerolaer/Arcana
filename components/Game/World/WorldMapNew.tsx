@@ -389,8 +389,8 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
         battleLog: [...prev.battleLog, actionText]
       }))
     } else {
-      // Обычная атака - бьем первого моба
-      const target = combatState.currentMobs[0]
+      // Обычная атака - бьем первого живого моба
+      const target = combatState.currentMobs.find(mob => mob.health > 0)
       if (!target) return
       
       const finalDamage = Math.max(1, damage - target.defense)
@@ -1099,13 +1099,13 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
                     <span className="text-red-400">
                       {battleStarted ? combatState.currentHealth : character.health}/{character.max_health}
                     </span>
-                </div>
+                  </div>
                   <div className="flex justify-between">
                     <span className="text-gray-300">MP:</span>
                     <span className="text-blue-400">
                       {battleStarted ? combatState.currentMana : character.mana}/{character.max_mana}
                     </span>
-              </div>
+                  </div>
                   <div className="flex justify-between">
                     <span className="text-gray-300">Уровень:</span>
                     <span className="text-yellow-400">{character.level}</span>
@@ -1172,9 +1172,9 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
                         <div className="flex justify-between">
                           <span className="text-gray-400">Редкость:</span>
                           <span className="text-purple-400">{mob.rarity}</span>
-                        </div>
-                  </div>
-                  
+              </div>
+            </div>
+
                   {/* Индикатор смерти - поверх карточки */}
                   {isDead && (
                     <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-lg">
@@ -1260,8 +1260,8 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
                           </div>
                           <div className="text-gray-400 text-sm">
                             Мобы атакуют автоматически
-                          </div>
-                        </div>
+                </div>
+              </div>
                       )}
                     </div>
                   )}
