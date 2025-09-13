@@ -182,6 +182,9 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
         // Обновляем персонажа с полученным опытом и золотом
         const xpResult = processXpGain(character.level, character.experience, result.experience)
         
+        console.log(`📊 Опыт получен: ${result.experience}, текущий уровень: ${character.level}, новый уровень: ${xpResult.newLevel}`)
+        console.log(`💰 Золото получено: ${result.gold}, текущее: ${character.gold}, новое: ${character.gold + result.gold}`)
+        
         // Применяем урон и расход маны
         // Используем текущие значения здоровья и маны, а не исходные
         const currentHealth = character.health
@@ -209,10 +212,12 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
           newHealth,
           newMana,
           healthLost: result.damageTaken,
-          manaUsed: result.manaUsed
+          manaUsed: result.manaUsed,
+          xpGained: result.experience,
+          goldGained: result.gold
         })
       } else {
-        console.log('❌ Фарм не завершен')
+        console.log('❌ Фарм не завершен - мобов убито:', result.mobsDefeated)
       }
     } catch (error) {
       console.error('Ошибка во время фарма:', error)

@@ -73,6 +73,8 @@ export class AutoCombatSystem {
     let round = 0
 
     console.log(`🤖 Начинаем автоматический бой с ${currentMobs.length} мобами, активных скиллов: ${this.activeSkills.length}`)
+    console.log(`👤 Персонаж: HP ${this.character.health}/${this.character.max_health}, MP ${this.character.mana}/${this.character.max_mana}, Атака ${this.character.attack_damage}, Защита ${this.character.defense}`)
+    console.log(`👹 Мобы:`, currentMobs.map(mob => `${mob.name} (HP: ${mob.health}, Атака: ${mob.attack}, Защита: ${mob.defense})`))
 
     while (currentMobs.length > 0 && round < this.options.maxRounds) {
       round++
@@ -102,6 +104,7 @@ export class AutoCombatSystem {
         this.markSkillUsed(skillToUse)
         
         console.log(`⚔️ Использован скилл ${skillToUse}, урон: ${skillResult.damageDealt}, получен урон: ${skillResult.damageTaken}, мана: ${skillResult.manaUsed}`)
+        console.log(`💀 Мобы после атаки:`, skillResult.remainingMobs.map(mob => `${mob.name} (HP: ${mob.health})`))
       } else {
         // Базовая атака
         const basicAttack = this.basicAttack(currentMobs)
@@ -122,14 +125,19 @@ export class AutoCombatSystem {
       await new Promise(resolve => setTimeout(resolve, 100))
     }
 
-    // Если все мобы побеждены
-    if (currentMobs.length === 0) {
+    // Начисляем опыт и золото за убитых мобов
+    if (result.mobsDefeated > 0) {
       result.success = true
-      result.experience = this.spot.mobs.reduce((sum, mob) => sum + mob.experience_reward, 0)
-      result.gold = this.spot.mobs.reduce((sum, mob) => sum + mob.gold_reward, 0)
-      console.log(`✅ Бой завершен успешно! Опыт: ${result.experience}, Золото: ${result.gold}`)
+      // Рассчитываем опыт и золото пропорционально убитым мобам
+      const totalMobs = this.spot.mobs.length
+      const defeatedRatio = result.mobsDefeated / totalMobs
+      
+      result.experience = Math.floor(this.spot.mobs.reduce((sum, mob) => sum + mob.experience_reward, 0) * defeatedRatio)
+      result.gold = Math.floor(this.spot.mobs.reduce((sum, mob) => sum + mob.gold_reward, 0) * defeatedRatio)
+      
+      console.log(`✅ Бой завершен! Убито мобов: ${result.mobsDefeated}/${totalMobs}, Опыт: ${result.experience}, Золото: ${result.gold}`)
     } else {
-      console.log(`❌ Бой не завершен, мобов осталось: ${currentMobs.length}`)
+      console.log(`❌ Бой не завершен, мобов убито: ${result.mobsDefeated}`)
     }
 
     return result
