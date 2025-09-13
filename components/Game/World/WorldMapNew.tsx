@@ -191,15 +191,6 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
     setClickedSpot(null)
   }
 
-  // Закрытие модала боя
-  const handleCloseBattleModal = () => {
-    setShowBattleModal(false)
-    setCurrentBattleSpot(null)
-    setBattleStarted(false)
-    setBattleEnded(false)
-    setBattleResult(null)
-    setSelectedSkillId(null)
-  }
 
   // Повторный бой
   const handleRepeatBattle = () => {
@@ -282,7 +273,7 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
 
   // Обработчик окончания боя
   const handleCombatEnd = async (result: any) => {
-    setShowBattleModal(false)
+    // НЕ закрываем модальное окно - показываем результат
     setBattleStarted(false)
     
     if (result.success) {
@@ -308,10 +299,26 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
     } else {
       console.log('❌ Бой проигран')
     }
-    
-    // Закрываем попап
+  }
+
+  // Обработчик закрытия модального окна
+  const handleCloseBattleModal = () => {
     setShowBattleModal(false)
-    setClickedSpot(null)
+    setBattleStarted(false)
+    setBattleEnded(false)
+    setBattleResult(null)
+    setCurrentBattleSpot(null)
+    setCombatState({
+      currentHealth: character.health,
+      currentMana: character.mana,
+      currentMobs: [],
+      round: 0,
+      isPlayerTurn: true,
+      lastAction: '',
+      lastDamage: 0,
+      lastMobDamage: 0,
+      battleLog: []
+    })
   }
 
   // Рендер континентов на карте мира
