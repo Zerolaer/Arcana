@@ -244,21 +244,24 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
     })
   }
 
-  // Начать бой (когда пользователь нажимает кнопку)
-  const handleStartCombat = () => {
+  // Атаковать выбранным скиллом
+  const handleAttack = () => {
     if (!selectedSkillId) {
       alert('Выберите скилл для атаки!')
       return
     }
     
-    setBattleStarted(true)
-    setCombatState(prev => ({
-      ...prev,
-      lastAction: 'Бой начался!',
-      battleLog: [...prev.battleLog, 'Бой начался!']
-    }))
+    // Если бой еще не начат - начинаем его
+    if (!battleStarted) {
+      setBattleStarted(true)
+      setCombatState(prev => ({
+        ...prev,
+        lastAction: 'Бой начался!',
+        battleLog: [...prev.battleLog, 'Бой начался!']
+      }))
+    }
     
-    // Запускаем бой
+    // Выполняем атаку
     executeCombatTurn()
   }
 
@@ -1070,9 +1073,9 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
               {!battleStarted ? (
                 <>
                   <div className="bg-dark-200/50 rounded-lg p-6 mb-4 text-center">
-                    <div className="text-white font-semibold mb-4 text-lg">⚔️ Выберите скилл для атаки</div>
+                    <div className="text-white font-semibold mb-4 text-lg">⚔️ Выберите скилл и атакуйте</div>
                     <div className="text-gray-300 mb-6">
-                      Выберите скилл из панели ниже и нажмите "Начать бой" в футере
+                      Выберите скилл из панели ниже и нажмите "Атаковать" в футере
                     </div>
                   </div>
                   
@@ -1106,7 +1109,7 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
                     </div>
                   </div>
 
-                  {/* Панель скиллов и кнопки */}
+                  {/* Панель скиллов */}
                   {!battleEnded && (
                     <div className="space-y-4">
                       {/* Панель скиллов */}
@@ -1117,19 +1120,6 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
                         className="mb-4"
                       />
                       
-                      {/* Кнопка атаки */}
-                      {battleStarted && combatState.isPlayerTurn && (
-                        <div className="text-center">
-                          <button
-                            onClick={executeCombatTurn}
-                            disabled={!selectedSkillId}
-                            className="game-button px-8 py-3 text-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                            {selectedSkillId ? '⚔️ Атаковать' : '🎯 Выберите скилл'}
-                          </button>
-                        </div>
-                      )}
-                      
                       {/* Сообщение о ходе мобов */}
                       {battleStarted && !combatState.isPlayerTurn && (
                         <div className="bg-dark-200/50 rounded-lg p-4 text-center">
@@ -1138,8 +1128,8 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
                           </div>
                           <div className="text-gray-400 text-sm">
                             Мобы атакуют автоматически
-                </div>
-              </div>
+                          </div>
+                        </div>
                       )}
                     </div>
                   )}
@@ -1459,15 +1449,16 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
                 ❌ Закрыть
               </button>
               
-              {/* Правые кнопки - Начать бой и Авто-бой */}
+              {/* Правые кнопки - Атаковать и Авто-бой */}
               <div className="flex space-x-3">
-                {!battleStarted ? (
+                {!battleEnded ? (
                   <>
                     <button
-                      onClick={handleStartCombat}
-                      className="game-button px-6 py-2"
+                      onClick={handleAttack}
+                      disabled={!selectedSkillId}
+                      className="game-button px-6 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      ⚔️ Начать бой
+                      {selectedSkillId ? '⚔️ Атаковать' : '🎯 Выберите скилл'}
                     </button>
                     <button
                       onClick={() => {/* TODO: Авто-бой */}}
@@ -1478,7 +1469,7 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
                   </>
                 ) : (
                   <div className="text-gray-400 text-sm">
-                    Бой в процессе...
+                    Бой завершен
                   </div>
                 )}
               </div>
