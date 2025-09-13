@@ -923,7 +923,7 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
                 <h2 className="text-xl font-bold text-white">⚔️ {currentBattleSpot.name}</h2>
               <button
                   onClick={handleCloseBattleModal}
-                className="text-gray-400 hover:text-white transition-colors"
+                  className="text-gray-400 hover:text-white transition-colors text-2xl"
               >
                 ✕
               </button>
@@ -983,13 +983,13 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
                     <span className="text-red-400">
                       {battleStarted ? combatState.currentHealth : character.health}/{character.max_health}
                     </span>
-                  </div>
+                </div>
                   <div className="flex justify-between">
                     <span className="text-gray-300">MP:</span>
                     <span className="text-blue-400">
                       {battleStarted ? combatState.currentMana : character.mana}/{character.max_mana}
                     </span>
-                  </div>
+              </div>
                   <div className="flex justify-between">
                     <span className="text-gray-300">Уровень:</span>
                     <span className="text-yellow-400">{character.level}</span>
@@ -1069,24 +1069,29 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
             {/* Правая панель - бой и скиллы */}
             <div className="w-2/3 p-4 flex flex-col">
               
-              {/* Лог боя или панель скиллов */}
+              {/* Лог боя или начало боя */}
               {!battleStarted ? (
-                <>
-                  <div className="bg-dark-200/50 rounded-lg p-6 mb-4 text-center">
-                    <div className="text-white font-semibold mb-4 text-lg">⚔️ Выберите скилл и атакуйте</div>
+                <div className="flex-1 flex items-center justify-center">
+                  <div className="bg-dark-200/50 rounded-lg p-8 text-center max-w-md">
+                    <div className="text-white font-semibold mb-4 text-xl">⚔️ Готовы к бою?</div>
                     <div className="text-gray-300 mb-6">
-                      Выберите скилл из панели ниже и нажмите "Атаковать" в футере
+                      Нажмите "Начать бой" чтобы сразиться с группой мобов
                     </div>
+              <button
+                onClick={() => {
+                        setBattleStarted(true)
+                        setCombatState(prev => ({
+                          ...prev,
+                          lastAction: 'Бой начался!',
+                          battleLog: [...prev.battleLog, 'Бой начался!']
+                        }))
+                      }}
+                      className="game-button px-8 py-3 text-lg"
+                    >
+                      🚀 Начать бой
+                    </button>
                   </div>
-                  
-                  {/* Панель скиллов для выбора */}
-                  <CombatSkillPanel
-                    character={character}
-                    onSkillSelect={handleSkillSelect}
-                    currentMana={character.mana}
-                    className="mb-4"
-                  />
-                </>
+                </div>
               ) : (
                 <>
                   {/* Лог боя */}
@@ -1439,41 +1444,6 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
               </div>
             </div>
             
-            {/* Общий футер */}
-            <div className="bg-dark-200/50 border-t border-dark-300/50 p-4 flex items-center justify-between">
-              {/* Левая кнопка - Закрыть */}
-              <button
-                onClick={handleCloseBattleModal}
-                className="game-button game-button--secondary px-6 py-2"
-              >
-                ❌ Закрыть
-              </button>
-              
-              {/* Правые кнопки - Атаковать и Авто-бой */}
-              <div className="flex space-x-3">
-                {!battleEnded ? (
-                  <>
-                    <button
-                      onClick={handleAttack}
-                      disabled={!selectedSkillId}
-                      className="game-button px-6 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {selectedSkillId ? '⚔️ Атаковать' : '🎯 Выберите скилл'}
-                    </button>
-                    <button
-                      onClick={() => {/* TODO: Авто-бой */}}
-                      className="game-button game-button--secondary px-6 py-2"
-                    >
-                      🤖 Авто-бой
-                    </button>
-                  </>
-                ) : (
-                  <div className="text-gray-400 text-sm">
-                    Бой завершен
-                  </div>
-                )}
-              </div>
-            </div>
           </div>
         </div>
       )}
