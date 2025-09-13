@@ -480,18 +480,18 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
                   </div>
                 )}
 
-                {/* Tooltip при наведении */}
+                {/* Оверлей при наведении - затемняем ячейку и показываем информацию поверх */}
                 {hoveredSpot?.id === spot.id && (
-                  <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 bg-dark-100 border border-primary-400/50 rounded p-2 z-20 min-w-48">
-                    <h4 className="text-sm font-bold text-white mb-1">{spot.name}</h4>
-                    <div className="text-xs text-gray-400 mb-2">
+                  <div className="absolute inset-0 bg-black/70 rounded flex flex-col items-center justify-center p-2 z-10">
+                    <h4 className="text-sm font-bold text-white mb-2 text-center">{spot.name}</h4>
+                    <div className="text-xs text-gray-300 mb-2 text-center">
                       {spot.mobs.length === 1 ? 'Нажмите для атаки' : 'Нажмите для выбора моба'}
                     </div>
-                    <div className="space-y-1">
+                    <div className="space-y-1 max-h-20 overflow-y-auto">
                       {spot.mobs.map((mob) => (
                         <div key={mob.id} className="flex items-center justify-between text-xs">
                           <span className="text-gray-300">{mob.icon} {mob.name}</span>
-                          <span className="text-yellow-400">{mob.level} ур.</span>
+                          <span className="text-yellow-400 ml-2">{mob.level} ур.</span>
                         </div>
                       ))}
                     </div>
@@ -700,8 +700,8 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
 
       {/* Компонент боя */}
       {showCombat && currentCombatSpot && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
-          <div className="bg-dark-800 rounded-lg p-6 w-full max-w-2xl mx-4">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-dark-100 border border-dark-300 rounded-lg p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
             {/* Заголовок */}
             <div className="flex items-center justify-between mb-6">
               <div className="text-center flex-1">
@@ -723,7 +723,7 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
 
             {/* Статы персонажа */}
             <div className="grid grid-cols-2 gap-4 mb-6">
-              <div className="bg-dark-700 rounded-lg p-4">
+              <div className="bg-dark-200/50 rounded-lg p-4">
                 <div className="text-white font-semibold mb-2">👤 Вы</div>
                 <div className="space-y-1 text-sm">
                   <div className="flex justify-between">
@@ -737,7 +737,7 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
                 </div>
               </div>
 
-              <div className="bg-dark-700 rounded-lg p-4">
+              <div className="bg-dark-200/50 rounded-lg p-4">
                 <div className="text-white font-semibold mb-2">👹 Мобы</div>
                 <div className="space-y-1 text-sm">
                   <div className="flex justify-between">
@@ -754,7 +754,7 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
 
             {/* Последнее действие */}
             {combatState.lastAction && (
-              <div className="bg-dark-700 rounded-lg p-4 mb-6">
+              <div className="bg-dark-200/50 rounded-lg p-4 mb-6">
                 <div className="text-white font-semibold mb-2">📝 Последнее действие</div>
                 <div className="text-gray-300">
                   {combatState.lastAction}
@@ -772,7 +772,7 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
             <div className="space-y-2 mb-6">
               <div className="text-white font-semibold mb-2">👹 Противники</div>
               {combatState.currentMobs.map((mob, index) => (
-                <div key={mob.id} className="bg-dark-700 rounded-lg p-3 flex items-center justify-between">
+                <div key={mob.id} className="bg-dark-200/50 rounded-lg p-3 flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <span className="text-2xl">{mob.icon}</span>
                     <div>
