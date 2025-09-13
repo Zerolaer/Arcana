@@ -449,9 +449,10 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
           battleLog: [...prev.battleLog, actionText]
         }
         
-        // Проверяем окончание боя
-        const aliveMobs = newMobs.filter(mob => mob.health > 0)
+        // Проверяем окончание боя ПОСЛЕ обновления состояния
+        const aliveMobs = updatedState.currentMobs.filter(mob => mob.health > 0)
         console.log('🔍 Живые мобы после атаки:', aliveMobs.length)
+        console.log('🔍 Все мобы:', updatedState.currentMobs.map(mob => ({ name: mob.name, health: mob.health })))
         
         if (aliveMobs.length === 0) {
           // Победа
@@ -474,20 +475,29 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
             battleLog: [...updatedState.battleLog, `🎉 Победа! Вы получили ${result.experience} опыта и ${result.gold} золота!`]
           }
         } else {
-          // Планируем ход мобов
+          // Планируем ход мобов через setTimeout
+          console.log('⏰ Планируем ход мобов через 1 секунду...')
+          
           setTimeout(() => {
+            console.log('👹 Выполняем ход мобов...')
             setCombatState(prevState => {
+              console.log('👹 Состояние мобов для хода мобов:', prevState.currentMobs.map(mob => ({ name: mob.name, health: mob.health })))
+              
               // Считаем урон только от живых мобов
               const aliveMobs = prevState.currentMobs.filter(mob => mob.health > 0)
-              let totalMobDamage = 0
+              console.log('👹 Живые мобы для хода:', aliveMobs.length)
               
+              let totalMobDamage = 0
               aliveMobs.forEach(mob => {
                 const mobDamage = Math.max(1, Math.ceil(mob.attack - (character.defense * 0.5)))
                 totalMobDamage += mobDamage
+                console.log(`👹 ${mob.name} атакует на ${mobDamage} урона`)
               })
             
               const mobActionText = `Мобы атакуют вас и наносят ${totalMobDamage} урона!`
               const newHealth = Math.max(0, prevState.currentHealth - totalMobDamage)
+              
+              console.log(`👹 Итоговый урон мобов: ${totalMobDamage}, HP игрока: ${prevState.currentHealth} → ${newHealth}`)
               
               // Обновляем HP в хедере
               onUpdateCharacterStats({
@@ -517,13 +527,20 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
                 }
               }
               
-              return {
+              const newState = {
                 ...prevState,
                 currentHealth: newHealth,
                 isPlayerTurn: true,
                 lastAction: `Ваш ход! Выберите скилл для атаки`,
                 battleLog: [...prevState.battleLog, mobActionText]
               }
+              
+              console.log('👹 Новое состояние после хода мобов:', {
+                isPlayerTurn: newState.isPlayerTurn,
+                currentHealth: newState.currentHealth
+              })
+              
+              return newState
             })
           }, 1000)
           
