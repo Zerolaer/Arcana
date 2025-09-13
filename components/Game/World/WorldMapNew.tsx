@@ -175,25 +175,18 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
     setClickedSpot(null)
   }
 
-  // Начало фарма - запускаем новый бой
-  const handleStartFarming = async (spot: FarmSpot, skills: string[], isAutoFarming: boolean = false, currentHealth?: number, currentMana?: number) => {
-    console.log('🚀 Начинаем фарм спота:', spot.name, 'с скиллами:', skills)
-    
-    // Проверяем, есть ли активные скиллы
-    if (skills.length === 0) {
-      console.log('❌ Нет активных скиллов для боя!')
-      alert('❌ Нет активных скиллов для боя! Активируйте хотя бы один скил в панели внизу.')
-      return
-    }
+  // Начало пошагового боя
+  const handleStartCombat = (spot: FarmSpot) => {
+    console.log('⚔️ Начинаем пошаговый бой на споте:', spot.name)
     
     // Инициализируем состояние боя
     setCombatState({
       currentMobs: [...spot.mobs],
       currentHealth: character.health,
       currentMana: character.mana,
-      round: 0,
+      round: 1,
       isPlayerTurn: true,
-      lastAction: '',
+      lastAction: 'Бой начался!',
       lastDamage: 0,
       lastMobDamage: 0
     })
@@ -201,6 +194,45 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
     // Запускаем новый бой
     setCurrentCombatSpot(spot)
     setShowCombat(true)
+  }
+
+  // Начало автофарма
+  const handleStartFarming = async (spot: FarmSpot, skills: string[], isAutoFarming: boolean = false, currentHealth?: number, currentMana?: number) => {
+    console.log('🌾 Начинаем автофарм на споте:', spot.name, 'с скиллами:', skills)
+    
+    // Проверяем, есть ли активные скиллы
+    if (skills.length === 0) {
+      console.log('❌ Нет активных скиллов для боя!')
+      alert('❌ Нет активных скиллов для боя! Активируйте хотя бы один скил в панели внизу.')
+      return
+    }
+
+    try {
+      // Используем AutoCombatSystem для автофарма
+      const autoCombat = new AutoCombatSystem(character, spot, skills)
+      const result = await autoCombat.executeCombat()
+      
+      console.log('🎯 Результат автофарма:', result)
+      
+      // Обновляем персонажа
+      const xpResult = processXpGain(character.level, character.experience, result.experience)
+      
+      await onUpdateCharacter({
+        level: xpResult.newLevel,
+        experience: xpResult.newXpProgress,
+        stat_points: character.stat_points + xpResult.totalStatPointsGained,
+        max_health: 100 + (character.endurance * 15) + (xpResult.totalStatPointsGained * 5),
+        max_mana: 50 + (character.intelligence * 8) + (xpResult.totalStatPointsGained * 3),
+        health: result.finalHealth,
+        mana: result.finalMana,
+        gold: character.gold + result.gold,
+        experience_to_next: xpResult.xpToNext
+      })
+      
+      console.log('✅ Автофарм завершен успешно')
+    } catch (error) {
+      console.error('Ошибка при автофарме:', error)
+    }
   }
 
   // Обработчик окончания боя
@@ -657,6 +689,7 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
           isOpen={showSpotInfo}
           onClose={handleCloseSpotInfo}
           onStartFarming={handleStartFarming}
+          onStartCombat={handleStartCombat}
           activeSkills={(() => {
             const skills = getActiveSkills()
             console.log('🔍 WorldMapNew передает активные скиллы:', skills)

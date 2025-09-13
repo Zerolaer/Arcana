@@ -4,7 +4,6 @@ import { useState, useRef, useEffect } from 'react'
 import { Character } from '@/types/game'
 import { FarmSpot, Mob } from '@/types/world'
 import { X, Sword, Shield, Heart, Zap, Trophy, Coins, Package, Users, Target } from 'lucide-react'
-import CombatDisplay from '../UI/CombatDisplay'
 
 interface SpotInfoModalProps {
   spot: FarmSpot
@@ -12,6 +11,7 @@ interface SpotInfoModalProps {
   isOpen: boolean
   onClose: () => void
   onStartFarming: (spot: FarmSpot, activeSkills: string[], isAutoFarming?: boolean, currentHealth?: number, currentMana?: number) => Promise<void>
+  onStartCombat: (spot: FarmSpot) => void
   activeSkills: string[]
 }
 
@@ -20,12 +20,11 @@ export default function SpotInfoModal({
   character, 
   isOpen, 
   onClose, 
-  onStartFarming, 
+  onStartFarming,
+  onStartCombat,
   activeSkills 
 }: SpotInfoModalProps) {
-  const [isFarming, setIsFarming] = useState(false)
   const [isAutoFarming, setIsAutoFarming] = useState(false)
-  const [showCombat, setShowCombat] = useState(false)
   const [currentHealth, setCurrentHealth] = useState(character.health)
   const [currentMana, setCurrentMana] = useState(character.mana)
   const autoFarmingRef = useRef(false)
@@ -82,12 +81,12 @@ export default function SpotInfoModal({
   // Примерный шанс победы
   const winChance = Math.max(10, Math.min(95, 75 - (levelDiff * 10)))
 
-  const handleStartFarming = async () => {
+  const handleStartCombat = () => {
     if (activeSkills.length === 0) {
       alert('Нет активных скиллов для боя!')
       return
     }
-    setShowCombat(true)
+    onStartCombat(spot)
   }
 
   const handleAutoFarming = async () => {
@@ -95,30 +94,33 @@ export default function SpotInfoModal({
       alert('Нет активных скиллов для боя!')
       return
     }
-    setShowCombat(true)
-  }
-
-  const handleCombatEnd = async (result: any) => {
-    setShowCombat(false)
     
-    if (result.success) {
-      // Обновляем персонажа через onStartFarming
-      await onStartFarming(spot, activeSkills, false, result.finalHealth, result.finalMana)
-      
-      // Если это автофарм, запускаем следующий бой
-      if (isAutoFarming && result.finalHealth > 0) {
-        setTimeout(() => {
-          setShowCombat(true)
-        }, 2000) // Пауза 2 секунды между боями
-      }
-    } else {
-      // Поражение - останавливаем автофарм
-      if (isAutoFarming) {
-        setIsAutoFarming(false)
-        autoFarmingRef.current = false
+    setIsAutoFarming(true)
+    autoFarmingRef.current = true
+    
+    // Запускаем автофарм в фоне
+    while (autoFarmingRef.current) {
+      try {
+        await onStartFarming(spot, activeSkills, true, currentHealth, currentMana)
+        
+        // Обновляем текущие значения
+        setCurrentHealth(character.health)
+        setCurrentMana(character.mana)
+        
+        // Пауза между боями
+        await new Promise(resolve => setTimeout(resolve, 2000))
+        
+        // Проверяем, не умер ли персонаж
+        if (character.health <= 0) {
+          break
+        }
+      } catch (error) {
+        console.error('Ошибка в автофарме:', error)
+        // Продолжаем фарм даже при ошибке в одном бою
       }
     }
   }
+
 
   const handleStopAutoFarming = () => {
     console.log('⏹️ Останавливаем автофарм...')
@@ -160,19 +162,7 @@ export default function SpotInfoModal({
   const totalGold = spot.mobs.reduce((sum, mob) => sum + mob.gold_reward, 0)
 
   return (
-    <>
-      {/* Компонент боя */}
-      {showCombat && (
-        <CombatDisplay
-          character={character}
-          mobs={spot.mobs}
-          isVisible={showCombat}
-          onCombatEnd={handleCombatEnd}
-        />
-      )}
-
-      {/* Основной попап */}
-      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
       <div className="bg-dark-100 border border-dark-300 rounded-lg p-6 max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
         
         {/* Заголовок */}
@@ -335,20 +325,15 @@ export default function SpotInfoModal({
           </button>
           
           <button
-            onClick={handleStartFarming}
-            disabled={isFarming || activeSkills.length === 0}
+            onClick={handleStartCombat}
+            disabled={activeSkills.length === 0}
             className={`px-6 py-2 rounded-lg transition-colors flex items-center space-x-2 ${
-              isFarming || activeSkills.length === 0
+              activeSkills.length === 0
                 ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
                 : 'bg-green-600 hover:bg-green-700 text-white'
             }`}
           >
-            {isFarming ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                <span>Фарм...</span>
-              </>
-            ) : activeSkills.length === 0 ? (
+            {activeSkills.length === 0 ? (
               <>
                 <Sword className="w-4 h-4" />
                 <span>Нет активных скиллов</span>
@@ -356,7 +341,7 @@ export default function SpotInfoModal({
             ) : (
               <>
                 <Sword className="w-4 h-4" />
-                <span>Начать фарм</span>
+                <span>Атаковать</span>
               </>
             )}
           </button>
@@ -383,7 +368,7 @@ export default function SpotInfoModal({
               ) : (
                 <>
                   <Sword className="w-4 h-4" />
-                  <span>Авто-бой</span>
+                  <span>Авто-фарм</span>
                 </>
               )}
             </button>
@@ -393,12 +378,11 @@ export default function SpotInfoModal({
               className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors flex items-center space-x-2"
             >
               <div className="animate-pulse rounded-full h-4 w-4 bg-white"></div>
-              <span>Остановить автофарм</span>
+              <span>Остановить</span>
             </button>
           )}
         </div>
       </div>
     </div>
-    </>
   )
 }
