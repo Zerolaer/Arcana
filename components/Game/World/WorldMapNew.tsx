@@ -112,8 +112,18 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
     setShowBattleModal(true)
     setBattleStarted(false)
     setSelectedSkillId(null)
-    // Сразу начинаем бой без подтверждения
-    handleStartBattle()
+    // Инициализируем боевое состояние
+    setCombatState({
+      currentMobs: spot.mobs.map(mob => ({ ...mob, maxHealth: mob.health })),
+      currentHealth: character.health,
+      currentMana: character.mana,
+      round: 1,
+      isPlayerTurn: true,
+      lastAction: 'Выберите скилл для атаки',
+      lastDamage: 0,
+      lastMobDamage: 0,
+      battleLog: ['Бой подготовлен! Выберите скилл для атаки.']
+    })
   }
 
   // Выбор моба из селектора
@@ -236,12 +246,139 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
 
   // Начать бой (когда пользователь нажимает кнопку)
   const handleStartCombat = () => {
+    if (!selectedSkillId) {
+      alert('Выберите скилл для атаки!')
+      return
+    }
+    
     setBattleStarted(true)
     setCombatState(prev => ({
       ...prev,
       lastAction: 'Бой начался!',
       battleLog: [...prev.battleLog, 'Бой начался!']
     }))
+    
+    // Запускаем бой
+    executeCombatTurn()
+  }
+
+  // Выполнение хода боя
+  const executeCombatTurn = () => {
+    if (!battleStarted || !selectedSkillId) return
+    
+    // Атака игрока
+    const target = combatState.currentMobs[0] // Атакуем первого моба
+    if (!target) return
+    
+    let damage = 100 // Базовая атака
+    let manaCost = 0
+    
+    // Если выбран скилл (не базовая атака)
+    if (selectedSkillId !== 'basic_attack') {
+      // Получаем данные скилла
+      const className = getClassNameFromCharacter(character)
+      const skillData = getActiveSkillData(selectedSkillId, className)
+      if (skillData) {
+        damage = skillData.base_damage + (character.strength * skillData.scaling_ratio)
+        manaCost = skillData.mana_cost
+      }
+    }
+    
+    const finalDamage = Math.max(1, damage - target.defense)
+    
+    // Обновляем состояние
+    const newMobs = combatState.currentMobs.map(mob => 
+      mob.id === target.id 
+        ? { ...mob, health: Math.max(0, mob.health - finalDamage) }
+        : mob
+    ).filter(mob => mob.health > 0)
+    
+    const actionText = selectedSkillId === 'basic_attack'
+      ? `Вы атакуете ${target.name} и наносите ${finalDamage} урона!`
+      : `Вы используете скилл против ${target.name} и наносите ${finalDamage} урона!`
+    
+    setCombatState(prev => ({
+      ...prev,
+      currentMobs: newMobs,
+      currentMana: prev.currentMana - manaCost,
+      lastAction: actionText,
+      lastDamage: finalDamage,
+      battleLog: [...prev.battleLog, actionText]
+    }))
+    
+    // Обновляем HP/MP в хедере
+    onUpdateCharacterStats({
+      health: combatState.currentHealth,
+      mana: combatState.currentMana - manaCost
+    })
+    
+    // Проверяем окончание боя
+    if (newMobs.length === 0) {
+      // Победа
+      const result = {
+        success: true,
+        experience: currentBattleSpot?.mobs.reduce((sum, mob) => sum + mob.experience_reward, 0) || 0,
+        gold: currentBattleSpot?.mobs.reduce((sum, mob) => sum + mob.gold_reward, 0) || 0,
+        finalHealth: combatState.currentHealth,
+        finalMana: combatState.currentMana - manaCost,
+        damageTaken: character.health - combatState.currentHealth,
+        manaUsed: character.mana - (combatState.currentMana - manaCost),
+        mobsDefeated: currentBattleSpot?.mobs.length || 0
+      }
+      
+      setBattleEnded(true)
+      setBattleResult(result)
+      setCombatState(prev => ({
+        ...prev,
+        battleLog: [...prev.battleLog, `🎉 Победа! Вы получили ${result.experience} опыта и ${result.gold} золота!`]
+      }))
+    } else {
+      // Ход мобов
+      setTimeout(() => {
+        const mobDamage = Math.max(1, target.attack - Math.floor(character.defense * 0.5))
+        const mobActionText = `Мобы атакуют вас и наносят ${mobDamage} урона!`
+        
+        setCombatState(prev => {
+          const newHealth = Math.max(0, prev.currentHealth - mobDamage)
+          
+          // Обновляем HP в хедере
+          onUpdateCharacterStats({
+            health: newHealth
+          })
+          
+          if (newHealth <= 0) {
+            // Поражение
+            const result = {
+              success: false,
+              experience: 0,
+              gold: 0,
+              finalHealth: 0,
+              finalMana: prev.currentMana,
+              damageTaken: character.health,
+              manaUsed: character.mana - prev.currentMana,
+              mobsDefeated: (currentBattleSpot?.mobs.length || 0) - newMobs.length
+            }
+            
+            setBattleEnded(true)
+            setBattleResult(result)
+            
+            return {
+              ...prev,
+              currentHealth: newHealth,
+              battleLog: [...prev.battleLog, mobActionText, `💀 Поражение! Вы погибли в бою...`]
+            }
+          }
+          
+          return {
+            ...prev,
+            currentHealth: newHealth,
+            isPlayerTurn: true,
+            lastAction: `Ваш ход! Выберите скилл для атаки`,
+            battleLog: [...prev.battleLog, mobActionText]
+          }
+        })
+      }, 1000)
+    }
   }
 
   // Начало автофарма
@@ -326,15 +463,15 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
         ...result,
         xpResult: xpResult,
         pendingUpdates: {
-          level: xpResult.newLevel,
-          experience: xpResult.newXpProgress,
-          stat_points: character.stat_points + xpResult.totalStatPointsGained,
-          max_health: 100 + (character.endurance * 15) + (xpResult.totalStatPointsGained * 5),
-          max_mana: 50 + (character.intelligence * 8) + (xpResult.totalStatPointsGained * 3),
-          health: result.finalHealth,
-          mana: result.finalMana,
-          gold: character.gold + result.gold,
-          experience_to_next: xpResult.xpToNext
+        level: xpResult.newLevel,
+        experience: xpResult.newXpProgress,
+        stat_points: character.stat_points + xpResult.totalStatPointsGained,
+        max_health: 100 + (character.endurance * 15) + (xpResult.totalStatPointsGained * 5),
+        max_mana: 50 + (character.intelligence * 8) + (xpResult.totalStatPointsGained * 3),
+        health: result.finalHealth,
+        mana: result.finalMana,
+        gold: character.gold + result.gold,
+        experience_to_next: xpResult.xpToNext
         }
       })
       
@@ -778,63 +915,63 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
             <div className="flex flex-1 overflow-hidden">
               {/* Левая панель - информация о бое */}
               <div className="w-1/3 bg-dark-200/30 border-r border-dark-300/50 p-4 flex flex-col">
-              {/* Заголовок */}
+            {/* Заголовок */}
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-bold text-white">⚔️ {currentBattleSpot.name}</h2>
-                <button
+              <button
                   onClick={handleCloseBattleModal}
-                  className="text-gray-400 hover:text-white transition-colors"
-                >
-                  ✕
-                </button>
-              </div>
+                className="text-gray-400 hover:text-white transition-colors"
+              >
+                ✕
+              </button>
+            </div>
 
               {/* Предварительная информация о бое */}
               {!battleStarted && (
                 <div className="bg-dark-200/50 rounded-lg p-4 mb-4">
                   <div className="text-white font-semibold mb-3">📊 Информация о бое</div>
                   <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
+                  <div className="flex justify-between">
                       <span className="text-gray-300">Сложность:</span>
                       <span className="text-orange-400">
                         {currentBattleSpot.mobs.length === 1 ? 'Легкая' : 
                          currentBattleSpot.mobs.length === 2 ? 'Средняя' : 'Сложная'}
                       </span>
-                    </div>
-                    <div className="flex justify-between">
+                  </div>
+                  <div className="flex justify-between">
                       <span className="text-gray-300">Мобов в группе:</span>
                       <span className="text-blue-400">{currentBattleSpot.mobs.length}</span>
-                    </div>
+                  </div>
                     <div className="flex justify-between">
                       <span className="text-gray-300">Шанс победы:</span>
                       <span className="text-green-400">
                         {character.level >= currentBattleSpot.mobs[0]?.level ? 'Высокий' : 'Средний'}
                       </span>
-                    </div>
-                  </div>
-                  
+                </div>
+              </div>
+
                   {/* Возможные награды */}
                   <div className="mt-4">
                     <div className="text-white font-semibold mb-2 text-sm">🎁 Награды</div>
                     <div className="space-y-1 text-xs">
-                      <div className="flex justify-between">
+                  <div className="flex justify-between">
                         <span className="text-gray-400">Опыт:</span>
                         <span className="text-yellow-400">
                           {currentBattleSpot.mobs.reduce((sum, mob) => sum + mob.experience_reward, 0)} XP
                         </span>
-                      </div>
-                      <div className="flex justify-between">
+                  </div>
+                  <div className="flex justify-between">
                         <span className="text-gray-400">Золото:</span>
                         <span className="text-yellow-400">
                           {currentBattleSpot.mobs.reduce((sum, mob) => sum + mob.gold_reward, 0)} G
                         </span>
-                      </div>
-                    </div>
                   </div>
                 </div>
+              </div>
+            </div>
               )}
 
-              {/* Статы персонажа */}
+            {/* Статы персонажа */}
               <div className="bg-dark-200/50 rounded-lg p-4 mb-4">
                 <div className="text-white font-semibold mb-3">👤 Ваши характеристики</div>
                 <div className="space-y-2 text-sm">
@@ -879,7 +1016,7 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
                 </div>
               </div>
 
-              {/* Список мобов */}
+            {/* Список мобов */}
               <div className="flex-1 overflow-y-auto">
                 <div className="space-y-3">
                   {currentBattleSpot.mobs.map((mob, index) => (
@@ -887,12 +1024,12 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
                       <div className="flex items-center space-x-3 mb-2">
                         <span className="text-3xl">{mob.icon}</span>
                         <div className="flex-1">
-                          <div className="text-white font-medium">{mob.name}</div>
-                          <div className="text-sm text-gray-400">Уровень {mob.level}</div>
-                        </div>
-                      </div>
+                      <div className="text-white font-medium">{mob.name}</div>
+                      <div className="text-sm text-gray-400">Уровень {mob.level}</div>
+                    </div>
+                  </div>
                       <div className="grid grid-cols-2 gap-2 text-xs">
-                        <div className="flex justify-between">
+                  <div className="flex justify-between">
                           <span className="text-gray-400">HP:</span>
                           <span className="text-red-400 font-semibold">
                             {battleStarted 
@@ -905,24 +1042,24 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
                               : `${mob.health}/${mob.health}`
                             }
                           </span>
-                        </div>
-                        <div className="flex justify-between">
+                  </div>
+                  <div className="flex justify-between">
                           <span className="text-gray-400">Атака:</span>
                           <span className="text-orange-400">{mob.attack}</span>
-                        </div>
+                  </div>
                         <div className="flex justify-between">
                           <span className="text-gray-400">Защита:</span>
                           <span className="text-blue-400">{mob.defense}</span>
-                        </div>
+                </div>
                         <div className="flex justify-between">
                           <span className="text-gray-400">Редкость:</span>
                           <span className="text-purple-400">{mob.rarity}</span>
                         </div>
-                      </div>
-                    </div>
-                  ))}
+                  </div>
                 </div>
+              ))}
               </div>
+            </div>
 
             </div>
 
@@ -969,22 +1106,41 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
                     </div>
                   </div>
 
-                  {/* Панель скиллов */}
-                  {combatState.isPlayerTurn ? (
-                    <CombatSkillPanel
-                      character={character}
-                      onSkillSelect={handleSkillSelect}
-                      currentMana={combatState.currentMana}
-                      className="mb-4"
-                    />
-                  ) : (
-                    <div className="bg-dark-200/50 rounded-lg p-4 mb-4 text-center">
-                      <div className="text-orange-400 mb-2 text-lg">
-                        ⏳ Ход мобов...
-                      </div>
-                      <div className="text-gray-400 text-sm">
-                        Мобы атакуют автоматически
-                      </div>
+                  {/* Панель скиллов и кнопки */}
+                  {!battleEnded && (
+                    <div className="space-y-4">
+                      {/* Панель скиллов */}
+                      <CombatSkillPanel
+                        character={character}
+                        onSkillSelect={handleSkillSelect}
+                        currentMana={combatState.currentMana}
+                        className="mb-4"
+                      />
+                      
+                      {/* Кнопка атаки */}
+                      {battleStarted && combatState.isPlayerTurn && (
+                        <div className="text-center">
+                          <button
+                            onClick={executeCombatTurn}
+                            disabled={!selectedSkillId}
+                            className="game-button px-8 py-3 text-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            {selectedSkillId ? '⚔️ Атаковать' : '🎯 Выберите скилл'}
+                          </button>
+                        </div>
+                      )}
+                      
+                      {/* Сообщение о ходе мобов */}
+                      {battleStarted && !combatState.isPlayerTurn && (
+                        <div className="bg-dark-200/50 rounded-lg p-4 text-center">
+                          <div className="text-orange-400 mb-2 text-lg">
+                            ⏳ Ход мобов...
+                          </div>
+                          <div className="text-gray-400 text-sm">
+                            Мобы атакуют автоматически
+                </div>
+              </div>
+                      )}
                     </div>
                   )}
                 </>
@@ -995,26 +1151,26 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
                 <div className="bg-dark-200/50 rounded-lg p-4 mb-4">
                   <div className="text-white font-semibold mb-3 text-center">
                     {battleResult.success ? '🎉 Победа!' : '💀 Поражение'}
-                  </div>
+                    </div>
                   
                   {battleResult.success && (
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
                         <span className="text-gray-400">Получено опыта:</span>
                         <span className="text-yellow-400 font-semibold">+{battleResult.experience} XP</span>
-                      </div>
+                  </div>
                       <div className="flex justify-between">
                         <span className="text-gray-400">Получено золота:</span>
                         <span className="text-yellow-400 font-semibold">+{battleResult.gold} G</span>
-                      </div>
+                  </div>
                       <div className="flex justify-between">
                         <span className="text-gray-400">Убито мобов:</span>
                         <span className="text-orange-400 font-semibold">{battleResult.mobsDefeated}</span>
-                      </div>
+                </div>
                       <div className="flex justify-between">
                         <span className="text-gray-400">Получено урона:</span>
                         <span className="text-red-400 font-semibold">{battleResult.damageTaken} HP</span>
-                      </div>
+            </div>
                       <div className="flex justify-between">
                         <span className="text-gray-400">Потрачено маны:</span>
                         <span className="text-blue-400 font-semibold">{battleResult.manaUsed} MP</span>
@@ -1041,14 +1197,14 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
 
               {/* Кнопка действия - только для хода игрока */}
               {battleStarted && combatState.isPlayerTurn && !battleEnded && (
-                <div className="text-center">
-                  <button
+            <div className="text-center">
+              <button
                     disabled={!selectedSkillId}
                     className={`game-button w-full ${!selectedSkillId ? 'opacity-50 cursor-not-allowed' : ''}`}
                     onClick={async () => {
-                  // Ход игрока - атакуем первого моба
-                  const target = combatState.currentMobs[0]
-                  if (target) {
+                    // Ход игрока - атакуем первого моба
+                    const target = combatState.currentMobs[0]
+                    if (target) {
                       // Рассчитываем урон с учетом выбранного скилла
                       let totalDamage = character.attack_damage
                       let manaCost = 0
@@ -1076,9 +1232,9 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
                             // Fallback: используем старую систему
                             const className = getClassNameFromCharacter(character)
                             const skillData = getActiveSkillData(selectedSkillId, className)
-                            if (skillData) {
+                        if (skillData) {
                               totalDamage = skillData.base_damage + (character.strength * skillData.scaling_ratio)
-                              manaCost = skillData.mana_cost
+                          manaCost = skillData.mana_cost
                               skillName = skillData.name
                               console.log(`💥 Урон скила (fallback): ${totalDamage}`)
                             }
@@ -1113,11 +1269,11 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
                       
                       setCombatState(prev => {
                         const newState = {
-                          ...prev,
-                          currentMobs: newMobs.filter(mob => mob.health > 0),
-                          currentMana: prev.currentMana - manaCost,
-                          round: prev.round + 1,
-                          isPlayerTurn: false,
+                        ...prev,
+                        currentMobs: newMobs.filter(mob => mob.health > 0),
+                        currentMana: prev.currentMana - manaCost,
+                        round: prev.round + 1,
+                        isPlayerTurn: false,
                           lastAction: actionText,
                           lastDamage: finalDamage,
                           battleLog: [...prev.battleLog, actionText]
@@ -1134,22 +1290,22 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
                       
                       // Автоматически переходим к ходу мобов через 1 секунду
                       setTimeout(() => {
-                        // Ход мобов - все мобы атакуют игрока
+                    // Ход мобов - все мобы атакуют игрока
                         setCombatState(prev => {
-                          let totalMobDamage = 0
+                    let totalMobDamage = 0
                           const aliveMobs = prev.currentMobs.filter(mob => mob.health > 0)
-                        
-                          for (const mob of aliveMobs) {
-                            const mobDamage = Math.max(1, mob.attack - Math.floor(character.defense * 0.5))
-                            totalMobDamage += mobDamage
-                          }
+                    
+                    for (const mob of aliveMobs) {
+                      const mobDamage = Math.max(1, mob.attack - Math.floor(character.defense * 0.5))
+                      totalMobDamage += mobDamage
+                    }
 
                           const mobActionText = `Мобы атакуют вас и наносят ${totalMobDamage} урона!`
                           
                           const newState = {
-                            ...prev,
-                            currentHealth: Math.max(0, prev.currentHealth - totalMobDamage),
-                            isPlayerTurn: true,
+                      ...prev,
+                      currentHealth: Math.max(0, prev.currentHealth - totalMobDamage),
+                      isPlayerTurn: true,
                             lastAction: mobActionText,
                             lastMobDamage: totalMobDamage,
                             battleLog: [...prev.battleLog, mobActionText]
@@ -1223,7 +1379,7 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
                           })
                         }, 2000)
                       }, 1000)
-                    }
+                  }
 
                   // Проверяем условия окончания боя
                   setTimeout(() => {
@@ -1232,9 +1388,9 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
                       const aliveMobs = prev.currentMobs.filter(mob => mob.health > 0)
                       
                       if (aliveMobs.length === 0) {
-                        // Победа
-                        const result = {
-                          success: true,
+                      // Победа
+                      const result = {
+                        success: true,
                           experience: currentBattleSpot.mobs.reduce((sum, mob) => sum + mob.experience_reward, 0),
                           gold: currentBattleSpot.mobs.reduce((sum, mob) => sum + mob.gold_reward, 0),
                           finalHealth: prev.currentHealth,
@@ -1249,21 +1405,21 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
                         
                         setBattleEnded(true)
                         setBattleResult(result)
-                        handleCombatEnd(result)
+                      handleCombatEnd(result)
                         
                         return {
                           ...prev,
                           battleLog: [...prev.battleLog, victoryLog]
                         }
                       } else if (prev.currentHealth <= 0) {
-                        // Поражение
-                        const result = {
-                          success: false,
-                          experience: 0,
-                          gold: 0,
-                          finalHealth: 0,
+                      // Поражение
+                      const result = {
+                        success: false,
+                        experience: 0,
+                        gold: 0,
+                        finalHealth: 0,
                           finalMana: prev.currentMana,
-                          damageTaken: character.health,
+                        damageTaken: character.health,
                           manaUsed: character.mana - prev.currentMana,
                           mobsDefeated: currentBattleSpot.mobs.length - aliveMobs.length
                         }
@@ -1273,12 +1429,12 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
                         
                         setBattleEnded(true)
                         setBattleResult(result)
-                        handleCombatEnd(result)
+                      handleCombatEnd(result)
                         
                         return {
                           ...prev,
                           battleLog: [...prev.battleLog, defeatLog]
-                        }
+                    }
                       }
                       
                       return prev
@@ -1287,8 +1443,8 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
                 }}
               >
                     {selectedSkillId ? '⚔️ Использовать скилл' : '🎯 Выберите скилл'}
-                  </button>
-                </div>
+              </button>
+            </div>
               )}
               </div>
             </div>
