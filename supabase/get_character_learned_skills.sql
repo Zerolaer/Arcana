@@ -2,6 +2,11 @@
 -- ФУНКЦИЯ ДЛЯ ПОЛУЧЕНИЯ ИЗУЧЕННЫХ СКИЛЛОВ ПЕРСОНАЖА
 -- ================================================
 
+-- Удаляем существующие функции, если они есть
+DROP FUNCTION IF EXISTS get_character_learned_skills(UUID);
+DROP FUNCTION IF EXISTS get_character_available_skills(UUID);
+DROP FUNCTION IF EXISTS learn_skill(UUID, UUID);
+
 -- Функция для получения изученных скиллов персонажа из новой схемы
 CREATE OR REPLACE FUNCTION get_character_learned_skills(p_character_id UUID)
 RETURNS JSON AS $$
