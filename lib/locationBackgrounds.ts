@@ -19,7 +19,7 @@ export const LOCATION_BACKGROUNDS: Record<string, LocationBackground> = {
   // Мирные Луга
   'Мирные Луга': {
     name: 'Мирные Луга',
-    image: '/locations/peaceful_meadows.png',
+    image: '/locations/peaceful_meadows.svg',
     icon: '🌿',
     description: 'Спокойные луга с мирными существами'
   },
@@ -27,7 +27,7 @@ export const LOCATION_BACKGROUNDS: Record<string, LocationBackground> = {
   // Темный Лес
   'Темный Лес': {
     name: 'Темный Лес',
-    image: '/locations/dark_forest.png',
+    image: '/locations/dark_forest.svg',
     icon: '🌲',
     description: 'Густой лес с опасными хищниками'
   },
@@ -35,7 +35,7 @@ export const LOCATION_BACKGROUNDS: Record<string, LocationBackground> = {
   // Пещеры Гоблинов
   'Пещеры Гоблинов': {
     name: 'Пещеры Гоблинов',
-    image: '/locations/goblin_caves.png',
+    image: '/locations/goblin_caves.svg',
     icon: '🕳️',
     description: 'Подземные туннели, населенные гоблинами'
   },
@@ -43,7 +43,7 @@ export const LOCATION_BACKGROUNDS: Record<string, LocationBackground> = {
   // Пылающая Пустыня
   'Пылающая Пустыня': {
     name: 'Пылающая Пустыня',
-    image: '/locations/burning_desert.png',
+    image: '/locations/burning_desert.svg',
     icon: '🔥',
     description: 'Раскаленная пустыня с огненными существами'
   },
@@ -51,7 +51,7 @@ export const LOCATION_BACKGROUNDS: Record<string, LocationBackground> = {
   // Ледяные Пики
   'Ледяные Пики': {
     name: 'Ледяные Пики',
-    image: '/locations/frozen_peaks.png',
+    image: '/locations/frozen_peaks.svg',
     icon: '🏔️',
     description: 'Замерзшие горы с ледяными монстрами'
   },
@@ -59,7 +59,7 @@ export const LOCATION_BACKGROUNDS: Record<string, LocationBackground> = {
   // Забытые Руины
   'Забытые Руины': {
     name: 'Забытые Руины',
-    image: '/locations/forgotten_ruins.png',
+    image: '/locations/forgotten_ruins.svg',
     icon: '🏛️',
     description: 'Древние руины с нежитью'
   },
@@ -67,7 +67,7 @@ export const LOCATION_BACKGROUNDS: Record<string, LocationBackground> = {
   // Адские Врата
   'Адские Врата': {
     name: 'Адские Врата',
-    image: '/locations/hell_gates.png',
+    image: '/locations/hell_gates.svg',
     icon: '🔥',
     description: 'Портал в ад с демонами'
   },
@@ -75,7 +75,7 @@ export const LOCATION_BACKGROUNDS: Record<string, LocationBackground> = {
   // Кристальные Пещеры
   'Кристальные Пещеры': {
     name: 'Кристальные Пещеры',
-    image: '/locations/crystal_caverns.png',
+    image: '/locations/crystal_caverns.svg',
     icon: '💎',
     description: 'Пещеры, полные кристальных существ'
   },
@@ -83,7 +83,7 @@ export const LOCATION_BACKGROUNDS: Record<string, LocationBackground> = {
   // Трон Драконов
   'Трон Драконов': {
     name: 'Трон Драконов',
-    image: '/locations/dragon_throne.png',
+    image: '/locations/dragon_throne.svg',
     icon: '🐉',
     description: 'Обитель древних драконов'
   }
@@ -94,19 +94,19 @@ export const CONTINENT_BACKGROUNDS: Record<string, ContinentBackground> = {
   'continent_1': {
     id: 'continent_1',
     name: 'Мирные Земли',
-    image: '/continents/continent_1.png',
+    image: '/continents/continent_1.svg',
     description: 'Безопасные территории для начинающих искателей приключений'
   },
   'continent_2': {
     id: 'continent_2',
     name: 'Опасные Территории',
-    image: '/continents/continent_2.png',
+    image: '/continents/continent_2.svg',
     description: 'Земли, полные опасностей и сокровищ'
   },
   'continent_3': {
     id: 'continent_3',
     name: 'Эпические Земли',
-    image: '/continents/continent_3.png',
+    image: '/continents/continent_3.svg',
     description: 'Самые опасные территории для опытных героев'
   }
 }
