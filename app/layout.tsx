@@ -31,7 +31,11 @@ export default function RootLayout({
           rel="stylesheet" 
         />
       </head>
-      <body className="antialiased">
+      <body className="antialiased bg-dark-900 text-white min-h-screen" style={{
+        backgroundColor: '#0a0a0f',
+        color: '#ffffff',
+        fontFamily: 'Poppins, system-ui, sans-serif'
+      }}>
         {children}
         <Toaster 
           position="top-right"

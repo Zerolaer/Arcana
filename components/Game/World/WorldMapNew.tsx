@@ -11,6 +11,7 @@ import { CombatSystem } from '@/lib/combatSystem'
 import { processXpGain } from '@/lib/levelSystemV2'
 import { useActiveSkills } from '@/lib/useActiveSkills'
 import { AutoCombatSystem } from '@/lib/autoCombatSystem'
+import { getActiveSkillData } from '@/lib/activeSkills'
 import MapFooter from '../UI/MapFooter'
 
 interface WorldMapProps {
@@ -797,21 +798,57 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
                     // Ход игрока - атакуем первого моба
                     const target = combatState.currentMobs[0]
                     if (target) {
-                      const damage = Math.max(1, character.attack_damage - target.defense)
+                      // Получаем активные скиллы
+                      const activeSkills = getActiveSkills()
+                      console.log('⚔️ Активные скиллы в бою:', activeSkills)
+                      
+                      // Рассчитываем урон с учетом скиллов
+                      let totalDamage = character.attack_damage
+                      let manaCost = 0
+                      
+                      if (activeSkills.length > 0) {
+                        // Используем первый активный скил для атаки
+                        const skill = activeSkills[0]
+                        console.log('🎯 Используем скил:', skill)
+                        
+                        // Получаем данные скила из activeSkills.ts
+                        const skillData = getActiveSkillData(skill, character.class_name)
+                        if (skillData) {
+                          totalDamage = skillData.base_damage + (character.attack_damage * skillData.stat_bonus)
+                          manaCost = skillData.mana_cost
+                          console.log(`💥 Урон скила: ${totalDamage} (базовый: ${skillData.base_damage}, бонус: ${skillData.stat_bonus})`)
+                        }
+                      }
+                      
+                      const finalDamage = Math.max(1, totalDamage - target.defense)
+                      
+                      // Проверяем, хватает ли маны
+                      if (manaCost > 0 && combatState.currentMana < manaCost) {
+                        console.log('❌ Недостаточно маны для скила!')
+                        setCombatState(prev => ({
+                          ...prev,
+                          lastAction: `Недостаточно маны для скила! (нужно: ${manaCost}, есть: ${prev.currentMana})`,
+                          lastDamage: 0
+                        }))
+                        return
+                      }
                       const newMobs = [...combatState.currentMobs]
                       const targetIndex = newMobs.findIndex(m => m.id === target.id)
                       
                       if (targetIndex !== -1) {
-                        newMobs[targetIndex].health = Math.max(0, newMobs[targetIndex].health - damage)
+                        newMobs[targetIndex].health = Math.max(0, newMobs[targetIndex].health - finalDamage)
                       }
 
                       setCombatState(prev => ({
                         ...prev,
                         currentMobs: newMobs.filter(mob => mob.health > 0),
+                        currentMana: prev.currentMana - manaCost,
                         round: prev.round + 1,
                         isPlayerTurn: false,
-                        lastAction: `Вы атакуете ${target.name}`,
-                        lastDamage: damage
+                        lastAction: activeSkills.length > 0 
+                          ? `Вы используете скил "${activeSkills[0]}" против ${target.name}` 
+                          : `Вы атакуете ${target.name}`,
+                        lastDamage: finalDamage
                       }))
                     }
                   } else {
