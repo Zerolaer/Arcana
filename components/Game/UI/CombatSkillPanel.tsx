@@ -167,13 +167,13 @@ export default function CombatSkillPanel({
               ${skill 
                 ? selectedSkillId === skill.id
                   ? 'border-yellow-400 bg-yellow-400/20' 
-                  : currentMana >= skill.mana_cost
+                  : currentMana >= skill.mana_cost || skill.mana_cost === 0
                     ? 'border-gray-500 bg-gray-700/50 hover:border-gray-400 hover:bg-gray-600/50'
                     : 'border-red-400 bg-red-400/10 opacity-50 cursor-not-allowed'
                 : 'border-gray-600 bg-gray-800/50 cursor-not-allowed'
               }
             `}
-            onClick={() => skill && currentMana >= skill.mana_cost && handleSkillClick(skill.id)}
+            onClick={() => skill && (currentMana >= skill.mana_cost || skill.mana_cost === 0) && handleSkillClick(skill.id)}
             title={skill ? `${skill.name}\n${skill.description}\nУрон: ${skill.base_damage}\nМана: ${skill.mana_cost}\nПерезарядка: ${skill.cooldown}с` : 'Пустая ячейка'}
           >
             {skill ? (

@@ -929,62 +929,50 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
             {/* Правая панель - бой и скиллы */}
             <div className="w-2/3 p-4 flex flex-col">
               
-              {/* Лог боя или панель скиллов */}
-              {!battleStarted ? (
-                <div className="bg-dark-200/50 rounded-lg p-6 mb-4 text-center">
-                  <div className="text-white font-semibold mb-4 text-lg">⚔️ Выберите скилл для атаки</div>
-                  <div className="text-gray-300 mb-6">
-                    Выберите скилл из панели ниже и нажмите "Начать бой" в футере
-                  </div>
-                </div>
-              ) : (
-                <>
-                  {/* Лог боя */}
-                  <div className="bg-dark-200/50 rounded-lg p-4 mb-4 flex-1 min-h-0 flex flex-col">
-                    <div className="text-white font-semibold mb-3">📝 Лог боя</div>
-                    <div className="flex-1 overflow-y-auto space-y-2 max-h-64">
-                      {combatState.battleLog.length > 0 ? (
-                        [...combatState.battleLog].reverse().map((logEntry, index) => (
-                          <div key={combatState.battleLog.length - index - 1} className="bg-dark-300/30 rounded p-3">
-                            <div className={`text-sm ${getLogColor(logEntry)}`}>
-                              {logEntry}
-                            </div>
-                          </div>
-                        ))
-                      ) : (
-                        <div className="text-gray-500 text-sm italic">
-                          Бой еще не начался...
+              {/* Лог боя */}
+              <div className="bg-dark-200/50 rounded-lg p-4 mb-4 flex-1 min-h-0 flex flex-col">
+                <div className="text-white font-semibold mb-3">📝 Лог боя</div>
+                <div className="flex-1 overflow-y-auto space-y-2 max-h-64">
+                  {combatState.battleLog.length > 0 ? (
+                    [...combatState.battleLog].reverse().map((logEntry, index) => (
+                      <div key={combatState.battleLog.length - index - 1} className="bg-dark-300/30 rounded p-3">
+                        <div className={`text-sm ${getLogColor(logEntry)}`}>
+                          {logEntry}
                         </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Панель скиллов */}
-                  {!battleStarted ? (
-                    <CombatSkillPanel
-                      character={character}
-                      onSkillSelect={handleSkillSelect}
-                      currentMana={character.mana}
-                      className="mb-4"
-                    />
-                  ) : combatState.isPlayerTurn ? (
-                    <CombatSkillPanel
-                      character={character}
-                      onSkillSelect={handleSkillSelect}
-                      currentMana={combatState.currentMana}
-                      className="mb-4"
-                    />
+                      </div>
+                    ))
                   ) : (
-                    <div className="bg-dark-200/50 rounded-lg p-4 mb-4 text-center">
-                      <div className="text-orange-400 mb-2 text-lg">
-                        ⏳ Ход мобов...
-                      </div>
-                      <div className="text-gray-400 text-sm">
-                        Мобы атакуют автоматически
-                      </div>
+                    <div className="text-gray-500 text-sm italic">
+                      Бой еще не начался...
                     </div>
                   )}
-                </>
+                </div>
+              </div>
+
+              {/* Панель скиллов */}
+              {!battleStarted ? (
+                <CombatSkillPanel
+                  character={character}
+                  onSkillSelect={handleSkillSelect}
+                  currentMana={character.mana}
+                  className="mb-4"
+                />
+              ) : combatState.isPlayerTurn ? (
+                <CombatSkillPanel
+                  character={character}
+                  onSkillSelect={handleSkillSelect}
+                  currentMana={combatState.currentMana}
+                  className="mb-4"
+                />
+              ) : (
+                <div className="bg-dark-200/50 rounded-lg p-4 mb-4 text-center">
+                  <div className="text-orange-400 mb-2 text-lg">
+                    ⏳ Ход мобов...
+                  </div>
+                  <div className="text-gray-400 text-sm">
+                    Мобы атакуют автоматически
+                  </div>
+                </div>
               )}
             
               {/* Результаты боя */}
