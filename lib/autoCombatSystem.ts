@@ -13,6 +13,8 @@ export interface CombatResult {
   skillsUsed: string[]
   damageTaken: number
   manaUsed: number
+  finalHealth: number
+  finalMana: number
 }
 
 export interface AutoCombatOptions {
@@ -49,6 +51,29 @@ export class AutoCombatSystem {
 
   // Основной метод автоматического боя
   async executeCombat(): Promise<CombatResult> {
+    // Проверяем, есть ли активные скиллы
+    if (this.activeSkills.length === 0) {
+      console.log('❌ Нет активных скиллов для боя!')
+      return {
+        success: false,
+        experience: 0,
+        gold: 0,
+        items: [],
+        mobsDefeated: 0,
+        totalDamage: 0,
+        skillsUsed: [],
+        damageTaken: 0,
+        manaUsed: 0,
+        finalHealth: this.character.health,
+        finalMana: this.character.mana
+      }
+    }
+
+    let currentMobs = [...this.spot.mobs]
+    let currentHealth = this.character.health
+    let currentMana = this.character.mana
+    let round = 0
+
     const result: CombatResult = {
       success: false,
       experience: 0,
@@ -58,19 +83,10 @@ export class AutoCombatSystem {
       totalDamage: 0,
       skillsUsed: [],
       damageTaken: 0,
-      manaUsed: 0
+      manaUsed: 0,
+      finalHealth: currentHealth,
+      finalMana: currentMana
     }
-
-    // Проверяем, есть ли активные скиллы
-    if (this.activeSkills.length === 0) {
-      console.log('❌ Нет активных скиллов для боя!')
-      return result
-    }
-
-    let currentMobs = [...this.spot.mobs]
-    let currentHealth = this.character.health
-    let currentMana = this.character.mana
-    let round = 0
 
     console.log(`🤖 Начинаем автоматический бой с ${currentMobs.length} мобами, активных скиллов: ${this.activeSkills.length}`)
     console.log(`👤 Персонаж: HP ${this.character.health}/${this.character.max_health}, MP ${this.character.mana}/${this.character.max_mana}, Атака ${this.character.attack_damage}, Защита ${this.character.defense}`)
@@ -125,6 +141,10 @@ export class AutoCombatSystem {
       await new Promise(resolve => setTimeout(resolve, 100))
     }
 
+    // Обновляем финальные значения здоровья и маны
+    result.finalHealth = currentHealth
+    result.finalMana = currentMana
+    
     // Начисляем опыт и золото за убитых мобов
     if (result.mobsDefeated > 0) {
       result.success = true
@@ -136,6 +156,7 @@ export class AutoCombatSystem {
       result.gold = Math.floor(this.spot.mobs.reduce((sum, mob) => sum + mob.gold_reward, 0) * defeatedRatio)
       
       console.log(`✅ Бой завершен! Убито мобов: ${result.mobsDefeated}/${totalMobs}, Опыт: ${result.experience}, Золото: ${result.gold}`)
+      console.log(`💔 Финальное здоровье: ${result.finalHealth}, Финальная мана: ${result.finalMana}`)
     } else {
       console.log(`❌ Бой не завершен, мобов убито: ${result.mobsDefeated}`)
     }

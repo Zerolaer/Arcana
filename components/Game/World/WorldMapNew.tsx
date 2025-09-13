@@ -175,7 +175,16 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
     }
     
     try {
-      const autoCombat = new AutoCombatSystem(character, spot, skills)
+      // Создаем копию персонажа с текущими значениями HP/MP
+      const currentCharacter = {
+        ...character,
+        health: character.health,
+        mana: character.mana
+      }
+      
+      console.log(`👤 Текущие статы персонажа: HP ${currentCharacter.health}/${currentCharacter.max_health}, MP ${currentCharacter.mana}/${currentCharacter.max_mana}`)
+      
+      const autoCombat = new AutoCombatSystem(currentCharacter, spot, skills)
       const result = await autoCombat.executeCombat()
       
       if (result.success) {
@@ -186,15 +195,12 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
         console.log(`💰 Золото получено: ${result.gold}, текущее: ${character.gold}, новое: ${character.gold + result.gold}`)
         console.log(`🔄 Обновляем персонажа в базе данных...`)
         
-        // Применяем урон и расход маны
-        // Используем текущие значения здоровья и маны, а не исходные
-        const currentHealth = character.health
-        const currentMana = character.mana
-        const newHealth = Math.max(1, currentHealth - result.damageTaken)
-        const newMana = Math.max(0, currentMana - result.manaUsed)
+        // Используем финальные значения здоровья и маны из боя
+        const newHealth = Math.max(1, result.finalHealth)
+        const newMana = Math.max(0, result.finalMana)
         
-        console.log(`💔 Урон применен: ${currentHealth} -> ${newHealth} (урон: ${result.damageTaken})`)
-        console.log(`💧 Мана потрачена: ${currentMana} -> ${newMana} (потрачено: ${result.manaUsed})`)
+        console.log(`💔 Урон применен: ${currentCharacter.health} -> ${newHealth} (урон: ${result.damageTaken})`)
+        console.log(`💧 Мана потрачена: ${currentCharacter.mana} -> ${newMana} (потрачено: ${result.manaUsed})`)
         
         await onUpdateCharacter({
           level: xpResult.newLevel,
