@@ -312,7 +312,11 @@ export class AutoCombatSystem {
   // Расчет урона от моба
   private calculateMobDamage(mob: Mob): number {
     const baseDamage = mob.attack
-    const finalDamage = Math.max(1, baseDamage - this.character.defense)
+    // Уменьшаем эффективность защиты персонажа
+    const defenseReduction = Math.floor(this.character.defense * 0.5)
+    const finalDamage = Math.max(1, baseDamage - defenseReduction)
+    
+    console.log(`👹 ${mob.name} атакует: база ${baseDamage}, защита персонажа ${this.character.defense} (снижение ${defenseReduction}), итого ${finalDamage}`)
     
     return Math.round(finalDamage)
   }

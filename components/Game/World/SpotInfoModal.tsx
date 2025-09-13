@@ -379,26 +379,13 @@ export default function SpotInfoModal({
               )}
             </button>
           ) : (
-            <div className="flex space-x-2">
-              <button
-                onClick={handleStopAutoFarming}
-                className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors flex items-center space-x-2"
-              >
-                <div className="animate-pulse rounded-full h-4 w-4 bg-white"></div>
-                <span>Остановить</span>
-              </button>
-              <button
-                onClick={() => {
-                  console.log('🛑 Принудительная остановка автофарма')
-                  autoFarmingRef.current = false
-                  setIsAutoFarming(false)
-                }}
-                className="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-lg transition-colors flex items-center space-x-2"
-              >
-                <span>🛑</span>
-                <span>Стоп</span>
-              </button>
-            </div>
+            <button
+              onClick={handleStopAutoFarming}
+              className="px-6 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors flex items-center space-x-2"
+            >
+              <div className="animate-pulse rounded-full h-4 w-4 bg-white"></div>
+              <span>Остановить автофарм</span>
+            </button>
           )}
         </div>
       </div>

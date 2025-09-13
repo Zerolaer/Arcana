@@ -18,10 +18,10 @@ const getZoneMobs = (zoneId: string, baseLevel: number): Mob[] => {
   }>> = {
     // ЗОНА 1: Мирные Луга (1-5 уровень)
     'peaceful_meadows': [
-      { name: 'Лесной Слизень', icon: '🟢', rarity: 'common', healthMultiplier: 8, attackMultiplier: 1.2, defenseMultiplier: 0.8, expMultiplier: 0.6, goldMultiplier: 1.2, groupSize: 3, speed: 80 },
-      { name: 'Дикий Кролик', icon: '🐰', rarity: 'common', healthMultiplier: 6, attackMultiplier: 1.0, defenseMultiplier: 0.4, expMultiplier: 0.5, goldMultiplier: 0.8, groupSize: 4, speed: 120 },
-      { name: 'Лесная Пчела', icon: '🐝', rarity: 'common', healthMultiplier: 5, attackMultiplier: 1.1, defenseMultiplier: 0.2, expMultiplier: 0.4, goldMultiplier: 0.9, groupSize: 4, speed: 150 },
-      { name: 'Мирный Олень', icon: '🦌', rarity: 'uncommon', healthMultiplier: 15, attackMultiplier: 1.8, defenseMultiplier: 1.2, expMultiplier: 1.0, goldMultiplier: 1.8, groupSize: 2, speed: 90 }
+      { name: 'Лесной Слизень', icon: '🟢', rarity: 'common', healthMultiplier: 8, attackMultiplier: 3.0, defenseMultiplier: 0.8, expMultiplier: 0.6, goldMultiplier: 1.2, groupSize: 3, speed: 80 },
+      { name: 'Дикий Кролик', icon: '🐰', rarity: 'common', healthMultiplier: 6, attackMultiplier: 2.5, defenseMultiplier: 0.4, expMultiplier: 0.5, goldMultiplier: 0.8, groupSize: 4, speed: 120 },
+      { name: 'Лесная Пчела', icon: '🐝', rarity: 'common', healthMultiplier: 5, attackMultiplier: 2.8, defenseMultiplier: 0.2, expMultiplier: 0.4, goldMultiplier: 0.9, groupSize: 4, speed: 150 },
+      { name: 'Мирный Олень', icon: '🦌', rarity: 'uncommon', healthMultiplier: 15, attackMultiplier: 4.0, defenseMultiplier: 1.2, expMultiplier: 1.0, goldMultiplier: 1.8, groupSize: 2, speed: 90 }
     ],
     
     // ЗОНА 2: Темный Лес (6-12 уровень)
