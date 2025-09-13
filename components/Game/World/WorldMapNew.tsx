@@ -1039,10 +1039,9 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
             {/* Список мобов */}
               <div className="flex-1 overflow-y-auto">
                 <div className="space-y-3">
-                  {currentBattleSpot.mobs.map((mob, index) => {
+                  {(battleStarted ? combatState.currentMobs : currentBattleSpot.mobs).map((mob, index) => {
                     // Проверяем, жив ли моб
-                    const currentMob = battleStarted ? combatState.currentMobs.find(cm => cm.id === mob.id) : mob
-                    const isDead = battleStarted && currentMob && currentMob.health <= 0
+                    const isDead = battleStarted && mob.health <= 0
                     
                     return (
                     <div key={mob.id} className={`bg-dark-200/50 rounded-lg p-3 ${isDead ? 'opacity-50 grayscale' : ''}`}>
@@ -1058,12 +1057,7 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
                           <span className="text-gray-400">HP:</span>
                           <span className="text-red-400 font-semibold">
                             {battleStarted 
-                              ? (() => {
-                                  const currentMob = combatState.currentMobs.find(cm => cm.id === mob.id)
-                                  return currentMob 
-                                    ? `${currentMob.health}/${(currentMob as any).maxHealth || mob.health}`
-                                    : `${mob.health}/${mob.health}`
-                                })()
+                              ? `${mob.health}/${(mob as any).maxHealth || mob.health}`
                               : `${mob.health}/${mob.health}`
                             }
                           </span>
