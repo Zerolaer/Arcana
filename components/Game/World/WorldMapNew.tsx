@@ -430,6 +430,7 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
         ...prev,
         currentMobs: newMobs,
         currentMana: prev.currentMana - manaCost,
+        isPlayerTurn: false,
         lastAction: actionText,
         lastDamage: finalDamage,
         battleLog: [...prev.battleLog, actionText]
@@ -506,7 +507,8 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
             return {
               ...prev,
               currentHealth: newHealth,
-              lastAction: mobActionText,
+              isPlayerTurn: true,
+              lastAction: `Ваш ход! Выберите скилл для атаки`,
               battleLog: [...prev.battleLog, mobActionText]
             }
           })
