@@ -46,33 +46,69 @@ export default function CombatSkillPanel({
       try {
         setIsLoading(true)
         
-        // Получаем название класса
-        const className = getClassNameFromCharacter(character)
+        // Получаем изученные скиллы из базы данных
+        const { supabase } = await import('@/lib/supabase')
+        const { data, error } = await (supabase as any).rpc('get_character_learned_skills', {
+          p_character_id: character.id
+        })
         
-        // Получаем все скиллы класса
-        const { getAvailableSkills } = await import('@/lib/activeSkills')
-        const allSkills = getAvailableSkills(className, character.level, [])
+        if (error) {
+          console.error('Ошибка загрузки скиллов:', error)
+          // Fallback: используем старую систему
+          const className = getClassNameFromCharacter(character)
+          const { getAvailableSkills } = await import('@/lib/activeSkills')
+          const allSkills = getAvailableSkills(className, character.level, [])
+          
+          const learned = allSkills
+            .filter(skill => skill.is_learned)
+            .map(skill => ({
+              ...skill,
+              isLearned: true,
+              isOnCooldown: false,
+              cooldownRemaining: 0
+            }))
+          
+          setLearnedSkills(learned)
+          return
+        }
         
-        // Фильтруем только изученные скиллы (уровень 1 или купленные)
-        const learned = allSkills
-          .filter(skill => skill.is_learned)
-          .map(skill => ({
-            ...skill,
+        if (data && Array.isArray(data)) {
+          const learned = data.map(skill => ({
+            id: skill.id,
+            name: skill.name,
+            description: skill.description,
+            level_requirement: skill.level_requirement,
+            icon: skill.icon,
+            skill_type: skill.skill_type,
+            damage_type: skill.damage_type,
+            base_damage: skill.base_damage,
+            mana_cost: skill.mana_cost,
+            cooldown: skill.cooldown,
+            scaling_stat: skill.scaling_stat,
+            scaling_ratio: skill.scaling_ratio,
+            class_requirements: [],
+            cost_to_learn: 0,
+            is_learned: true,
+            nodes: [],
             isLearned: true,
             isOnCooldown: false,
             cooldownRemaining: 0
           }))
-        
-        setLearnedSkills(learned)
+          
+          setLearnedSkills(learned)
+        } else {
+          setLearnedSkills([])
+        }
       } catch (error) {
         console.error('Ошибка загрузки скиллов:', error)
+        setLearnedSkills([])
       } finally {
         setIsLoading(false)
       }
     }
 
     loadLearnedSkills()
-  }, [character.level, character.name])
+  }, [character.id, character.level])
 
   // Получаем иконку для типа скилла
   const getSkillTypeIcon = (skillType: string) => {

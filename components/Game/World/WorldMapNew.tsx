@@ -831,7 +831,7 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
             {/* Кнопка для продолжения боя */}
             <div className="text-center">
               <button
-                onClick={() => {
+                onClick={async () => {
                   // Простая логика боя
                   if (combatState.isPlayerTurn) {
                     // Ход игрока - атакуем первого моба
@@ -846,14 +846,33 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
                         // Используем выбранный скилл
                         console.log('🎯 Используем выбранный скилл:', selectedSkillId)
                         
-                        // Получаем данные скила из activeSkills.ts
-                        const className = getClassNameFromCharacter(character)
-                        const skillData = getActiveSkillData(selectedSkillId, className)
-                        if (skillData) {
-                          totalDamage = skillData.base_damage + (character.attack_damage * skillData.scaling_ratio)
-                          manaCost = skillData.mana_cost
-                          skillName = skillData.name
-                          console.log(`💥 Урон скила: ${totalDamage} (базовый: ${skillData.base_damage}, бонус: ${skillData.scaling_ratio})`)
+                        // Получаем данные скила из базы данных
+                        try {
+                          const { supabase } = await import('@/lib/supabase')
+                          const { data: skillData, error } = await (supabase as any)
+                            .from('skills')
+                            .select('*')
+                            .eq('id', selectedSkillId)
+                            .single()
+                          
+                          if (skillData && !error) {
+                            totalDamage = (skillData as any).base_damage + (character.attack_damage * (skillData as any).scaling_ratio)
+                            manaCost = (skillData as any).mana_cost
+                            skillName = (skillData as any).name
+                            console.log(`💥 Урон скила: ${totalDamage} (базовый: ${(skillData as any).base_damage}, бонус: ${(skillData as any).scaling_ratio})`)
+                          } else {
+                            // Fallback: используем старую систему
+                            const className = getClassNameFromCharacter(character)
+                            const skillData = getActiveSkillData(selectedSkillId, className)
+                            if (skillData) {
+                              totalDamage = skillData.base_damage + (character.attack_damage * skillData.scaling_ratio)
+                              manaCost = skillData.mana_cost
+                              skillName = skillData.name
+                              console.log(`💥 Урон скила (fallback): ${totalDamage}`)
+                            }
+                          }
+                        } catch (error) {
+                          console.error('Ошибка получения данных скилла:', error)
                         }
                       }
                       

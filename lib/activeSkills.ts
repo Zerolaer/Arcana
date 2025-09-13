@@ -473,6 +473,11 @@ export function getAvailableSkills(className: string, level: number, learnedSkil
 
 // Функция для получения данных конкретного навыка по ID и классу
 export function getActiveSkillData(skillId: string, className: string): ActiveSkill | null {
+  // Если это UUID (из базы данных), возвращаем null - данные должны быть получены из БД
+  if (skillId.includes('-') && skillId.length === 36) {
+    return null
+  }
+  
   const skills = getClassSkills(className)
   const skill = skills.find(s => s.id === skillId)
   
