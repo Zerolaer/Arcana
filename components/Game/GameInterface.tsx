@@ -200,6 +200,7 @@ export default function GameInterface({ character: initialCharacter, user, onLog
           <WorldMapNew
             character={character}
             onUpdateCharacter={updateCharacterData}
+            onUpdateCharacterStats={(updates) => setCharacter(prev => ({ ...prev, ...updates }))}
             activeSkills={activeSkills}
           />
         )

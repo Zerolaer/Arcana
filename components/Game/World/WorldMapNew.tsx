@@ -31,12 +31,13 @@ function getClassNameFromCharacter(character: Character): string {
 interface WorldMapProps {
   character: Character
   onUpdateCharacter: (updates: Partial<Character>) => Promise<boolean>
+  onUpdateCharacterStats: (updates: Partial<Character>) => void
   activeSkills: ReturnType<typeof useActiveSkills>
 }
 
 type ViewMode = 'world' | 'continent' | 'zone'
 
-export default function WorldMapNew({ character, onUpdateCharacter, activeSkills }: WorldMapProps) {
+export default function WorldMapNew({ character, onUpdateCharacter, onUpdateCharacterStats, activeSkills }: WorldMapProps) {
   const [viewMode, setViewMode] = useState<ViewMode>('world')
   const [selectedContinent, setSelectedContinent] = useState<Continent | null>(null)
   const [selectedZone, setSelectedZone] = useState<Zone | null>(null)
@@ -223,6 +224,12 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
       lastDamage: 0,
       lastMobDamage: 0,
       battleLog: ['Бой начался!']
+    })
+    
+    // Обновляем HP/MP в хедере при начале боя
+    onUpdateCharacterStats({
+      health: character.health,
+      mana: character.mana
     })
   }
 
@@ -1059,16 +1066,26 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
                         ? `Вы используете "${skillName}" против ${target.name} и наносите ${finalDamage} урона!`
                         : `Вы атакуете ${target.name} и наносите ${finalDamage} урона!`
                       
-                      setCombatState(prev => ({
-                        ...prev,
-                        currentMobs: newMobs.filter(mob => mob.health > 0),
-                        currentMana: prev.currentMana - manaCost,
-                        round: prev.round + 1,
-                        isPlayerTurn: false,
-                        lastAction: actionText,
-                        lastDamage: finalDamage,
-                        battleLog: [...prev.battleLog, actionText]
-                      }))
+                      setCombatState(prev => {
+                        const newState = {
+                          ...prev,
+                          currentMobs: newMobs.filter(mob => mob.health > 0),
+                          currentMana: prev.currentMana - manaCost,
+                          round: prev.round + 1,
+                          isPlayerTurn: false,
+                          lastAction: actionText,
+                          lastDamage: finalDamage,
+                          battleLog: [...prev.battleLog, actionText]
+                        }
+                        
+                        // Обновляем HP/MP в хедере в реальном времени
+                        onUpdateCharacterStats({
+                          health: newState.currentHealth,
+                          mana: newState.currentMana
+                        })
+                        
+                        return newState
+                      })
                       
                       // Автоматически переходим к ходу мобов через 1 секунду
                       setTimeout(() => {
@@ -1083,14 +1100,23 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
 
                         const mobActionText = `Мобы атакуют вас и наносят ${totalMobDamage} урона!`
                         
-                        setCombatState(prev => ({
-                          ...prev,
-                          currentHealth: Math.max(0, prev.currentHealth - totalMobDamage),
-                          isPlayerTurn: true,
-                          lastAction: mobActionText,
-                          lastMobDamage: totalMobDamage,
-                          battleLog: [...prev.battleLog, mobActionText]
-                        }))
+                        setCombatState(prev => {
+                          const newState = {
+                            ...prev,
+                            currentHealth: Math.max(0, prev.currentHealth - totalMobDamage),
+                            isPlayerTurn: true,
+                            lastAction: mobActionText,
+                            lastMobDamage: totalMobDamage,
+                            battleLog: [...prev.battleLog, mobActionText]
+                          }
+                          
+                          // Обновляем HP в хедере в реальном времени
+                          onUpdateCharacterStats({
+                            health: newState.currentHealth
+                          })
+                          
+                          return newState
+                        })
                         
                         // Автоматически переходим к следующему ходу игрока через 2 секунды
                         setTimeout(() => {
