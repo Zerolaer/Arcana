@@ -277,44 +277,53 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
     setBattleStarted(false)
     
     if (result.success) {
-      // Обновляем персонажа с полученным опытом и золотом
+      // Подготавливаем данные для обновления, но НЕ обновляем базу данных сразу
       const xpResult = processXpGain(character.level, character.experience, result.experience)
       
       console.log(`📊 Опыт получен: ${result.experience}, текущий уровень: ${character.level}, новый уровень: ${xpResult.newLevel}`)
       console.log(`💰 Золото получено: ${result.gold}, текущее: ${character.gold}, новое: ${character.gold + result.gold}`)
       
-      // Подготавливаем все обновления сразу
-      const updates: Partial<Character> = {
-        level: xpResult.newLevel,
-        experience: xpResult.newXpProgress,
-        stat_points: character.stat_points + xpResult.totalStatPointsGained,
-        max_health: 100 + (character.endurance * 15) + (xpResult.totalStatPointsGained * 5),
-        max_mana: 50 + (character.intelligence * 8) + (xpResult.totalStatPointsGained * 3),
-        health: result.finalHealth,
-        mana: result.finalMana,
-        gold: character.gold + result.gold,
-        experience_to_next: xpResult.xpToNext
-      }
+      // Сохраняем данные для обновления в состоянии
+      setBattleResult({
+        ...result,
+        xpResult: xpResult,
+        pendingUpdates: {
+          level: xpResult.newLevel,
+          experience: xpResult.newXpProgress,
+          stat_points: character.stat_points + xpResult.totalStatPointsGained,
+          max_health: 100 + (character.endurance * 15) + (xpResult.totalStatPointsGained * 5),
+          max_mana: 50 + (character.intelligence * 8) + (xpResult.totalStatPointsGained * 3),
+          health: result.finalHealth,
+          mana: result.finalMana,
+          gold: character.gold + result.gold,
+          experience_to_next: xpResult.xpToNext
+        }
+      })
       
-      // Если повышение уровня - добавляем бонусы
-      if (xpResult.levelsGained > 0) {
-        updates.max_health = updates.max_health! + (20 * xpResult.levelsGained)
-        updates.max_mana = updates.max_mana! + (10 * xpResult.levelsGained)
-        updates.health = updates.max_health // Полное восстановление при повышении уровня
-        updates.mana = updates.max_mana
-      }
-      
-      // ОДНО обновление персонажа
-      await onUpdateCharacter(updates)
-      
-      console.log(`✅ Персонаж обновлен в базе данных! Новый уровень: ${xpResult.newLevel}, HP: ${result.finalHealth}, MP: ${result.finalMana}`)
+      console.log(`✅ Данные подготовлены для обновления! Новый уровень: ${xpResult.newLevel}`)
     } else {
       console.log('❌ Бой проигран')
     }
   }
 
   // Обработчик закрытия модального окна
-  const handleCloseBattleModal = () => {
+  const handleCloseBattleModal = async () => {
+    // Если есть отложенные обновления - применяем их
+    if (battleResult && battleResult.pendingUpdates) {
+      console.log('🔄 Применяем отложенные обновления персонажа...')
+      
+      // Если повышение уровня - добавляем бонусы
+      if (battleResult.xpResult && battleResult.xpResult.levelsGained > 0) {
+        battleResult.pendingUpdates.max_health = battleResult.pendingUpdates.max_health! + (20 * battleResult.xpResult.levelsGained)
+        battleResult.pendingUpdates.max_mana = battleResult.pendingUpdates.max_mana! + (10 * battleResult.xpResult.levelsGained)
+        battleResult.pendingUpdates.health = battleResult.pendingUpdates.max_health // Полное восстановление при повышении уровня
+        battleResult.pendingUpdates.mana = battleResult.pendingUpdates.max_mana
+      }
+      
+      await onUpdateCharacter(battleResult.pendingUpdates)
+      console.log('✅ Персонаж обновлен в базе данных!')
+    }
+    
     setShowBattleModal(false)
     setBattleStarted(false)
     setBattleEnded(false)
