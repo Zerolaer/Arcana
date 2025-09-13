@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, forwardRef, useImperativeHandle } from 'react'
 import { Character } from '@/types/game'
 import { ActiveSkill } from '@/types/skills'
 import { getActiveSkillData } from '@/lib/activeSkills'
@@ -12,6 +12,7 @@ interface CombatSkillPanelProps {
   onSkillSelect: (skillId: string) => void
   currentMana: number
   className?: string
+  onSkillUsed?: (skillId: string) => void
 }
 
 interface LearnedSkill extends ActiveSkill {
@@ -20,15 +21,17 @@ interface LearnedSkill extends ActiveSkill {
   cooldownRemaining: number
 }
 
-export default function CombatSkillPanel({ 
+const CombatSkillPanel = forwardRef<any, CombatSkillPanelProps>(({ 
   character, 
   onSkillSelect, 
   currentMana,
-  className = '' 
-}: CombatSkillPanelProps) {
+  className = '',
+  onSkillUsed
+}, ref) => {
   const [learnedSkills, setLearnedSkills] = useState<LearnedSkill[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [selectedSkillId, setSelectedSkillId] = useState<string | null>(null)
+  const [skillCooldowns, setSkillCooldowns] = useState<Record<string, number>>({})
 
   // Получаем название класса персонажа
   const getClassNameFromCharacter = (character: Character): string => {
@@ -98,9 +101,58 @@ export default function CombatSkillPanel({
 
   // Обработчик выбора скилла
   const handleSkillClick = (skillId: string) => {
+    const skill = skillSlots.find(s => s?.id === skillId)
+    if (!skill) return
+
+    // Проверяем кулдаун
+    if (skillCooldowns[skillId] > 0) {
+      alert('Скилл на кулдауне!')
+      return
+    }
+
+    // Проверяем ману
+    if (skill.mana_cost > currentMana) {
+      alert('Недостаточно маны!')
+      return
+    }
+
     setSelectedSkillId(skillId)
     onSkillSelect(skillId)
   }
+
+  // Функция для запуска кулдауна скилла
+  const startCooldown = (skillId: string, cooldown: number) => {
+    setSkillCooldowns(prev => ({
+      ...prev,
+      [skillId]: cooldown
+    }))
+  }
+
+  // Обновляем кулдауны каждую секунду
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setSkillCooldowns(prev => {
+        const newCooldowns = { ...prev }
+        let hasChanges = false
+        
+        Object.keys(newCooldowns).forEach(skillId => {
+          if (newCooldowns[skillId] > 0) {
+            newCooldowns[skillId]--
+            hasChanges = true
+          }
+        })
+        
+        return hasChanges ? newCooldowns : prev
+      })
+    }, 1000)
+
+    return () => clearInterval(interval)
+  }, [])
+
+  // Экспортируем функцию для родительского компонента
+  useImperativeHandle(ref, () => ({
+    startCooldown
+  }), [])
 
   // Создаем массив из 6 ячеек (базовая атака + изученные скиллы + пустые ячейки)
   const createSkillSlots = () => {
@@ -167,9 +219,11 @@ export default function CombatSkillPanel({
               ${skill 
                 ? selectedSkillId === skill.id
                   ? 'border-yellow-400 bg-yellow-400/20' 
-                  : currentMana >= skill.mana_cost || skill.mana_cost === 0
-                    ? 'border-gray-500 bg-gray-700/50 hover:border-gray-400 hover:bg-gray-600/50'
-                    : 'border-red-400 bg-red-400/10 opacity-50 cursor-not-allowed'
+                  : skillCooldowns[skill.id] > 0
+                    ? 'border-gray-600 bg-gray-800/50 opacity-50 cursor-not-allowed'
+                    : currentMana >= skill.mana_cost || skill.mana_cost === 0
+                      ? 'border-gray-500 bg-gray-700/50 hover:border-gray-400 hover:bg-gray-600/50'
+                      : 'border-red-400 bg-red-400/10 opacity-50 cursor-not-allowed'
                 : 'border-gray-600 bg-gray-800/50 cursor-not-allowed'
               }
             `}
@@ -179,17 +233,28 @@ export default function CombatSkillPanel({
             {skill ? (
               <>
                 {/* Иконка скилла */}
-                <div className="text-2xl">{skill.icon}</div>
+                <div className={`text-2xl ${skillCooldowns[skill.id] > 0 ? 'opacity-30' : ''}`}>
+                  {skill.icon}
+                </div>
+                
+                {/* Кулдаун оверлей */}
+                {skillCooldowns[skill.id] > 0 && (
+                  <div className="absolute inset-0 bg-black/70 rounded-lg flex items-center justify-center">
+                    <div className="text-white font-bold text-lg">
+                      {skillCooldowns[skill.id]}
+                    </div>
+                  </div>
+                )}
                 
                 {/* Индикатор маны */}
-                {skill.mana_cost > 0 && (
+                {skill.mana_cost > 0 && skillCooldowns[skill.id] === 0 && (
                   <div className="absolute top-1 right-1 bg-blue-600 text-white text-xs px-1 rounded">
                     {skill.mana_cost}
                   </div>
                 )}
                 
-                {/* Индикатор перезарядки */}
-                {skill.cooldown > 0 && (
+                {/* Индикатор перезарядки (только если не на кулдауне) */}
+                {skill.cooldown > 0 && skillCooldowns[skill.id] === 0 && (
                   <div className="absolute bottom-1 right-1 bg-orange-600 text-white text-xs px-1 rounded">
                     {skill.cooldown}с
                   </div>
@@ -203,4 +268,8 @@ export default function CombatSkillPanel({
       </div>
     </div>
   )
-}
+})
+
+CombatSkillPanel.displayName = 'CombatSkillPanel'
+
+export default CombatSkillPanel

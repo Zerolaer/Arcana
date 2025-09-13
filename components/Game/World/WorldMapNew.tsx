@@ -53,6 +53,7 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
   const [battleEnded, setBattleEnded] = useState(false)
   const [battleResult, setBattleResult] = useState<any>(null)
   const [selectedSkillId, setSelectedSkillId] = useState<string | null>(null)
+  const [skillPanelRef, setSkillPanelRef] = useState<any>(null)
   const [combatState, setCombatState] = useState({
     currentMobs: [] as Mob[],
     currentHealth: 0,
@@ -275,6 +276,7 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
     
     let damage = 100 // Базовая атака
     let manaCost = 0
+    let cooldown = 0
     
     // Если выбран скилл (не базовая атака)
     if (selectedSkillId !== 'basic_attack') {
@@ -284,7 +286,13 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
       if (skillData) {
         damage = skillData.base_damage + (character.strength * skillData.scaling_ratio)
         manaCost = skillData.mana_cost
+        cooldown = skillData.cooldown || 0
       }
+    }
+    
+    // Запускаем кулдаун скилла
+    if (skillPanelRef && skillPanelRef.startCooldown) {
+      skillPanelRef.startCooldown(selectedSkillId, cooldown)
     }
     
     const finalDamage = Math.max(1, damage - target.defense)
@@ -1039,7 +1047,7 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
                               ? (() => {
                                   const currentMob = combatState.currentMobs.find(cm => cm.id === mob.id)
                                   return currentMob 
-                                    ? `${currentMob.health}/${(currentMob as any).maxHealth || currentMob.health}`
+                                    ? `${currentMob.health}/${(currentMob as any).maxHealth || mob.health}`
                                     : `${mob.health}/${mob.health}`
                                 })()
                               : `${mob.health}/${mob.health}`
@@ -1119,10 +1127,14 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
                     <div className="space-y-4">
                       {/* Панель скиллов */}
                       <CombatSkillPanel
+                        ref={setSkillPanelRef}
                         character={character}
                         onSkillSelect={handleSkillSelect}
                         currentMana={combatState.currentMana}
                         className="mb-4"
+                        onSkillUsed={(skillId) => {
+                          // Обработка использования скилла
+                        }}
                       />
                       
                       {/* Сообщение о ходе мобов */}
