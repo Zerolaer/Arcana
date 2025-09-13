@@ -13,6 +13,7 @@ import { useActiveSkills } from '@/lib/useActiveSkills'
 import { AutoCombatSystem } from '@/lib/autoCombatSystem'
 import { getActiveSkillData } from '@/lib/activeSkills'
 import MapFooter from '../UI/MapFooter'
+import CombatSkillPanel from '../UI/CombatSkillPanel'
 
 // Временная функция для определения класса персонажа
 // TODO: Получать название класса из базы данных
@@ -50,6 +51,7 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
   const [showSpotInfo, setShowSpotInfo] = useState(false)
   const [showCombat, setShowCombat] = useState(false)
   const [currentCombatSpot, setCurrentCombatSpot] = useState<FarmSpot | null>(null)
+  const [selectedSkillId, setSelectedSkillId] = useState<string | null>(null)
   const [combatState, setCombatState] = useState({
     currentMobs: [] as Mob[],
     currentHealth: 0,
@@ -249,6 +251,12 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
     } catch (error) {
       console.error('Ошибка при автофарме:', error)
     }
+  }
+
+  // Обработчик выбора скилла
+  const handleSkillSelect = (skillId: string) => {
+    setSelectedSkillId(skillId)
+    console.log('🎯 Выбран скилл:', skillId)
   }
 
   // Обработчик окончания боя
@@ -804,6 +812,22 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
               ))}
             </div>
 
+            {/* Панель скиллов или кнопка продолжения */}
+            {combatState.isPlayerTurn ? (
+              <CombatSkillPanel
+                character={character}
+                onSkillSelect={handleSkillSelect}
+                currentMana={combatState.currentMana}
+                className="mb-4"
+              />
+            ) : (
+              <div className="text-center mb-4">
+                <div className="text-gray-400 mb-2">
+                  Ход мобов...
+                </div>
+              </div>
+            )}
+            
             {/* Кнопка для продолжения боя */}
             <div className="text-center">
               <button
@@ -813,27 +837,22 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
                     // Ход игрока - атакуем первого моба
                     const target = combatState.currentMobs[0]
                     if (target) {
-                      // Получаем активные скиллы
-                      const activeSkills = getActiveSkills()
-                      console.log('⚔️ Активные скиллы в бою:', activeSkills)
-                      
-                      // Рассчитываем урон с учетом скиллов
+                      // Рассчитываем урон с учетом выбранного скилла
                       let totalDamage = character.attack_damage
                       let manaCost = 0
+                      let skillName = 'Базовая атака'
                       
-                      if (activeSkills.length > 0) {
-                        // Используем первый активный скил для атаки
-                        const skill = activeSkills[0]
-                        console.log('🎯 Используем скил:', skill)
+                      if (selectedSkillId && selectedSkillId !== 'basic_attack') {
+                        // Используем выбранный скилл
+                        console.log('🎯 Используем выбранный скилл:', selectedSkillId)
                         
                         // Получаем данные скила из activeSkills.ts
-                        // Временно используем fallback для определения класса
-                        // TODO: Получать название класса из базы данных
                         const className = getClassNameFromCharacter(character)
-                        const skillData = getActiveSkillData(skill, className)
+                        const skillData = getActiveSkillData(selectedSkillId, className)
                         if (skillData) {
                           totalDamage = skillData.base_damage + (character.attack_damage * skillData.scaling_ratio)
                           manaCost = skillData.mana_cost
+                          skillName = skillData.name
                           console.log(`💥 Урон скила: ${totalDamage} (базовый: ${skillData.base_damage}, бонус: ${skillData.scaling_ratio})`)
                         }
                       }
@@ -863,8 +882,8 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
                         currentMana: prev.currentMana - manaCost,
                         round: prev.round + 1,
                         isPlayerTurn: false,
-                        lastAction: activeSkills.length > 0 
-                          ? `Вы используете скил "${activeSkills[0]}" против ${target.name}` 
+                        lastAction: selectedSkillId && selectedSkillId !== 'basic_attack'
+                          ? `Вы используете "${skillName}" против ${target.name}` 
                           : `Вы атакуете ${target.name}`,
                         lastDamage: finalDamage
                       }))
@@ -919,9 +938,13 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
                     }
                   }, 1000)
                 }}
-                className="game-button"
+                disabled={combatState.isPlayerTurn && !selectedSkillId}
+                className={`game-button ${combatState.isPlayerTurn && !selectedSkillId ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
-                {combatState.isPlayerTurn ? 'Атаковать' : 'Продолжить'}
+                {combatState.isPlayerTurn 
+                  ? (selectedSkillId ? 'Использовать скилл' : 'Выберите скилл') 
+                  : 'Продолжить'
+                }
               </button>
             </div>
           </div>
