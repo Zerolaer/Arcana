@@ -309,6 +309,13 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
         manaCost = selectedSkillData.mana_cost
         cooldown = selectedSkillData.cooldown || 0
         isAOE = selectedSkillData.skill_type === 'aoe' || selectedSkillData.skill_type === 'ultimate'
+        
+        console.log('🔢 Расчет урона скилла:')
+        console.log('Скилл:', selectedSkillData.name)
+        console.log('Базовая атака:', selectedSkillData.base_damage)
+        console.log('Характеристика:', selectedSkillData.scaling_stat, '=', scalingStat)
+        console.log('Коэффициент:', selectedSkillData.scaling_ratio)
+        console.log('Итоговый урон:', damage)
       } else {
         // Fallback - получаем данные скилла из кода
         const className = getClassNameFromCharacter(character)
@@ -406,10 +413,14 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
       }
 
       const target = combatState.currentMobs[targetIndex]
-      console.log('🎯 Цель атаки:', { name: target.name, health: target.health, index: targetIndex })
+      console.log('🎯 Цель атаки:', { name: target.name, health: target.health, maxHealth: (target as any).maxHealth, defense: target.defense, index: targetIndex })
       
       const finalDamage = Math.max(1, damage - target.defense)
-      console.log('💥 Урон по цели:', finalDamage, 'HP до:', target.health, 'HP после:', Math.max(0, target.health - finalDamage))
+      console.log('💥 Расчет финального урона:')
+      console.log('Урон скилла:', damage)
+      console.log('Защита моба:', target.defense)
+      console.log('Финальный урон:', finalDamage)
+      console.log('HP до:', target.health, 'HP после:', Math.max(0, target.health - finalDamage))
       
       // Обновляем состояние напрямую по индексу
       const newMobs = [...combatState.currentMobs]
