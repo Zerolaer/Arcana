@@ -389,43 +389,37 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
         battleLog: [...prev.battleLog, actionText]
       }))
     } else {
-      // Обычная атака - бьем первого живого моба
-      const aliveMobs = combatState.currentMobs.filter(mob => mob.health > 0)
-      console.log('🎯 Живые мобы:', aliveMobs.map(mob => ({ name: mob.name, health: mob.health })))
+      // Обычная атака - бьем первого живого моба по индексу
+      let targetIndex = -1
+      for (let i = 0; i < combatState.currentMobs.length; i++) {
+        if (combatState.currentMobs[i].health > 0) {
+          targetIndex = i
+          break
+        }
+      }
       
-      if (aliveMobs.length === 0) return
+      console.log('🎯 Индекс первого живого моба:', targetIndex)
       
-      const target = aliveMobs[0] // Берем первого живого моба
-      console.log('🎯 Цель атаки:', target)
+      if (targetIndex === -1) {
+        console.log('❌ Нет живых мобов!')
+        return
+      }
+
+      const target = combatState.currentMobs[targetIndex]
+      console.log('🎯 Цель атаки:', { name: target.name, health: target.health, index: targetIndex })
       
       const finalDamage = Math.max(1, damage - target.defense)
       console.log('💥 Урон по цели:', finalDamage, 'HP до:', target.health, 'HP после:', Math.max(0, target.health - finalDamage))
       
-      // Обновляем состояние - находим моба по имени и уровню (более надежно)
-      const targetIndex = combatState.currentMobs.findIndex(mob => 
-        mob.name === target.name && mob.level === target.level && mob.health > 0
-      )
-      console.log('🎯 Индекс цели по имени/уровню:', targetIndex)
-      console.log('🎯 Ищем моба:', { name: target.name, level: target.level, health: target.health })
-      console.log('🎯 Все мобы для поиска:', combatState.currentMobs.map(mob => ({ 
-        name: mob.name, 
-        level: mob.level, 
-        health: mob.health,
-        id: mob.id 
-      })))
-      
+      // Обновляем состояние напрямую по индексу
       const newMobs = [...combatState.currentMobs]
-      if (targetIndex !== -1) {
-        console.log('✅ Найден моб по индексу:', targetIndex)
-        newMobs[targetIndex] = {
-          ...newMobs[targetIndex],
-          health: Math.max(0, newMobs[targetIndex].health - finalDamage),
-          maxHealth: (newMobs[targetIndex] as any).maxHealth || newMobs[targetIndex].health
-        } as any
-        console.log('✅ Обновлен моб:', newMobs[targetIndex])
-      } else {
-        console.error('❌ Моб не найден! Цель:', target)
-      }
+      newMobs[targetIndex] = {
+        ...newMobs[targetIndex],
+        health: Math.max(0, newMobs[targetIndex].health - finalDamage),
+        maxHealth: (newMobs[targetIndex] as any).maxHealth || newMobs[targetIndex].health
+      } as any
+      
+      console.log('✅ Обновлен моб по индексу:', targetIndex, newMobs[targetIndex])
       
       const actionText = selectedSkillId === 'basic_attack'
         ? `Вы атакуете ${target.name} и наносите ${finalDamage} урона!`
