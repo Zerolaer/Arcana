@@ -6,13 +6,11 @@ import { Continent, Zone, FarmSpot, Mob } from '@/types/world'
 import { WORLD_DATA, getAvailableContinents, getAvailableZones } from '@/lib/balancedWorldData'
 import { Map, Sword, Users, Trophy, Lock, ChevronRight } from 'lucide-react'
 import MobAttackModal from './MobAttackModal'
-import SpotInfoModal from './SpotInfoModal'
 import { CombatSystem } from '@/lib/combatSystem'
 import { processXpGain } from '@/lib/levelSystemV2'
 import { useActiveSkills } from '@/lib/useActiveSkills'
 import { AutoCombatSystem } from '@/lib/autoCombatSystem'
 import { getActiveSkillData } from '@/lib/activeSkills'
-import MapFooter from '../UI/MapFooter'
 import CombatSkillPanel from '../UI/CombatSkillPanel'
 
 // Временная функция для определения класса персонажа
@@ -48,9 +46,9 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [clickedSpot, setClickedSpot] = useState<FarmSpot | null>(null)
   const [showMobSelector, setShowMobSelector] = useState(false)
-  const [showSpotInfo, setShowSpotInfo] = useState(false)
-  const [showCombat, setShowCombat] = useState(false)
-  const [currentCombatSpot, setCurrentCombatSpot] = useState<FarmSpot | null>(null)
+  const [showBattleModal, setShowBattleModal] = useState(false)
+  const [currentBattleSpot, setCurrentBattleSpot] = useState<FarmSpot | null>(null)
+  const [battleStarted, setBattleStarted] = useState(false)
   const [selectedSkillId, setSelectedSkillId] = useState<string | null>(null)
   const [combatState, setCombatState] = useState({
     currentMobs: [] as Mob[],
@@ -106,7 +104,10 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
   // Клик по ячейке на карте
   const handleSpotClick = (spot: FarmSpot) => {
     setClickedSpot(spot)
-    setShowSpotInfo(true)
+    setCurrentBattleSpot(spot)
+    setShowBattleModal(true)
+    setBattleStarted(false)
+    setSelectedSkillId(null)
   }
 
   // Выбор моба из селектора
@@ -187,19 +188,22 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
     setClickedSpot(null)
   }
 
-  // Закрытие информации о споте
-  const handleCloseSpotInfo = () => {
-    setShowSpotInfo(false)
-    setClickedSpot(null)
+  // Закрытие модала боя
+  const handleCloseBattleModal = () => {
+    setShowBattleModal(false)
+    setCurrentBattleSpot(null)
+    setBattleStarted(false)
+    setSelectedSkillId(null)
   }
 
-  // Начало пошагового боя
-  const handleStartCombat = (spot: FarmSpot) => {
-    console.log('⚔️ Начинаем пошаговый бой на споте:', spot.name)
+  // Начало боя
+  const handleStartBattle = () => {
+    if (!currentBattleSpot) return
     
-    // Инициализируем состояние боя
+    console.log('⚔️ Начинаем бой на споте:', currentBattleSpot.name)
+    setBattleStarted(true)
     setCombatState({
-      currentMobs: [...spot.mobs],
+      currentMobs: [...currentBattleSpot.mobs],
       currentHealth: character.health,
       currentMana: character.mana,
       round: 1,
@@ -208,10 +212,6 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
       lastDamage: 0,
       lastMobDamage: 0
     })
-    
-    // Запускаем новый бой
-    setCurrentCombatSpot(spot)
-    setShowCombat(true)
   }
 
   // Начало автофарма
@@ -261,7 +261,8 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
 
   // Обработчик окончания боя
   const handleCombatEnd = async (result: any) => {
-    setShowCombat(false)
+    setShowBattleModal(false)
+    setBattleStarted(false)
     
     if (result.success) {
       // Обновляем персонажа с полученным опытом и золотом
@@ -288,7 +289,7 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
     }
     
     // Закрываем попап
-    setShowSpotInfo(false)
+    setShowBattleModal(false)
     setClickedSpot(null)
   }
 
@@ -345,14 +346,6 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
           </div>
         </div>
 
-        {/* Панель скиллов в футере карты мира */}
-        <div className="p-4 border-t border-primary-400/30 bg-dark-100/50">
-          <MapFooter 
-            character={character}
-            onUpdateCharacter={onUpdateCharacter}
-            activeSkills={activeSkills}
-          />
-        </div>
       </div>
     )
   }
@@ -418,14 +411,6 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
           </div>
         </div>
 
-        {/* Панель скиллов в футере континента */}
-        <div className="p-4 border-t border-primary-400/30 bg-dark-100/50">
-          <MapFooter 
-            character={character}
-            onUpdateCharacter={onUpdateCharacter}
-            activeSkills={activeSkills}
-          />
-        </div>
       </div>
     )
   }
@@ -526,14 +511,6 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
           </div>
         </div>
 
-        {/* Панель скиллов в футере зоны */}
-        <div className="p-4 border-t border-primary-400/30 bg-dark-100/50">
-          <MapFooter 
-            character={character}
-            onUpdateCharacter={onUpdateCharacter}
-            activeSkills={activeSkills}
-          />
-        </div>
       </div>
     )
   }
@@ -705,43 +682,68 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
         </div>
       )}
 
-      {/* Модал информации о споте - скрываем во время боя */}
-      {clickedSpot && !showCombat && (
-        <SpotInfoModal
-          spot={clickedSpot}
-          character={character}
-          isOpen={showSpotInfo}
-          onClose={handleCloseSpotInfo}
-          onStartFarming={handleStartFarming}
-          onStartCombat={handleStartCombat}
-          activeSkills={(() => {
-            const skills = getActiveSkills()
-            console.log('🔍 WorldMapNew передает активные скиллы:', skills)
-            return skills
-          })()}
-        />
-      )}
-
-      {/* Компонент боя - широкое окно */}
-      {showCombat && currentCombatSpot && (
+      {/* Единый модал боя */}
+      {showBattleModal && currentBattleSpot && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-dark-100 border border-dark-300 rounded-lg w-full max-w-7xl h-[90vh] flex overflow-hidden">
             
-            {/* Левая панель - информация о мобах */}
+            {/* Левая панель - информация о бое */}
             <div className="w-1/3 bg-dark-200/30 border-r border-dark-300/50 p-4 flex flex-col">
               {/* Заголовок */}
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-xl font-bold text-white">👹 Противники</h2>
+                <h2 className="text-xl font-bold text-white">⚔️ {currentBattleSpot.name}</h2>
                 <button
-                  onClick={() => {
-                    setShowCombat(false)
-                    setCurrentCombatSpot(null)
-                  }}
+                  onClick={handleCloseBattleModal}
                   className="text-gray-400 hover:text-white transition-colors"
                 >
                   ✕
                 </button>
               </div>
+
+              {/* Предварительная информация о бое */}
+              {!battleStarted && (
+                <div className="bg-dark-200/50 rounded-lg p-4 mb-4">
+                  <div className="text-white font-semibold mb-3">📊 Информация о бое</div>
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-gray-300">Сложность:</span>
+                      <span className="text-orange-400">
+                        {currentBattleSpot.mobs.length === 1 ? 'Легкая' : 
+                         currentBattleSpot.mobs.length === 2 ? 'Средняя' : 'Сложная'}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-300">Мобов в группе:</span>
+                      <span className="text-blue-400">{currentBattleSpot.mobs.length}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-300">Шанс победы:</span>
+                      <span className="text-green-400">
+                        {character.level >= currentBattleSpot.mobs[0]?.level ? 'Высокий' : 'Средний'}
+                      </span>
+                    </div>
+                  </div>
+                  
+                  {/* Возможные награды */}
+                  <div className="mt-4">
+                    <div className="text-white font-semibold mb-2 text-sm">🎁 Награды</div>
+                    <div className="space-y-1 text-xs">
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Опыт:</span>
+                        <span className="text-yellow-400">
+                          {currentBattleSpot.mobs.reduce((sum, mob) => sum + mob.experience_reward, 0)} XP
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Золото:</span>
+                        <span className="text-yellow-400">
+                          {currentBattleSpot.mobs.reduce((sum, mob) => sum + mob.gold_reward, 0)} G
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
 
               {/* Статы персонажа */}
               <div className="bg-dark-200/50 rounded-lg p-4 mb-4">
@@ -749,29 +751,49 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span className="text-gray-300">HP:</span>
-                    <span className="text-red-400">{combatState.currentHealth}/{character.max_health}</span>
+                    <span className="text-red-400">
+                      {battleStarted ? combatState.currentHealth : character.health}/{character.max_health}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-300">MP:</span>
-                    <span className="text-blue-400">{combatState.currentMana}/{character.max_mana}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-300">Раунд:</span>
-                    <span className="text-yellow-400">{combatState.round}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-300">Ход:</span>
-                    <span className={combatState.isPlayerTurn ? "text-green-400" : "text-orange-400"}>
-                      {combatState.isPlayerTurn ? 'Ваш' : 'Мобов'}
+                    <span className="text-blue-400">
+                      {battleStarted ? combatState.currentMana : character.mana}/{character.max_mana}
                     </span>
                   </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-300">Уровень:</span>
+                    <span className="text-yellow-400">{character.level}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-300">Атака:</span>
+                    <span className="text-orange-400">{character.attack_damage}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-300">Защита:</span>
+                    <span className="text-blue-400">{character.defense}</span>
+                  </div>
+                  {battleStarted && (
+                    <>
+                      <div className="flex justify-between">
+                        <span className="text-gray-300">Раунд:</span>
+                        <span className="text-yellow-400">{combatState.round}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-300">Ход:</span>
+                        <span className={combatState.isPlayerTurn ? "text-green-400" : "text-orange-400"}>
+                          {combatState.isPlayerTurn ? 'Ваш' : 'Мобов'}
+                        </span>
+                      </div>
+                    </>
+                  )}
                 </div>
               </div>
 
               {/* Список мобов */}
               <div className="flex-1 overflow-y-auto">
                 <div className="space-y-3">
-                  {combatState.currentMobs.map((mob, index) => (
+                  {(battleStarted ? combatState.currentMobs : currentBattleSpot.mobs).map((mob, index) => (
                     <div key={mob.id} className="bg-dark-200/50 rounded-lg p-3">
                       <div className="flex items-center space-x-3 mb-2">
                         <span className="text-3xl">{mob.icon}</span>
@@ -783,7 +805,9 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
                       <div className="grid grid-cols-2 gap-2 text-xs">
                         <div className="flex justify-between">
                           <span className="text-gray-400">HP:</span>
-                          <span className="text-red-400 font-semibold">{mob.health}</span>
+                          <span className="text-red-400 font-semibold">
+                            {battleStarted ? mob.health : mob.health}/{mob.health}
+                          </span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-gray-400">Атака:</span>
@@ -813,7 +837,7 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-400">Всего было:</span>
-                    <span className="text-gray-400">{currentCombatSpot.mobs.length}</span>
+                    <span className="text-gray-400">{currentBattleSpot.mobs.length}</span>
                   </div>
                 </div>
               </div>
@@ -822,53 +846,72 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
             {/* Правая панель - бой и скиллы */}
             <div className="w-2/3 p-4 flex flex-col">
               
-              {/* Лог боя */}
-              <div className="bg-dark-200/50 rounded-lg p-4 mb-4 flex-1 min-h-0">
-                <div className="text-white font-semibold mb-3">📝 Лог боя</div>
-                <div className="h-full overflow-y-auto space-y-2">
-                  {combatState.lastAction && (
-                    <div className="bg-dark-300/30 rounded p-3">
-                      <div className="text-gray-300 text-sm">
-                        {combatState.lastAction}
-                        {combatState.lastDamage > 0 && (
-                          <span className="text-red-400 ml-2">(-{combatState.lastDamage} HP)</span>
-                        )}
-                        {combatState.lastMobDamage > 0 && (
-                          <span className="text-orange-400 ml-2">(-{combatState.lastMobDamage} HP)</span>
-                        )}
+              {/* Кнопка начала боя или лог боя */}
+              {!battleStarted ? (
+                <div className="bg-dark-200/50 rounded-lg p-6 mb-4 text-center">
+                  <div className="text-white font-semibold mb-4 text-lg">⚔️ Готовы к бою?</div>
+                  <div className="text-gray-300 mb-6">
+                    Выберите скиллы и начните сражение с группой мобов
+                  </div>
+                  <button
+                    onClick={handleStartBattle}
+                    className="game-button px-8 py-3 text-lg"
+                  >
+                    🚀 Начать бой
+                  </button>
+                </div>
+              ) : (
+                <>
+                  {/* Лог боя */}
+                  <div className="bg-dark-200/50 rounded-lg p-4 mb-4 flex-1 min-h-0">
+                    <div className="text-white font-semibold mb-3">📝 Лог боя</div>
+                    <div className="h-full overflow-y-auto space-y-2">
+                      {combatState.lastAction && (
+                        <div className="bg-dark-300/30 rounded p-3">
+                          <div className="text-gray-300 text-sm">
+                            {combatState.lastAction}
+                            {combatState.lastDamage > 0 && (
+                              <span className="text-red-400 ml-2">(-{combatState.lastDamage} HP)</span>
+                            )}
+                            {combatState.lastMobDamage > 0 && (
+                              <span className="text-orange-400 ml-2">(-{combatState.lastMobDamage} HP)</span>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                      {!combatState.lastAction && (
+                        <div className="text-gray-500 text-sm italic">
+                          Бой еще не начался...
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Панель скиллов */}
+                  {combatState.isPlayerTurn ? (
+                    <CombatSkillPanel
+                      character={character}
+                      onSkillSelect={handleSkillSelect}
+                      currentMana={combatState.currentMana}
+                      className="mb-4"
+                    />
+                  ) : (
+                    <div className="bg-dark-200/50 rounded-lg p-4 mb-4 text-center">
+                      <div className="text-gray-400 mb-2">
+                        ⏳ Ход мобов...
                       </div>
                     </div>
                   )}
-                  {!combatState.lastAction && (
-                    <div className="text-gray-500 text-sm italic">
-                      Бой еще не начался...
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Панель скиллов */}
-              {combatState.isPlayerTurn ? (
-                <CombatSkillPanel
-                  character={character}
-                  onSkillSelect={handleSkillSelect}
-                  currentMana={combatState.currentMana}
-                  className="mb-4"
-                />
-              ) : (
-                <div className="bg-dark-200/50 rounded-lg p-4 mb-4 text-center">
-                  <div className="text-gray-400 mb-2">
-                    ⏳ Ход мобов...
-                  </div>
-                </div>
+                </>
               )}
             
               {/* Кнопка действия */}
-              <div className="text-center">
-                <button
-                  disabled={combatState.isPlayerTurn && !selectedSkillId}
-                  className={`game-button w-full ${combatState.isPlayerTurn && !selectedSkillId ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  onClick={async () => {
+              {battleStarted && (
+                <div className="text-center">
+                  <button
+                    disabled={combatState.isPlayerTurn && !selectedSkillId}
+                    className={`game-button w-full ${combatState.isPlayerTurn && !selectedSkillId ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    onClick={async () => {
                   // Простая логика боя
                   if (combatState.isPlayerTurn) {
                     // Ход игрока - атакуем первого моба
@@ -969,13 +1012,13 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
                       // Победа
                       const result = {
                         success: true,
-                        experience: currentCombatSpot.mobs.reduce((sum, mob) => sum + mob.experience_reward, 0),
-                        gold: currentCombatSpot.mobs.reduce((sum, mob) => sum + mob.gold_reward, 0),
+                        experience: currentBattleSpot.mobs.reduce((sum, mob) => sum + mob.experience_reward, 0),
+                        gold: currentBattleSpot.mobs.reduce((sum, mob) => sum + mob.gold_reward, 0),
                         finalHealth: combatState.currentHealth,
                         finalMana: combatState.currentMana,
                         damageTaken: character.health - combatState.currentHealth,
                         manaUsed: character.mana - combatState.currentMana,
-                        mobsDefeated: currentCombatSpot.mobs.length
+                        mobsDefeated: currentBattleSpot.mobs.length
                       }
                       handleCombatEnd(result)
                     } else if (combatState.currentHealth <= 0) {
@@ -988,19 +1031,20 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
                         finalMana: combatState.currentMana,
                         damageTaken: character.health,
                         manaUsed: character.mana - combatState.currentMana,
-                        mobsDefeated: currentCombatSpot.mobs.length - combatState.currentMobs.length
+                        mobsDefeated: currentBattleSpot.mobs.length - combatState.currentMobs.length
                       }
                       handleCombatEnd(result)
                     }
                   }, 1000)
                 }}
               >
-                {combatState.isPlayerTurn 
-                  ? (selectedSkillId ? '⚔️ Использовать скилл' : '🎯 Выберите скилл') 
-                  : '⏭️ Продолжить'
-                }
-              </button>
-              </div>
+                    {combatState.isPlayerTurn 
+                      ? (selectedSkillId ? '⚔️ Использовать скилл' : '🎯 Выберите скилл') 
+                      : '⏭️ Продолжить'
+                    }
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
