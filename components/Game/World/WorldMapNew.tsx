@@ -283,7 +283,8 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
       console.log(`📊 Опыт получен: ${result.experience}, текущий уровень: ${character.level}, новый уровень: ${xpResult.newLevel}`)
       console.log(`💰 Золото получено: ${result.gold}, текущее: ${character.gold}, новое: ${character.gold + result.gold}`)
       
-      await onUpdateCharacter({
+      // Подготавливаем все обновления сразу
+      const updates: Partial<Character> = {
         level: xpResult.newLevel,
         experience: xpResult.newXpProgress,
         stat_points: character.stat_points + xpResult.totalStatPointsGained,
@@ -293,7 +294,18 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
         mana: result.finalMana,
         gold: character.gold + result.gold,
         experience_to_next: xpResult.xpToNext
-      })
+      }
+      
+      // Если повышение уровня - добавляем бонусы
+      if (xpResult.levelsGained > 0) {
+        updates.max_health = updates.max_health! + (20 * xpResult.levelsGained)
+        updates.max_mana = updates.max_mana! + (10 * xpResult.levelsGained)
+        updates.health = updates.max_health // Полное восстановление при повышении уровня
+        updates.mana = updates.max_mana
+      }
+      
+      // ОДНО обновление персонажа
+      await onUpdateCharacter(updates)
       
       console.log(`✅ Персонаж обновлен в базе данных! Новый уровень: ${xpResult.newLevel}, HP: ${result.finalHealth}, MP: ${result.finalMana}`)
     } else {
