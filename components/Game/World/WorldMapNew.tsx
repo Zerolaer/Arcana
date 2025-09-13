@@ -289,6 +289,13 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
     console.log('🎯 Выбран скилл:', skillId)
   }
 
+  // Обработка окончания боя
+  useEffect(() => {
+    if (battleEnded && battleResult) {
+      handleCombatEnd(battleResult)
+    }
+  }, [battleEnded, battleResult])
+
   // Функция для определения цвета лога
   const getLogColor = (logEntry: string) => {
     if (logEntry.includes('наносите') || logEntry.includes('урона!') || logEntry.includes('Победа!') || logEntry.includes('опыта') || logEntry.includes('золота')) {
@@ -1125,17 +1132,17 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
                       // Автоматически переходим к ходу мобов через 1 секунду
                       setTimeout(() => {
                         // Ход мобов - все мобы атакуют игрока
-                        let totalMobDamage = 0
-                        const aliveMobs = newMobs.filter(mob => mob.health > 0)
-                        
-                        for (const mob of aliveMobs) {
-                          const mobDamage = Math.max(1, mob.attack - Math.floor(character.defense * 0.5))
-                          totalMobDamage += mobDamage
-                        }
-
-                        const mobActionText = `Мобы атакуют вас и наносят ${totalMobDamage} урона!`
-                        
                         setCombatState(prev => {
+                          let totalMobDamage = 0
+                          const aliveMobs = prev.currentMobs.filter(mob => mob.health > 0)
+                        
+                          for (const mob of aliveMobs) {
+                            const mobDamage = Math.max(1, mob.attack - Math.floor(character.defense * 0.5))
+                            totalMobDamage += mobDamage
+                          }
+
+                          const mobActionText = `Мобы атакуют вас и наносят ${totalMobDamage} урона!`
+                          
                           const newState = {
                             ...prev,
                             currentHealth: Math.max(0, prev.currentHealth - totalMobDamage),
@@ -1176,7 +1183,6 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
                               
                               setBattleEnded(true)
                               setBattleResult(result)
-                              handleCombatEnd(result)
                               
                               return {
                                 ...prev,
@@ -1199,7 +1205,6 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
                               
                               setBattleEnded(true)
                               setBattleResult(result)
-                              handleCombatEnd(result)
                               
                               return {
                                 ...prev,
