@@ -12,6 +12,7 @@ import { processXpGain } from '@/lib/levelSystemV2'
 import { useActiveSkills } from '@/lib/useActiveSkills'
 import { AutoCombatSystem } from '@/lib/autoCombatSystem'
 import MapFooter from '../UI/MapFooter'
+import CombatDisplay from '../UI/CombatDisplay'
 
 interface WorldMapProps {
   character: Character
@@ -32,6 +33,8 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
   const [clickedSpot, setClickedSpot] = useState<FarmSpot | null>(null)
   const [showMobSelector, setShowMobSelector] = useState(false)
   const [showSpotInfo, setShowSpotInfo] = useState(false)
+  const [showCombat, setShowCombat] = useState(false)
+  const [currentCombatSpot, setCurrentCombatSpot] = useState<FarmSpot | null>(null)
   const { getActiveSkills } = activeSkills
 
   // Получаем доступные континенты для текущего уровня игрока
@@ -163,7 +166,7 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
     setClickedSpot(null)
   }
 
-  // Начало фарма
+  // Начало фарма - запускаем новый бой
   const handleStartFarming = async (spot: FarmSpot, skills: string[], isAutoFarming: boolean = false, currentHealth?: number, currentMana?: number) => {
     console.log('🚀 Начинаем фарм спота:', spot.name, 'с скиллами:', skills)
     
@@ -174,73 +177,42 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
       return
     }
     
-    try {
-      // Используем переданные значения или текущие значения персонажа
-      const health = currentHealth !== undefined ? currentHealth : character.health
-      const mana = currentMana !== undefined ? currentMana : character.mana
+    // Запускаем новый бой
+    setCurrentCombatSpot(spot)
+    setShowCombat(true)
+  }
+
+  // Обработчик окончания боя
+  const handleCombatEnd = async (result: any) => {
+    setShowCombat(false)
+    
+    if (result.success) {
+      // Обновляем персонажа с полученным опытом и золотом
+      const xpResult = processXpGain(character.level, character.experience, result.experience)
       
-      // Создаем копию персонажа с текущими значениями HP/MP
-      const currentCharacter = {
-        ...character,
-        health: health,
-        mana: mana
-      }
+      console.log(`📊 Опыт получен: ${result.experience}, текущий уровень: ${character.level}, новый уровень: ${xpResult.newLevel}`)
+      console.log(`💰 Золото получено: ${result.gold}, текущее: ${character.gold}, новое: ${character.gold + result.gold}`)
       
-      console.log(`👤 Текущие статы персонажа: HP ${currentCharacter.health}/${currentCharacter.max_health}, MP ${currentCharacter.mana}/${currentCharacter.max_mana}`)
+      await onUpdateCharacter({
+        level: xpResult.newLevel,
+        experience: xpResult.newXpProgress,
+        stat_points: character.stat_points + xpResult.totalStatPointsGained,
+        max_health: 100 + (character.endurance * 15) + (xpResult.totalStatPointsGained * 5),
+        max_mana: 50 + (character.intelligence * 8) + (xpResult.totalStatPointsGained * 3),
+        health: result.finalHealth,
+        mana: result.finalMana,
+        gold: character.gold + result.gold,
+        experience_to_next: xpResult.xpToNext
+      })
       
-      const autoCombat = new AutoCombatSystem(currentCharacter, spot, skills)
-      const result = await autoCombat.executeCombat()
-      
-      if (result.success) {
-        // Обновляем персонажа с полученным опытом и золотом
-        const xpResult = processXpGain(character.level, character.experience, result.experience)
-        
-        console.log(`📊 Опыт получен: ${result.experience}, текущий уровень: ${character.level}, новый уровень: ${xpResult.newLevel}`)
-        console.log(`💰 Золото получено: ${result.gold}, текущее: ${character.gold}, новое: ${character.gold + result.gold}`)
-        console.log(`🔄 Обновляем персонажа в базе данных...`)
-        
-        // Используем финальные значения здоровья и маны из боя
-        const newHealth = Math.max(1, result.finalHealth)
-        const newMana = Math.max(0, result.finalMana)
-        
-        console.log(`💔 Урон применен: ${currentCharacter.health} -> ${newHealth} (урон: ${result.damageTaken})`)
-        console.log(`💧 Мана потрачена: ${currentCharacter.mana} -> ${newMana} (потрачено: ${result.manaUsed})`)
-        
-        await onUpdateCharacter({
-          level: xpResult.newLevel,
-          experience: xpResult.newXpProgress,
-          stat_points: character.stat_points + xpResult.totalStatPointsGained,
-          max_health: 100 + (character.endurance * 15) + (xpResult.totalStatPointsGained * 5),
-          max_mana: 50 + (character.intelligence * 8) + (xpResult.totalStatPointsGained * 3),
-          health: newHealth,
-          mana: newMana,
-          gold: character.gold + result.gold,
-          experience_to_next: xpResult.xpToNext
-        })
-        
-        console.log(`✅ Персонаж обновлен в базе данных! Новый уровень: ${xpResult.newLevel}, HP: ${newHealth}, MP: ${newMana}`)
-        
-        console.log('✅ Фарм завершен успешно!', {
-          ...result,
-          newHealth,
-          newMana,
-          healthLost: result.damageTaken,
-          manaUsed: result.manaUsed,
-          xpGained: result.experience,
-          goldGained: result.gold
-        })
-      } else {
-        console.log('❌ Фарм не завершен - мобов убито:', result.mobsDefeated)
-      }
-    } catch (error) {
-      console.error('Ошибка во время фарма:', error)
+      console.log(`✅ Персонаж обновлен в базе данных! Новый уровень: ${xpResult.newLevel}, HP: ${result.finalHealth}, MP: ${result.finalMana}`)
+    } else {
+      console.log('❌ Бой проигран')
     }
     
-    // Закрываем попап только если это НЕ автофарм
-    if (!isAutoFarming) {
-      setShowSpotInfo(false)
-      setClickedSpot(null)
-    }
+    // Закрываем попап
+    setShowSpotInfo(false)
+    setClickedSpot(null)
   }
 
   // Рендер континентов на карте мира
@@ -669,6 +641,16 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
             console.log('🔍 WorldMapNew передает активные скиллы:', skills)
             return skills
           })()}
+        />
+      )}
+
+      {/* Компонент боя */}
+      {currentCombatSpot && (
+        <CombatDisplay
+          character={character}
+          mobs={currentCombatSpot.mobs}
+          isVisible={showCombat}
+          onCombatEnd={handleCombatEnd}
         />
       )}
     </div>
