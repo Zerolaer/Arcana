@@ -263,13 +263,13 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
       }))
     }
     
-    // Выполняем атаку
-    executeCombatTurn()
+    // Выполняем атаку с актуальным состоянием
+    executeCombatTurn(combatState)
   }
 
   // Выполнение хода боя
-  const executeCombatTurn = () => {
-    if (!battleStarted || !selectedSkillId || !combatState.isPlayerTurn) return
+  const executeCombatTurn = (currentState = combatState) => {
+    if (!battleStarted || !selectedSkillId || !currentState.isPlayerTurn) return
     
     let damage = 100 // Базовая атака
     let manaCost = 0
@@ -397,13 +397,16 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
       }))
     } else {
       // Обычная атака - бьем первого живого моба по индексу
+      // ВАЖНО: используем ПЕРЕДАННОЕ состояние!
       let targetIndex = -1
-      for (let i = 0; i < combatState.currentMobs.length; i++) {
-        if (combatState.currentMobs[i].health > 0) {
+      for (let i = 0; i < currentState.currentMobs.length; i++) {
+        if (currentState.currentMobs[i].health > 0) {
           targetIndex = i
           break
         }
       }
+      
+      console.log('🎯 Поиск цели в массиве:', currentState.currentMobs.map(mob => ({ name: mob.name, health: mob.health })))
       
       console.log('🎯 Индекс первого живого моба:', targetIndex)
       
@@ -412,7 +415,7 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
         return
       }
 
-      const target = combatState.currentMobs[targetIndex]
+      const target = currentState.currentMobs[targetIndex]
       console.log('🎯 Цель атаки:', { name: target.name, health: target.health, maxHealth: (target as any).maxHealth, defense: target.defense, index: targetIndex })
       
       const finalDamage = Math.max(1, damage - target.defense)
@@ -423,7 +426,7 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
       console.log('HP до:', target.health, 'HP после:', Math.max(0, target.health - finalDamage))
       
       // Обновляем состояние напрямую по индексу
-      const newMobs = [...combatState.currentMobs]
+      const newMobs = [...currentState.currentMobs]
       newMobs[targetIndex] = {
         ...newMobs[targetIndex],
         health: Math.max(0, newMobs[targetIndex].health - finalDamage),
