@@ -49,6 +49,8 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
   const [showBattleModal, setShowBattleModal] = useState(false)
   const [currentBattleSpot, setCurrentBattleSpot] = useState<FarmSpot | null>(null)
   const [battleStarted, setBattleStarted] = useState(false)
+  const [battleEnded, setBattleEnded] = useState(false)
+  const [battleResult, setBattleResult] = useState<any>(null)
   const [selectedSkillId, setSelectedSkillId] = useState<string | null>(null)
   const [combatState, setCombatState] = useState({
     currentMobs: [] as Mob[],
@@ -58,7 +60,8 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
     isPlayerTurn: true,
     lastAction: '',
     lastDamage: 0,
-    lastMobDamage: 0
+    lastMobDamage: 0,
+    battleLog: [] as string[] // Полная история боя
   })
   const { getActiveSkills } = activeSkills
 
@@ -193,7 +196,15 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
     setShowBattleModal(false)
     setCurrentBattleSpot(null)
     setBattleStarted(false)
+    setBattleEnded(false)
+    setBattleResult(null)
     setSelectedSkillId(null)
+  }
+
+  // Повторный бой
+  const handleRepeatBattle = () => {
+    if (!currentBattleSpot) return
+    handleStartBattle()
   }
 
   // Начало боя
@@ -202,6 +213,8 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
     
     console.log('⚔️ Начинаем бой на споте:', currentBattleSpot.name)
     setBattleStarted(true)
+    setBattleEnded(false)
+    setBattleResult(null)
     
     // Создаем копии мобов с сохранением максимального HP
     const mobsWithMaxHealth = currentBattleSpot.mobs.map(mob => ({
@@ -217,7 +230,8 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
       isPlayerTurn: true,
       lastAction: 'Бой начался!',
       lastDamage: 0,
-      lastMobDamage: 0
+      lastMobDamage: 0,
+      battleLog: ['Бой начался!']
     })
   }
 
@@ -859,20 +873,15 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
                   <div className="bg-dark-200/50 rounded-lg p-4 mb-4 flex-1 min-h-0">
                     <div className="text-white font-semibold mb-3">📝 Лог боя</div>
                     <div className="h-full overflow-y-auto space-y-2">
-                      {combatState.lastAction && (
-                        <div className="bg-dark-300/30 rounded p-3">
-                          <div className="text-gray-300 text-sm">
-                            {combatState.lastAction}
-                            {combatState.lastDamage > 0 && (
-                              <span className="text-red-400 ml-2">(-{combatState.lastDamage} HP)</span>
-                            )}
-                            {combatState.lastMobDamage > 0 && (
-                              <span className="text-orange-400 ml-2">(-{combatState.lastMobDamage} HP)</span>
-                            )}
+                      {combatState.battleLog.length > 0 ? (
+                        combatState.battleLog.map((logEntry, index) => (
+                          <div key={index} className="bg-dark-300/30 rounded p-3">
+                            <div className="text-gray-300 text-sm">
+                              {logEntry}
+                            </div>
                           </div>
-                        </div>
-                      )}
-                      {!combatState.lastAction && (
+                        ))
+                      ) : (
                         <div className="text-gray-500 text-sm italic">
                           Бой еще не начался...
                         </div>
@@ -901,8 +910,57 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
                 </>
               )}
             
+              {/* Результаты боя */}
+              {battleEnded && battleResult && (
+                <div className="bg-dark-200/50 rounded-lg p-4 mb-4">
+                  <div className="text-white font-semibold mb-3 text-center">
+                    {battleResult.success ? '🎉 Победа!' : '💀 Поражение'}
+                  </div>
+                  
+                  {battleResult.success && (
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Получено опыта:</span>
+                        <span className="text-yellow-400 font-semibold">+{battleResult.experience} XP</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Получено золота:</span>
+                        <span className="text-yellow-400 font-semibold">+{battleResult.gold} G</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Убито мобов:</span>
+                        <span className="text-orange-400 font-semibold">{battleResult.mobsDefeated}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Получено урона:</span>
+                        <span className="text-red-400 font-semibold">{battleResult.damageTaken} HP</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-gray-400">Потрачено маны:</span>
+                        <span className="text-blue-400 font-semibold">{battleResult.manaUsed} MP</span>
+                      </div>
+                    </div>
+                  )}
+                  
+                  <div className="flex space-x-2 mt-4">
+                    <button
+                      onClick={handleCloseBattleModal}
+                      className="flex-1 game-button bg-gray-600 hover:bg-gray-700"
+                    >
+                      ✅ Завершить
+                    </button>
+                    <button
+                      onClick={handleRepeatBattle}
+                      className="flex-1 game-button bg-blue-600 hover:bg-blue-700"
+                    >
+                      🔄 Повторить
+                    </button>
+                  </div>
+                </div>
+              )}
+
               {/* Кнопка действия - только для хода игрока */}
-              {battleStarted && combatState.isPlayerTurn && (
+              {battleStarted && combatState.isPlayerTurn && !battleEnded && (
                 <div className="text-center">
                   <button
                     disabled={!selectedSkillId}
@@ -969,16 +1027,19 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
                         newMobs[targetIndex].health = Math.max(0, newMobs[targetIndex].health - finalDamage)
                       }
 
+                      const actionText = selectedSkillId && selectedSkillId !== 'basic_attack'
+                        ? `Вы используете "${skillName}" против ${target.name} и наносите ${finalDamage} урона!`
+                        : `Вы атакуете ${target.name} и наносите ${finalDamage} урона!`
+                      
                       setCombatState(prev => ({
                         ...prev,
                         currentMobs: newMobs.filter(mob => mob.health > 0),
                         currentMana: prev.currentMana - manaCost,
                         round: prev.round + 1,
                         isPlayerTurn: false,
-                        lastAction: selectedSkillId && selectedSkillId !== 'basic_attack'
-                          ? `Вы используете "${skillName}" против ${target.name}` 
-                          : `Вы атакуете ${target.name}`,
-                        lastDamage: finalDamage
+                        lastAction: actionText,
+                        lastDamage: finalDamage,
+                        battleLog: [...prev.battleLog, actionText]
                       }))
                       
                       // Автоматически переходим к ходу мобов через 1 секунду
@@ -992,12 +1053,15 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
                           totalMobDamage += mobDamage
                         }
 
+                        const mobActionText = `Мобы атакуют вас и наносят ${totalMobDamage} урона!`
+                        
                         setCombatState(prev => ({
                           ...prev,
                           currentHealth: Math.max(0, prev.currentHealth - totalMobDamage),
                           isPlayerTurn: true,
-                          lastAction: `Мобы атакуют вас`,
-                          lastMobDamage: totalMobDamage
+                          lastAction: mobActionText,
+                          lastMobDamage: totalMobDamage,
+                          battleLog: [...prev.battleLog, mobActionText]
                         }))
                         
                         // Автоматически переходим к следующему ходу игрока через 2 секунды
@@ -1025,6 +1089,15 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
                         manaUsed: character.mana - combatState.currentMana,
                         mobsDefeated: currentBattleSpot.mobs.length
                       }
+                      
+                      // Добавляем запись о победе в лог
+                      setCombatState(prev => ({
+                        ...prev,
+                        battleLog: [...prev.battleLog, `🎉 Победа! Вы получили ${result.experience} опыта и ${result.gold} золота!`]
+                      }))
+                      
+                      setBattleEnded(true)
+                      setBattleResult(result)
                       handleCombatEnd(result)
                     } else if (combatState.currentHealth <= 0) {
                       // Поражение
@@ -1038,6 +1111,15 @@ export default function WorldMapNew({ character, onUpdateCharacter, activeSkills
                         manaUsed: character.mana - combatState.currentMana,
                         mobsDefeated: currentBattleSpot.mobs.length - combatState.currentMobs.length
                       }
+                      
+                      // Добавляем запись о поражении в лог
+                      setCombatState(prev => ({
+                        ...prev,
+                        battleLog: [...prev.battleLog, `💀 Поражение! Вы погибли в бою...`]
+                      }))
+                      
+                      setBattleEnded(true)
+                      setBattleResult(result)
                       handleCombatEnd(result)
                     }
                   }, 1000)
