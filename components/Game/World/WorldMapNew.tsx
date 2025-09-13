@@ -391,9 +391,12 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
     } else {
       // Обычная атака - бьем первого живого моба
       const target = combatState.currentMobs.find(mob => mob.health > 0)
+      console.log('🎯 Цель атаки:', target)
+      console.log('🎯 Все мобы:', combatState.currentMobs.map(mob => ({ name: mob.name, health: mob.health })))
       if (!target) return
       
       const finalDamage = Math.max(1, damage - target.defense)
+      console.log('💥 Урон по цели:', finalDamage, 'HP до:', target.health, 'HP после:', Math.max(0, target.health - finalDamage))
       
       // Обновляем состояние (не фильтруем мертвых мобов сразу)
       const newMobs = combatState.currentMobs.map(mob => 
@@ -406,14 +409,18 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
         ? `Вы атакуете ${target.name} и наносите ${finalDamage} урона!`
         : `Вы используете скилл против ${target.name} и наносите ${finalDamage} урона!`
       
-      setCombatState(prev => ({
-        ...prev,
-        currentMobs: newMobs,
-        currentMana: prev.currentMana - manaCost,
-        lastAction: actionText,
-        lastDamage: finalDamage,
-        battleLog: [...prev.battleLog, actionText]
-      }))
+      setCombatState(prev => {
+        console.log('🔄 Обновляем состояние боя')
+        console.log('🔄 Новые мобы:', newMobs.map(mob => ({ name: mob.name, health: mob.health })))
+        return {
+          ...prev,
+          currentMobs: newMobs,
+          currentMana: prev.currentMana - manaCost,
+          lastAction: actionText,
+          lastDamage: finalDamage,
+          battleLog: [...prev.battleLog, actionText]
+        }
+      })
     }
     
     // Обновляем HP/MP в хедере
