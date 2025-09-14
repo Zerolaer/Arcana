@@ -33,7 +33,7 @@ export default function LocationMap({ character, onUpdateCharacter, isLoading = 
   const [selectedSpot, setSelectedSpot] = useState<FarmingSpot | null>(null)
   
   // Используем кешированные данные
-  const { data: locations, loading, error } = useLocations()
+  const { data: locations, loading, error, refetch } = useLocations()
 
   useEffect(() => {
     if (locations && locations.length > 0) {
@@ -113,7 +113,7 @@ export default function LocationMap({ character, onUpdateCharacter, isLoading = 
           current_spot_id: spot.id
         })
         // Reload locations to update occupancy
-        loadLocations()
+        refetch()
       }
     } catch (error) {
       console.error('Error occupying spot:', error)
@@ -143,7 +143,7 @@ export default function LocationMap({ character, onUpdateCharacter, isLoading = 
           current_spot_id: undefined
         })
         // Reload locations to update occupancy
-        loadLocations()
+        refetch()
       }
     } catch (error) {
       console.error('Error leaving spot:', error)
