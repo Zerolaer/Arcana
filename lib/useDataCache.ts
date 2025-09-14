@@ -154,7 +154,7 @@ export function useCachedData<T>(
 
 // Predefined hooks for common data
 export function useLocations() {
-  return useCachedData(
+  return useCachedData<any[]>(
     'locations',
     async () => {
       const { data, error } = await supabase
@@ -170,7 +170,7 @@ export function useLocations() {
 }
 
 export function useFarmingSpots(locationId?: string) {
-  return useCachedData(
+  return useCachedData<any[]>(
     `farming_spots_${locationId}`,
     async () => {
       if (!locationId) return []
@@ -188,7 +188,7 @@ export function useFarmingSpots(locationId?: string) {
 }
 
 export function useMobs() {
-  return useCachedData(
+  return useCachedData<any[]>(
     'mobs',
     async () => {
       const { data, error } = await supabase
@@ -204,7 +204,7 @@ export function useMobs() {
 }
 
 export function useCharacterInventory(characterId: string) {
-  return useCachedData(
+  return useCachedData<any[]>(
     `inventory_${characterId}`,
     async () => {
       const { data, error } = await (supabase as any)
@@ -218,7 +218,7 @@ export function useCharacterInventory(characterId: string) {
 }
 
 export function useCharacterEquipment(characterId: string) {
-  return useCachedData(
+  return useCachedData<any[]>(
     `equipment_${characterId}`,
     async () => {
       const { data, error } = await (supabase as any)

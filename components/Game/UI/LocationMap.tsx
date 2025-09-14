@@ -187,7 +187,7 @@ export default function LocationMap({ character, onUpdateCharacter, isLoading = 
           <h4 className="text-md font-medium text-gray-300">Локации</h4>
           
           <div className="space-y-2">
-            {locations?.map((location) => (
+            {(locations || []).map((location) => (
               <div
                 key={location.id}
                 onClick={() => handleLocationSelect(location)}

@@ -81,7 +81,7 @@ class PerformanceMonitor {
     if ('PerformanceObserver' in window) {
       const observer = new PerformanceObserver((list) => {
         for (const entry of list.getEntries()) {
-          this.recordMetric('FID', entry.processingStart - entry.startTime, 'measure')
+          this.recordMetric('FID', entry.duration, 'measure')
         }
       })
       
@@ -144,9 +144,9 @@ class PerformanceMonitor {
     
     console.timeEnd = (label: string) => {
       originalConsoleTimeEnd.call(console, label)
-      const duration = performance.now() - this.metrics
-        .filter(m => m.name === `render-${label}`)
-        .pop()?.value || 0
+      const duration = performance.now() - (this.metrics
+        ?.filter(m => m.name === `render-${label}`)
+        .pop()?.value || 0)
       this.recordMetric(`render-duration-${label}`, duration, 'custom')
     }
   }

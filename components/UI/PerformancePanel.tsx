@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { usePerformanceMonitor } from '@/lib/performanceMetrics'
-import { BarChart3, Zap, Clock, Memory, Wifi, WifiOff } from 'lucide-react'
+import { BarChart3, Zap, Clock, HardDrive, Wifi, WifiOff } from 'lucide-react'
 
 export default function PerformancePanel() {
   const [isOpen, setIsOpen] = useState(false)

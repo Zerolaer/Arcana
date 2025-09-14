@@ -84,19 +84,19 @@ const CombatInterface = forwardRef<CombatInterfaceRef, CombatInterfaceProps>(
                     <span className="font-semibold text-white">{mob.name}</span>
                     <span className="text-sm text-gray-400">Ур. {mob.level}</span>
                   </div>
-                  <div className="text-sm text-gray-300 mb-2">{mob.description}</div>
+                  <div className="text-sm text-gray-300 mb-2">{(mob as any).description || 'Описание недоступно'}</div>
                   <div className="space-y-1">
                     <div className="flex justify-between text-xs">
                       <span className="text-red-300">HP:</span>
                       <span className="text-white">
-                        {Math.ceil(mob.health)} / {Math.ceil(mob.max_health)}
+                        {Math.ceil(mob.health)} / {Math.ceil(mob.health)}
                       </span>
                     </div>
                     <div className="w-full bg-gray-700 rounded-full h-2">
                       <div
                         className="bg-red-500 h-2 rounded-full transition-all duration-300"
                         style={{
-                          width: `${Math.max(0, (mob.health / mob.max_health) * 100)}%`
+                          width: `${Math.max(0, (mob.health / mob.health) * 100)}%`
                         }}
                       />
                     </div>
@@ -150,7 +150,7 @@ const CombatInterface = forwardRef<CombatInterfaceRef, CombatInterfaceProps>(
                 ref={skillPanelRef}
                 character={character}
                 onSkillSelect={onSkillSelect}
-                selectedSkill={combatState.selectedSkill}
+                currentMana={character.mana}
               />
 
               {/* Кнопка атаки */}

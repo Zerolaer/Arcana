@@ -163,7 +163,7 @@ export async function compressedFetch(
     
     if (typeof body === 'string') {
       const compressed = await compressionManager.compress(body)
-      body = compressed
+      body = compressed.buffer as ArrayBuffer
     }
     
     return fetch(url, {

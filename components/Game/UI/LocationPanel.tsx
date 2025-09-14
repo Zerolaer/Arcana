@@ -107,7 +107,7 @@ export default function LocationPanel({ character, onUpdateCharacter, isLoading 
           </h2>
 
           <div className="space-y-3">
-            {locations.map((location) => {
+            {(locations || []).map((location) => {
               const isAccessible = canAccessLocation(location)
               const isCurrent = location.id === character.current_location_id
 
@@ -188,8 +188,8 @@ export default function LocationPanel({ character, onUpdateCharacter, isLoading 
 
           {selectedLocation ? (
             <div className="space-y-3">
-              {farmingSpots.length > 0 ? (
-                farmingSpots.map((spot) => {
+              {(farmingSpots || []).length > 0 ? (
+                (farmingSpots || []).map((spot) => {
                   const isOccupied = spot.current_occupancy >= spot.max_occupancy
                   const isCurrentSpot = character.current_spot_id === spot.id
 
