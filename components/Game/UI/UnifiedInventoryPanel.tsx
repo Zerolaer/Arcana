@@ -48,7 +48,8 @@ const equipmentSlots = [
 ]
 
 export default function UnifiedInventoryPanel({ character, onUpdateCharacter, isLoading }: UnifiedInventoryPanelProps) {
-  console.log('🎮 UnifiedInventoryPanel загружен!')
+  console.log('🎮🎮🎮 UnifiedInventoryPanel загружен! Это НОВЫЙ компонент!')
+  console.log('🎮🎮🎮 Если вы видите это сообщение, значит новый компонент работает!')
   
   // Инвентарь состояние
   const [inventory, setInventory] = useState<(GameItem | null)[]>(new Array(48).fill(null))
@@ -285,7 +286,7 @@ export default function UnifiedInventoryPanel({ character, onUpdateCharacter, is
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-2">
                 <Package className="w-5 h-5 text-blue-400" />
-                <h2 className="text-lg font-semibold text-white">🎮 НОВЫЙ ИНВЕНТАРЬ (Unified)</h2>
+                <h2 className="text-2xl font-bold text-red-400 animate-pulse">🎮🎮🎮 НОВЫЙ ИНВЕНТАРЬ (Unified) 🎮🎮🎮</h2>
                 <span className="text-sm text-gray-400">
                   {inventory.filter(item => item !== null).length}/48
                 </span>
