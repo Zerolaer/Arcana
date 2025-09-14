@@ -2,7 +2,7 @@
 
 import { lazy, Suspense } from 'react'
 import { Character } from '@/types/game'
-import ErrorBoundary from '../UI/ErrorBoundary'
+import ErrorBoundary from '../../UI/ErrorBoundary'
 import { Loader2 } from 'lucide-react'
 
 // Lazy load heavy components
