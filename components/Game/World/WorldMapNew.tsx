@@ -720,7 +720,10 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
                       : 'border-gray-600/30 bg-gray-800/20'
                   }`}
                   style={continent ? {
-                    background: getContinentBackground(continent.id).image
+                    backgroundImage: `url(${getContinentBackground(continent.id).image})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    backgroundRepeat: 'no-repeat'
                   } : undefined}
                   onClick={() => continent && handleContinentSelect(continent)}
                 >
@@ -1472,10 +1475,10 @@ export default function WorldMapNew({ character, onUpdateCharacter, onUpdateChar
                       } else {
                         // Одиночная атака - бьем одного моба
                         const finalDamage = Math.max(1, totalDamage - target.defense)
-                        const targetIndex = newMobs.findIndex(m => m.id === target.id)
-                        
-                        if (targetIndex !== -1) {
-                          newMobs[targetIndex].health = Math.max(0, newMobs[targetIndex].health - finalDamage)
+                      const targetIndex = newMobs.findIndex(m => m.id === target.id)
+                      
+                      if (targetIndex !== -1) {
+                        newMobs[targetIndex].health = Math.max(0, newMobs[targetIndex].health - finalDamage)
                           totalDamageDealt = finalDamage
                           console.log(`💥 ${target.name}: ${finalDamage} урона (остается ${newMobs[targetIndex].health} HP)`)
                         }

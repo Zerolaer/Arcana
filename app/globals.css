@@ -721,3 +721,53 @@ a {
   border-color: rgba(107, 114, 128, 0.5);
   opacity: 0.9;
 }
+
+/* Location Background Classes */
+.location-bg-peaceful-meadows {
+  background: linear-gradient(135deg, #2d5a27 0%, #1a3d1a 50%, #0f2810 100%);
+}
+
+.location-bg-dark-forest {
+  background: linear-gradient(135deg, #1a3d1a 0%, #0f2810 50%, #0a1f0a 100%);
+}
+
+.location-bg-goblin-caves {
+  background: linear-gradient(135deg, #8d6e63 0%, #5d4037 50%, #3e2723 100%);
+}
+
+.location-bg-burning-desert {
+  background: linear-gradient(135deg, #d32f2f 0%, #b71c1c 50%, #8b0000 100%);
+}
+
+.location-bg-frozen-peaks {
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 50%, #90caf9 100%);
+}
+
+.location-bg-forgotten-ruins {
+  background: linear-gradient(135deg, #5d4037 0%, #3e2723 50%, #2e1b1b 100%);
+}
+
+.location-bg-hell-gates {
+  background: linear-gradient(135deg, #b71c1c 0%, #8b0000 50%, #660000 100%);
+}
+
+.location-bg-crystal-caverns {
+  background: linear-gradient(135deg, #4a148c 0%, #311b92 50%, #1a0d36 100%);
+}
+
+.location-bg-dragon-throne {
+  background: linear-gradient(135deg, #311b92 0%, #1a0d36 50%, #0d0623 100%);
+}
+
+/* Continent Background Classes */
+.continent-bg-peaceful-lands {
+  background: linear-gradient(135deg, #2d5a27 0%, #1a3d1a 50%, #0f2810 100%);
+}
+
+.continent-bg-dangerous-territories {
+  background: linear-gradient(135deg, #d32f2f 0%, #b71c1c 50%, #8b0000 100%);
+}
+
+.continent-bg-epic-lands {
+  background: linear-gradient(135deg, #4a148c 0%, #311b92 50%, #1a0d36 100%);
+}
