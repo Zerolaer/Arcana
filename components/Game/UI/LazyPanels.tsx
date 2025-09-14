@@ -7,7 +7,7 @@ import { Loader2 } from 'lucide-react'
 
 // Lazy load heavy components
 const CharacterPanelUnified = lazy(() => import('./CharacterPanelUnified'))
-const UnifiedInventoryPanel = lazy(() => import('./UnifiedInventoryPanel'))
+const InventoryPanel = lazy(() => import('./InventoryPanel'))
 const SkillsPanelNew = lazy(() => import('./SkillsPanelNew'))
 const LocationPanel = lazy(() => import('./LocationPanel'))
 const CombatPanel = lazy(() => import('./CombatPanel'))
@@ -54,7 +54,7 @@ export const LazyCharacterPanel = (props: LazyPanelProps) => (
 
 export const LazyInventoryPanel = (props: LazyPanelProps) => (
   <LazyWrapper panelName="инвентаря">
-    <UnifiedInventoryPanel {...props} />
+    <InventoryPanel {...props} />
   </LazyWrapper>
 )
 
