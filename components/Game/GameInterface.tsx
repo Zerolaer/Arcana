@@ -20,7 +20,6 @@ import {
   LazyInventoryPanel,
   LazySkillsPanel,
   LazyLocationPanel,
-  LazyEquipmentPanel,
   LazyCombatPanel
 } from './UI/LazyPanels'
 

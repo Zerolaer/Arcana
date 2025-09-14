@@ -37,13 +37,17 @@ export interface GameItem {
   subType?: string
   icon: string
   level?: number
+  level_requirement?: number
   stats: ItemStats
   value: number
   stackable?: boolean
   stackSize?: number
+  quantity?: number
   
   // НОВАЯ СИСТЕМА КАЧЕСТВА (вместо прочности)
   quality?: number // 1-100
+  upgradeLevel?: number
+  obtainedAt?: string
   
   // Базовые и актуальные статы
   base_stats?: ItemStats

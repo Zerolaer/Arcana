@@ -5,9 +5,10 @@ import ItemTooltip, { GameItem } from './ItemTooltip'
 
 interface DraggableItemProps {
   item: GameItem
-  slotIndex: number
+  slotIndex?: number
   onDragStart?: (item: GameItem, slotIndex: number) => void
   onDragEnd?: () => void
+  onClick?: () => void
   className?: string
   showStackCount?: boolean
   onUse?: () => void
@@ -23,6 +24,7 @@ export default function DraggableItem({
   slotIndex, 
   onDragStart, 
   onDragEnd,
+  onClick,
   className = '',
   showStackCount = true,
   onUse,
@@ -62,7 +64,10 @@ export default function DraggableItem({
     
     console.log('🖱️ DraggableItem clicked - opening tooltip')
     
-    // Просто логируем - Tooltip сам обработает клик
+    // Вызываем переданный onClick
+    if (onClick) {
+      onClick()
+    }
   }
 
   const handleMouseMove = (e: MouseEvent) => {
@@ -79,7 +84,7 @@ export default function DraggableItem({
         dragRef.current.style.opacity = '0.8'
       }
       
-      if (onDragStart) {
+      if (onDragStart && slotIndex !== undefined) {
         onDragStart(item, slotIndex)
       }
     }
