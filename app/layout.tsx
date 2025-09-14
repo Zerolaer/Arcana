@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import { Toaster } from 'react-hot-toast'
+import ServiceWorkerProvider from '@/components/ServiceWorkerProvider'
 
 export const metadata: Metadata = {
   title: 'MMORPG Web Game',
@@ -30,12 +31,19 @@ export default function RootLayout({
           href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap" 
           rel="stylesheet" 
         />
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#6366f1" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="apple-mobile-web-app-title" content="Arcana" />
+        <link rel="apple-touch-icon" href="/icons/icon-192x192.png" />
       </head>
       <body className="antialiased bg-dark-900 text-white min-h-screen" style={{
         backgroundColor: '#0a0a0f',
         color: '#ffffff',
         fontFamily: 'Poppins, system-ui, sans-serif'
       }}>
+        <ServiceWorkerProvider />
         {children}
         <Toaster 
           position="top-right"

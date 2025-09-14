@@ -6,6 +6,7 @@ import { MapPin, Users, Sword, Star, Clock, Zap, Shield, Target } from 'lucide-r
 import { supabase } from '@/lib/supabase'
 import { toast } from 'react-hot-toast'
 import { getLocationBackground } from '@/lib/locationBackgrounds'
+import { useLocations } from '@/lib/useDataCache'
 
 interface LocationMapProps {
   character: Character
@@ -28,49 +29,24 @@ interface MobSpawn {
 }
 
 export default function LocationMap({ character, onUpdateCharacter, isLoading = false, className = '' }: LocationMapProps) {
-  const [locations, setLocations] = useState<LocationWithSpots[]>([])
   const [selectedLocation, setSelectedLocation] = useState<LocationWithSpots | null>(null)
   const [selectedSpot, setSelectedSpot] = useState<FarmingSpot | null>(null)
-  const [loading, setLoading] = useState(true)
+  
+  // Используем кешированные данные
+  const { data: locations, loading, error } = useLocations()
 
   useEffect(() => {
-    loadLocations()
-  }, [])
-
-  const loadLocations = async () => {
-    try {
-      setLoading(true)
-      const { data, error } = await supabase
-        .from('locations')
-        .select(`
-          *,
-          farming_spots (
-            *,
-            mob_spawns (
-              *,
-              mob:mobs (*)
-            )
-          )
-        `)
-        .order('min_level')
-
-      if (error) {
-        console.error('Error loading locations:', error)
-        toast.error('Ошибка загрузки локаций')
-        return
-      }
-
-      setLocations(data || [])
-      if (data && data.length > 0) {
-        setSelectedLocation(data[0])
-      }
-    } catch (error) {
-      console.error('Error loading locations:', error)
-      toast.error('Ошибка подключения к серверу')
-    } finally {
-      setLoading(false)
+    if (locations && locations.length > 0) {
+      setSelectedLocation(locations[0] as LocationWithSpots)
     }
-  }
+  }, [locations])
+
+  // Обработка ошибок
+  useEffect(() => {
+    if (error) {
+      toast.error('Ошибка загрузки локаций')
+    }
+  }, [error])
 
   const canAccessLocation = (location: Location) => {
     return character.level >= location.min_level && 

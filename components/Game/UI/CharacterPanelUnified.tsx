@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo, useCallback, memo } from 'react'
 import { Character } from '@/types/game'
 import { toast } from 'react-hot-toast'
 import { Plus, Minus, RotateCcw, Crown, TrendingUp, Sword, Shield, Star, Zap, Eye, Package } from 'lucide-react'
@@ -16,7 +16,7 @@ interface CharacterPanelProps {
 
 
 
-export default function CharacterPanelUnified({ character, onUpdateCharacter, isLoading }: CharacterPanelProps) {
+const CharacterPanelUnified = memo(function CharacterPanelUnified({ character, onUpdateCharacter, isLoading }: CharacterPanelProps) {
   const [tempStats, setTempStats] = useState({
     agility: 0,
     precision: 0,
@@ -31,13 +31,19 @@ export default function CharacterPanelUnified({ character, onUpdateCharacter, is
   })
   const [equipmentKey, setEquipmentKey] = useState(0) // Для принудительного обновления EquipmentComponent
   
-  // Рассчитываем актуальные характеристики
-  const calculatedStats = calculateCharacterStats(character)
+  // Рассчитываем актуальные характеристики (мемоизировано)
+  const calculatedStats = useMemo(() => calculateCharacterStats(character), [character])
 
-  const totalAllocatedPoints = Object.values(tempStats).reduce((sum, val) => sum + val, 0)
-  const remainingPoints = character.stat_points - totalAllocatedPoints
+  const totalAllocatedPoints = useMemo(() => 
+    Object.values(tempStats).reduce((sum, val) => sum + val, 0), 
+    [tempStats]
+  )
+  const remainingPoints = useMemo(() => 
+    character.stat_points - totalAllocatedPoints, 
+    [character.stat_points, totalAllocatedPoints]
+  )
 
-  const statInfo = [
+  const statInfo = useMemo(() => [
     {
       key: 'agility' as const,
       name: 'Ловкость',
@@ -98,10 +104,10 @@ export default function CharacterPanelUnified({ character, onUpdateCharacter, is
       icon: <Eye className="w-4 h-4 text-indigo-400" />,
       effects: ['Урон из невидимости: +1.8 за очко', 'Шанс критического удара']
     }
-  ]
+  ], [])
 
 
-  const adjustTempStat = (stat: keyof typeof tempStats, change: number) => {
+  const adjustTempStat = useCallback((stat: keyof typeof tempStats, change: number) => {
     const newValue = tempStats[stat] + change
     const newTotal = totalAllocatedPoints - tempStats[stat] + newValue
     
@@ -113,9 +119,9 @@ export default function CharacterPanelUnified({ character, onUpdateCharacter, is
       ...prev,
       [stat]: newValue
     }))
-  }
+  }, [tempStats, totalAllocatedPoints, character.stat_points])
 
-  const resetTempStats = () => {
+  const resetTempStats = useCallback(() => {
     setTempStats({
       agility: 0,
       precision: 0,
@@ -128,9 +134,9 @@ export default function CharacterPanelUnified({ character, onUpdateCharacter, is
       armor: 0,
       stealth: 0
     })
-  }
+  }, [])
 
-  const applyStatChanges = async () => {
+  const applyStatChanges = useCallback(async () => {
     if (totalAllocatedPoints === 0) {
       toast.error('Нет изменений для применения')
       return
@@ -168,11 +174,11 @@ export default function CharacterPanelUnified({ character, onUpdateCharacter, is
       resetTempStats()
       toast.success('Характеристики обновлены!')
     }
-  }
+  }, [character, tempStats, totalAllocatedPoints, remainingPoints, onUpdateCharacter, resetTempStats])
 
-  const getStatValue = (stat: keyof typeof tempStats) => {
+  const getStatValue = useCallback((stat: keyof typeof tempStats) => {
     return character[stat] + tempStats[stat]
-  }
+  }, [character, tempStats])
 
   const getStatEffects = () => []
 
@@ -350,4 +356,6 @@ export default function CharacterPanelUnified({ character, onUpdateCharacter, is
 
     </div>
   )
-}
+})
+
+export default CharacterPanelUnified

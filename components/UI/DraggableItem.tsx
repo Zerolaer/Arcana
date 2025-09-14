@@ -33,32 +33,16 @@ export default function DraggableItem({
   isEquipped = false
 }: DraggableItemProps) {
   
-  // Debug logging
-  console.log('🔍 DraggableItem rendered:', {
-    itemName: item.name,
-    isEquipped,
-    itemIsEquipped: item.isEquipped,
-    'isEquipped === true': isEquipped === true,
-    'item.isEquipped === true': item.isEquipped === true
-  })
   const [isDragging, setIsDragging] = useState(false)
   const dragRef = useRef<HTMLDivElement>(null)
   const dragStartPos = useRef({ x: 0, y: 0 })
 
   const handleMouseDown = (e: React.MouseEvent) => {
-    console.log('🚨 DraggableItem handleMouseDown CALLED!', { item: item.name, button: e.button })
-    
-    // ВРЕМЕННО ОТКЛЮЧАЕМ ДРАГ & ДРОП
-    console.log('🚨 MouseDown - drag & drop DISABLED for now')
-    return
-    
     // Don't start drag if it's a right click or if we're clicking on a button
     if (e.button !== 0 || (e.target as HTMLElement).closest('button')) {
-      console.log('🚨 MouseDown ignored - right click or button')
       return
     }
     
-    console.log('🚨 MouseDown - NOT starting drag immediately')
     // Don't start drag immediately - let click work first
     dragStartPos.current = { x: e.clientX, y: e.clientY }
     

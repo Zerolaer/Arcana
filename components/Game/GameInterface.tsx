@@ -9,14 +9,20 @@ import { toast } from 'react-hot-toast'
 // Game UI Components
 import GameHeader from './UI/GameHeader'
 import GameSidebar, { ActivePanel } from './UI/GameSidebar'
-import CharacterPanelUnified from './UI/CharacterPanelUnified'
-import InventoryPanelNew from './UI/InventoryPanelNew'
-import LocationPanel from './UI/LocationPanel'
 import WorldMapNew from './World/WorldMapNew'
-import SkillsPanelNew from './UI/SkillsPanelNew'
 import RegenerationSystemSimple from './UI/RegenerationSystemSimple'
 import AdminPanel from './Admin/AdminPanel'
 import { useActiveSkills } from '@/lib/useActiveSkills'
+
+// Lazy loaded panels
+import {
+  LazyCharacterPanel,
+  LazyInventoryPanel,
+  LazySkillsPanel,
+  LazyLocationPanel,
+  LazyEquipmentPanel,
+  LazyCombatPanel
+} from './UI/LazyPanels'
 
 interface GameInterfaceProps {
   character: Character
@@ -67,7 +73,6 @@ export default function GameInterface({ character: initialCharacter, user, onLog
           filter: `id=eq.${character.id}`
         }, 
         (payload: any) => {
-          console.log('Character updated:', payload)
           if (payload.new) {
             setCharacter(payload.new as Character)
           }
@@ -173,7 +178,7 @@ export default function GameInterface({ character: initialCharacter, user, onLog
     switch (activePanel) {
       case 'character':
         return (
-          <CharacterPanelUnified 
+          <LazyCharacterPanel 
             character={character}
             onUpdateCharacter={updateCharacterData}
             isLoading={isLoading}
@@ -181,7 +186,7 @@ export default function GameInterface({ character: initialCharacter, user, onLog
         )
       case 'inventory':
         return (
-          <InventoryPanelNew
+          <LazyInventoryPanel
             character={character}
             onUpdateCharacter={updateCharacterData}
             isLoading={isLoading}
@@ -189,7 +194,7 @@ export default function GameInterface({ character: initialCharacter, user, onLog
         )
       case 'skills':
         return (
-          <SkillsPanelNew 
+          <LazySkillsPanel 
             character={character}
             onUpdateCharacter={updateCharacterData}
             isLoading={isLoading}

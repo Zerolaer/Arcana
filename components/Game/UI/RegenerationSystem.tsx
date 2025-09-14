@@ -88,7 +88,7 @@ export default function RegenerationSystem({
     } catch (error) {
       // Тихо обрабатываем ошибки регенерации
     }
-  }, [character, onUpdateCharacter, isInCombat])
+  }, [character.id, character.health, character.mana, character.is_in_combat, onUpdateCharacter, isInCombat])
 
   // Функция для пересчета регенерации при изменении экипировки
   const recalculateRegeneration = useCallback(async () => {

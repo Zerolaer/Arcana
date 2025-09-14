@@ -6,6 +6,7 @@ import { Map, MapPin, Users, Target, TrendingUp, Clock } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'react-hot-toast'
 import { getLocationBackground } from '@/lib/locationBackgrounds'
+import { useLocations, useFarmingSpots } from '@/lib/useDataCache'
 
 interface LocationPanelProps {
   character: Character
@@ -35,64 +36,28 @@ interface FarmingSpot {
 }
 
 export default function LocationPanel({ character, onUpdateCharacter, isLoading }: LocationPanelProps) {
-  const [locations, setLocations] = useState<Location[]>([])
   const [selectedLocation, setSelectedLocation] = useState<Location | null>(null)
-  const [farmingSpots, setFarmingSpots] = useState<FarmingSpot[]>([])
-  const [loading, setLoading] = useState(true)
+  
+  // Используем кешированные данные
+  const { data: locations, loading: locationsLoading, error: locationsError } = useLocations()
+  const { data: farmingSpots, loading: spotsLoading } = useFarmingSpots(selectedLocation?.id)
 
   useEffect(() => {
-    loadLocations()
-  }, [])
-
-  const loadLocations = async () => {
-    try {
-      const { data, error } = await (supabase
-        .from('locations') as any)
-        .select('*')
-        .order('min_level')
-
-      if (error) {
-        console.error('Error loading locations:', error)
-        toast.error('Ошибка загрузки локаций')
-        return
+    if (locations && locations.length > 0) {
+      // Set current location as selected if available
+      const currentLocation = locations.find((loc: any) => loc.id === character.current_location_id)
+      if (currentLocation) {
+        setSelectedLocation(currentLocation)
       }
-
-      if (data) {
-        setLocations(data)
-        // Set current location as selected if available
-        const currentLocation = data.find((loc: any) => loc.id === character.current_location_id)
-        if (currentLocation) {
-          setSelectedLocation(currentLocation)
-          loadFarmingSpots(currentLocation.id)
-        }
-      }
-    } catch (error) {
-      console.error('Error loading locations:', error)
-      toast.error('Ошибка подключения')
-    } finally {
-      setLoading(false)
     }
-  }
+  }, [locations, character.current_location_id])
 
-  const loadFarmingSpots = async (locationId: string) => {
-    try {
-      const { data, error } = await (supabase
-        .from('farming_spots') as any)
-        .select('*')
-        .eq('location_id', locationId)
-
-      if (error) {
-        console.error('Error loading farming spots:', error)
-        return
-      }
-
-      if (data) {
-        setFarmingSpots(data)
-      }
-    } catch (error) {
-      console.error('Error loading farming spots:', error)
+  // Обработка ошибок
+  useEffect(() => {
+    if (locationsError) {
+      toast.error('Ошибка загрузки локаций')
     }
-  }
+  }, [locationsError])
 
   const travelToLocation = async (location: Location) => {
     if (location.min_level > character.level) {
@@ -107,7 +72,6 @@ export default function LocationPanel({ character, onUpdateCharacter, isLoading 
 
     if (success) {
       setSelectedLocation(location)
-      loadFarmingSpots(location.id)
       toast.success(`Перемещение в ${location.name}`)
     }
   }
@@ -123,7 +87,7 @@ export default function LocationPanel({ character, onUpdateCharacter, isLoading 
     return 'border-red-400/30 bg-red-500/5'
   }
 
-  if (loading) {
+  if (locationsLoading) {
     return (
       <div className="flex-1 p-6 flex items-center justify-center">
         <div className="loading-spinner mr-3" />
