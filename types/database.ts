@@ -548,6 +548,131 @@ export interface Database {
           created_at?: string
         }
       }
+      mobs: {
+        Row: {
+          id: string
+          name: string
+          description: string | null
+          level: number
+          health: number
+          attack_damage: number
+          defense: number
+          magic_resistance: number
+          aggressive: boolean
+          respawn_time: number
+          experience_reward: number
+          gold_reward: number
+          loot_table_id: string | null
+          image: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          description?: string | null
+          level?: number
+          health?: number
+          attack_damage?: number
+          defense?: number
+          magic_resistance?: number
+          aggressive?: boolean
+          respawn_time?: number
+          experience_reward?: number
+          gold_reward?: number
+          loot_table_id?: string | null
+          image?: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          description?: string | null
+          level?: number
+          health?: number
+          attack_damage?: number
+          defense?: number
+          magic_resistance?: number
+          aggressive?: boolean
+          respawn_time?: number
+          experience_reward?: number
+          gold_reward?: number
+          loot_table_id?: string | null
+          image?: string
+          created_at?: string
+        }
+      }
+      mob_spawns: {
+        Row: {
+          id: string
+          spot_id: string
+          mob_id: string
+          spawn_rate: number
+          max_concurrent: number
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          spot_id: string
+          mob_id: string
+          spawn_rate?: number
+          max_concurrent?: number
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          spot_id?: string
+          mob_id?: string
+          spawn_rate?: number
+          max_concurrent?: number
+          created_at?: string
+        }
+      }
+      loot_tables: {
+        Row: {
+          id: string
+          name: string
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          name: string
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          name?: string
+          created_at?: string
+        }
+      }
+      loot_table_items: {
+        Row: {
+          id: string
+          loot_table_id: string
+          item_id: string
+          drop_rate: number
+          min_quantity: number
+          max_quantity: number
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          loot_table_id: string
+          item_id: string
+          drop_rate?: number
+          min_quantity?: number
+          max_quantity?: number
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          loot_table_id?: string
+          item_id?: string
+          drop_rate?: number
+          min_quantity?: number
+          max_quantity?: number
+          created_at?: string
+        }
+      }
     }
     Views: {
       [_ in never]: never

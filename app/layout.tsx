@@ -1,8 +1,7 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import { Toaster } from 'react-hot-toast'
-import ServiceWorkerProvider from '@/components/ServiceWorkerProvider'
-import PerformancePanel from '@/components/UI/PerformancePanel'
+import ClientProviders from '@/components/ClientProviders'
 import ResourcePreloader from '@/components/UI/ResourcePreloader'
 
 export const metadata: Metadata = {
@@ -45,10 +44,9 @@ export default function RootLayout({
         color: '#ffffff',
         fontFamily: 'Poppins, system-ui, sans-serif'
       }}>
-        <ServiceWorkerProvider />
+        <ClientProviders />
         <ResourcePreloader />
         {children}
-        <PerformancePanel />
         <Toaster 
           position="top-right"
           toastOptions={{

@@ -61,7 +61,7 @@ export default function LocationMap({ character, onUpdateCharacter, isLoading = 
 
   const getSpotStatus = (spot: FarmingSpot) => {
     const isOccupied = spot.current_occupancy >= spot.max_occupancy
-    const isPlayerOccupied = spot.occupied_by.includes(character.id)
+    const isPlayerOccupied = character.current_spot_id === spot.id
     
     if (isPlayerOccupied) return 'player'
     if (isOccupied) return 'occupied'
@@ -301,11 +301,11 @@ export default function LocationMap({ character, onUpdateCharacter, isLoading = 
                         <div className="flex items-center justify-between text-xs text-gray-500">
                           <div className="flex items-center space-x-1">
                             <Star className="w-3 h-3" />
-                            <span>Дроп: +{spot.drop_rate_bonus}%</span>
+                            <span>Сложность: x{spot.difficulty_multiplier}</span>
                           </div>
                           <div className="flex items-center space-x-1">
                             <Zap className="w-3 h-3" />
-                            <span>Редкий дроп: +{spot.rare_drop_bonus}%</span>
+                            <span>Опыт: x{spot.experience_multiplier}</span>
                           </div>
                         </div>
                         

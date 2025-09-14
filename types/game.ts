@@ -176,23 +176,25 @@ export interface FarmingSpot {
   location_id: string;
   name: string;
   description: string;
+  level_requirement: number;
+  icon: string;
   
   // Occupancy
   max_occupancy: number;
   current_occupancy: number;
-  occupied_by: string[]; // character IDs
   
-  // Mob spawns
-  mob_spawns: MobSpawn[];
+  // Multipliers
+  difficulty_multiplier: number;
+  experience_multiplier: number;
   
-  // Drop bonuses
-  drop_rate_bonus: number;
-  rare_drop_bonus: number;
-  
-  coordinates: {
+  // Position
+  position: {
     x: number;
     y: number;
   };
+  
+  // Mob spawns (populated via joins)
+  mob_spawns?: (MobSpawn & { mob: Mob })[];
   
   created_at: string;
 }
@@ -225,9 +227,12 @@ export interface Mob {
 }
 
 export interface MobSpawn {
+  id: string;
+  spot_id: string;
   mob_id: string;
   spawn_rate: number; // mobs per minute
   max_concurrent: number;
+  created_at: string;
 }
 
 export interface Item {

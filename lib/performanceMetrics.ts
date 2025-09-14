@@ -44,7 +44,7 @@ class PerformanceMonitor {
   }
 
   private observePaint(name: string, metricName: string) {
-    if ('PerformanceObserver' in window) {
+    if (typeof window !== 'undefined' && 'PerformanceObserver' in window) {
       const observer = new PerformanceObserver((list) => {
         for (const entry of list.getEntries()) {
           if (entry.name === name) {
@@ -62,7 +62,7 @@ class PerformanceMonitor {
   }
 
   private observeLCP() {
-    if ('PerformanceObserver' in window) {
+    if (typeof window !== 'undefined' && 'PerformanceObserver' in window) {
       const observer = new PerformanceObserver((list) => {
         const entries = list.getEntries()
         const lastEntry = entries[entries.length - 1]
@@ -78,7 +78,7 @@ class PerformanceMonitor {
   }
 
   private observeFID() {
-    if ('PerformanceObserver' in window) {
+    if (typeof window !== 'undefined' && 'PerformanceObserver' in window) {
       const observer = new PerformanceObserver((list) => {
         for (const entry of list.getEntries()) {
           this.recordMetric('FID', entry.duration, 'measure')
@@ -94,7 +94,7 @@ class PerformanceMonitor {
   }
 
   private observeCLS() {
-    if ('PerformanceObserver' in window) {
+    if (typeof window !== 'undefined' && 'PerformanceObserver' in window) {
       let clsValue = 0
       const observer = new PerformanceObserver((list) => {
         for (const entry of list.getEntries()) {
@@ -114,7 +114,7 @@ class PerformanceMonitor {
   }
 
   private observeTTFB() {
-    if (performance.timing) {
+    if (typeof performance !== 'undefined' && performance.timing) {
       const ttfb = performance.timing.responseStart - performance.timing.navigationStart
       this.recordMetric('TTFB', ttfb, 'navigation')
     }
@@ -139,12 +139,12 @@ class PerformanceMonitor {
     
     console.time = (label: string) => {
       originalConsoleTime.call(console, label)
-      this.recordMetric(`render-${label}`, performance.now(), 'custom')
+      this.recordMetric(`render-${label}`, typeof performance !== 'undefined' ? performance.now() : 0, 'custom')
     }
     
     console.timeEnd = (label: string) => {
       originalConsoleTimeEnd.call(console, label)
-      const duration = performance.now() - (this.metrics
+      const duration = (typeof performance !== 'undefined' ? performance.now() : 0) - (this.metrics
         ?.filter(m => m.name === `render-${label}`)
         .pop()?.value || 0)
       this.recordMetric(`render-duration-${label}`, duration, 'custom')
@@ -153,26 +153,28 @@ class PerformanceMonitor {
 
   private observeAPICalls() {
     // Monitor fetch performance
-    const originalFetch = window.fetch
-    window.fetch = async (...args) => {
-      const start = performance.now()
-      const url = args[0] as string
-      
-      try {
-        const response = await originalFetch(...args)
-        const duration = performance.now() - start
-        this.recordMetric(`api-${url}`, duration, 'custom')
-        return response
-      } catch (error) {
-        const duration = performance.now() - start
-        this.recordMetric(`api-error-${url}`, duration, 'custom')
-        throw error
+    if (typeof window !== 'undefined') {
+      const originalFetch = window.fetch
+      window.fetch = async (...args) => {
+        const start = typeof performance !== 'undefined' ? performance.now() : 0
+        const url = args[0] as string
+        
+        try {
+          const response = await originalFetch(...args)
+          const duration = (typeof performance !== 'undefined' ? performance.now() : 0) - start
+          this.recordMetric(`api-${url}`, duration, 'custom')
+          return response
+        } catch (error) {
+          const duration = (typeof performance !== 'undefined' ? performance.now() : 0) - start
+          this.recordMetric(`api-error-${url}`, duration, 'custom')
+          throw error
+        }
       }
     }
   }
 
   private observeMemoryUsage() {
-    if ('memory' in performance) {
+    if (typeof performance !== 'undefined' && 'memory' in performance && typeof setInterval !== 'undefined') {
       setInterval(() => {
         const memory = (performance as any).memory
         this.recordMetric('memory-used', memory.usedJSHeapSize, 'custom')
@@ -266,7 +268,7 @@ class PerformanceMonitor {
         body: JSON.stringify({
           metrics: this.metrics,
           webVitals: this.getWebVitals(),
-          userAgent: navigator.userAgent,
+          userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'Server',
           timestamp: Date.now()
         })
       })
@@ -297,18 +299,18 @@ export function measurePerformance<T>(
   name: string, 
   fn: () => T | Promise<T>
 ): T | Promise<T> {
-  const start = performance.now()
+  const start = typeof performance !== 'undefined' ? performance.now() : 0
   
   const result = fn()
   
   if (result instanceof Promise) {
     return result.then((value) => {
-      const duration = performance.now() - start
+      const duration = (typeof performance !== 'undefined' ? performance.now() : 0) - start
       performanceMonitor.recordMetric(name, duration, 'custom')
       return value
     })
   } else {
-    const duration = performance.now() - start
+    const duration = (typeof performance !== 'undefined' ? performance.now() : 0) - start
     performanceMonitor.recordMetric(name, duration, 'custom')
     return result
   }
@@ -318,10 +320,10 @@ export function measureAsyncPerformance<T>(
   name: string, 
   fn: () => Promise<T>
 ): Promise<T> {
-  const start = performance.now()
+  const start = typeof performance !== 'undefined' ? performance.now() : 0
   
   return fn().then((value) => {
-    const duration = performance.now() - start
+    const duration = (typeof performance !== 'undefined' ? performance.now() : 0) - start
     performanceMonitor.recordMetric(name, duration, 'custom')
     return value
   })

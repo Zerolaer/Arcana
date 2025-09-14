@@ -12,14 +12,14 @@ export function useServiceWorker(): ServiceWorkerState {
   const [state, setState] = useState<ServiceWorkerState>({
     isSupported: false,
     isRegistered: false,
-    isOnline: navigator.onLine,
+    isOnline: typeof navigator !== 'undefined' ? navigator.onLine : true,
     registration: null,
     error: null
   })
 
   useEffect(() => {
     // Check if service workers are supported
-    if (!('serviceWorker' in navigator)) {
+    if (typeof navigator === 'undefined' || !('serviceWorker' in navigator)) {
       setState(prev => ({ ...prev, isSupported: false }))
       return
     }
@@ -29,7 +29,7 @@ export function useServiceWorker(): ServiceWorkerState {
     // Register service worker
     const registerSW = async () => {
       try {
-        const registration = await navigator.serviceWorker.register('/sw.js', {
+        const registration = await navigator!.serviceWorker.register('/sw.js', {
           scope: '/'
         })
 
@@ -47,7 +47,7 @@ export function useServiceWorker(): ServiceWorkerState {
           const newWorker = registration.installing
           if (newWorker) {
             newWorker.addEventListener('statechange', () => {
-              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              if (newWorker.state === 'installed' && navigator!.serviceWorker.controller) {
                 // New content is available, notify user
                 console.log('New content available! Please refresh.')
                 // You could show a notification to the user here
@@ -78,13 +78,15 @@ export function useServiceWorker(): ServiceWorkerState {
       setState(prev => ({ ...prev, isOnline: false }))
     }
 
-    window.addEventListener('online', handleOnline)
-    window.addEventListener('offline', handleOffline)
+    if (typeof window !== 'undefined') {
+      window.addEventListener('online', handleOnline)
+      window.addEventListener('offline', handleOffline)
 
-    // Cleanup
-    return () => {
-      window.removeEventListener('online', handleOnline)
-      window.removeEventListener('offline', handleOffline)
+      // Cleanup
+      return () => {
+        window.removeEventListener('online', handleOnline)
+        window.removeEventListener('offline', handleOffline)
+      }
     }
   }, [])
 
@@ -96,7 +98,7 @@ export function useBackgroundSync() {
   const [isSupported, setIsSupported] = useState(false)
 
   useEffect(() => {
-    if ('serviceWorker' in navigator && 'sync' in window.ServiceWorkerRegistration.prototype) {
+    if (typeof navigator !== 'undefined' && 'serviceWorker' in navigator && typeof window !== 'undefined' && 'sync' in window.ServiceWorkerRegistration.prototype) {
       setIsSupported(true)
     }
   }, [])
@@ -108,7 +110,7 @@ export function useBackgroundSync() {
     }
 
     try {
-      const registration = await navigator.serviceWorker.ready
+      const registration = await navigator!.serviceWorker.ready
       await (registration as any).sync?.register(tag)
       
       // Store data for background sync
@@ -137,7 +139,7 @@ export function usePushNotifications() {
   const [subscription, setSubscription] = useState<PushSubscription | null>(null)
 
   useEffect(() => {
-    if ('Notification' in window && 'serviceWorker' in navigator && 'PushManager' in window) {
+    if (typeof window !== 'undefined' && 'Notification' in window && typeof navigator !== 'undefined' && 'serviceWorker' in navigator && 'PushManager' in window) {
       setIsSupported(true)
       setPermission(Notification.permission)
     }
@@ -160,7 +162,7 @@ export function usePushNotifications() {
     if (!isSupported || permission !== 'granted') return false
 
     try {
-      const registration = await navigator.serviceWorker.ready
+      const registration = await navigator!.serviceWorker.ready
       const subscription = await registration.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY

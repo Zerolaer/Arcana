@@ -31,8 +31,8 @@ interface FarmingSpot {
   description: string
   max_occupancy: number
   current_occupancy: number
-  drop_rate_bonus: number
-  rare_drop_bonus: number
+  difficulty_multiplier: number
+  experience_multiplier: number
 }
 
 export default function LocationPanel({ character, onUpdateCharacter, isLoading }: LocationPanelProps) {
@@ -228,13 +228,13 @@ export default function LocationPanel({ character, onUpdateCharacter, isLoading 
                         <div className="flex items-center space-x-1">
                           <span className="text-blue-400">📦</span>
                           <span className="text-blue-300">
-                            +{((spot.drop_rate_bonus - 1) * 100).toFixed(0)}% дроп
+                            x{spot.difficulty_multiplier} сложность
                           </span>
                         </div>
                         <div className="flex items-center space-x-1">
                           <span className="text-purple-400">✨</span>
                           <span className="text-purple-300">
-                            +{((spot.rare_drop_bonus - 1) * 100).toFixed(0)}% редкий
+                            x{spot.experience_multiplier} опыт
                           </span>
                         </div>
                       </div>
