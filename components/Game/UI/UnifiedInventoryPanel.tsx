@@ -49,7 +49,7 @@ const equipmentSlots = [
 
 export default function UnifiedInventoryPanel({ character, onUpdateCharacter, isLoading }: UnifiedInventoryPanelProps) {
   // Инвентарь состояние
-  const [inventory, setInventory] = useState<(GameItem | null)[]>(new Array(100).fill(null))
+  const [inventory, setInventory] = useState<(GameItem | null)[]>(new Array(48).fill(null))
   const [inventoryLoading, setInventoryLoading] = useState(true)
   const [draggedItem, setDraggedItem] = useState<GameItem | null>(null)
   const [draggedFromIndex, setDraggedFromIndex] = useState<number | undefined>()
@@ -91,9 +91,9 @@ export default function UnifiedInventoryPanel({ character, onUpdateCharacter, is
       }
 
       // Создаем массив инвентаря
-      const inventoryArray = new Array(100).fill(null)
+      const inventoryArray = new Array(48).fill(null)
       data?.forEach((item: any) => {
-        if (item.slot_position && item.slot_position > 0 && item.slot_position <= 100) {
+        if (item.slot_position && item.slot_position > 0 && item.slot_position <= 48) {
           inventoryArray[item.slot_position - 1] = {
             id: item.item_id,
             name: item.item_name,
@@ -285,7 +285,7 @@ export default function UnifiedInventoryPanel({ character, onUpdateCharacter, is
                 <Package className="w-5 h-5 text-blue-400" />
                 <h2 className="text-lg font-semibold text-white">Инвентарь</h2>
                 <span className="text-sm text-gray-400">
-                  {inventory.filter(item => item !== null).length}/100
+                  {inventory.filter(item => item !== null).length}/48
                 </span>
               </div>
               
@@ -318,8 +318,8 @@ export default function UnifiedInventoryPanel({ character, onUpdateCharacter, is
             </div>
 
             {/* Сетка инвентаря */}
-            <div className="grid grid-cols-10 gap-1 h-[calc(100%-80px)] overflow-y-auto">
-              {Array.from({ length: 100 }, (_, index) => {
+            <div className="grid grid-cols-8 gap-1 h-[calc(100%-80px)] overflow-y-auto">
+              {Array.from({ length: 48 }, (_, index) => {
                 const item = inventory[index]
                 const isFiltered = item && !filteredInventory.includes(item)
                 
