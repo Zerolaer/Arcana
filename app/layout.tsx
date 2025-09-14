@@ -2,6 +2,8 @@ import type { Metadata } from 'next'
 import './globals.css'
 import { Toaster } from 'react-hot-toast'
 import ServiceWorkerProvider from '@/components/ServiceWorkerProvider'
+import PerformancePanel from '@/components/UI/PerformancePanel'
+import ResourcePreloader from '@/components/UI/ResourcePreloader'
 
 export const metadata: Metadata = {
   title: 'MMORPG Web Game',
@@ -44,7 +46,9 @@ export default function RootLayout({
         fontFamily: 'Poppins, system-ui, sans-serif'
       }}>
         <ServiceWorkerProvider />
+        <ResourcePreloader />
         {children}
+        <PerformancePanel />
         <Toaster 
           position="top-right"
           toastOptions={{

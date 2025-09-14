@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { supabase } from './supabase'
+import { compressedCache, shouldCompress } from './compressionUtils'
 
 interface CacheEntry<T> {
   data: T
@@ -18,20 +19,38 @@ const CACHE_TTL = 5 * 60 * 1000 // 5 minutes default
 class DataCache {
   private cache = new Map<string, CacheEntry<any>>()
 
-  get<T>(key: string): CacheEntry<T> | null {
+  async get<T>(key: string): Promise<CacheEntry<T> | null> {
     const entry = this.cache.get(key)
-    if (!entry) return null
+    if (!entry) {
+      // Check compressed cache
+      const compressedData = await compressedCache.get(key)
+      if (compressedData) {
+        return {
+          data: compressedData,
+          timestamp: Date.now(),
+          loading: false,
+          error: null
+        }
+      }
+      return null
+    }
 
     // Check if expired
     if (Date.now() - entry.timestamp > CACHE_TTL) {
       this.cache.delete(key)
+      compressedCache.delete(key)
       return null
     }
 
     return entry
   }
 
-  set<T>(key: string, data: T, loading = false, error: string | null = null): void {
+  async set<T>(key: string, data: T, loading = false, error: string | null = null): Promise<void> {
+    // Use compressed cache for large data
+    if (shouldCompress(data)) {
+      await compressedCache.set(key, data)
+    }
+    
     this.cache.set(key, {
       data,
       timestamp: Date.now(),
@@ -86,13 +105,10 @@ export function useCachedData<T>(
     data: T | null
     loading: boolean
     error: string | null
-  }>(() => {
-    const cached = dataCache.get<T>(key)
-    return {
-      data: cached?.data || null,
-      loading: cached?.loading || false,
-      error: cached?.error || null
-    }
+  }>({
+    data: null,
+    loading: false,
+    error: null
   })
 
   const refetch = useCallback(async () => {
@@ -101,7 +117,7 @@ export function useCachedData<T>(
 
     try {
       const data = await fetcher()
-      dataCache.set(key, data)
+      await dataCache.set(key, data)
       setState({ data, loading: false, error: null })
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error'
@@ -111,17 +127,21 @@ export function useCachedData<T>(
   }, [key, fetcher])
 
   useEffect(() => {
-    const cached = dataCache.get<T>(key)
-    
-    if (cached && !options.refetchOnMount) {
-      setState({
-        data: cached.data,
-        loading: cached.loading,
-        error: cached.error
-      })
-    } else {
-      refetch()
+    const loadCachedData = async () => {
+      const cached = await dataCache.get<T>(key)
+      
+      if (cached && !options.refetchOnMount) {
+        setState({
+          data: cached.data,
+          loading: cached.loading,
+          error: cached.error
+        })
+      } else {
+        refetch()
+      }
     }
+
+    loadCachedData()
   }, [key, refetch, options.refetchOnMount])
 
   return {

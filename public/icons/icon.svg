@@ -1,0 +1,26 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle -->
+  <circle cx="256" cy="256" r="240" fill="#6366f1" stroke="#4f46e5" stroke-width="8"/>
+  
+  <!-- Inner circle -->
+  <circle cx="256" cy="256" r="180" fill="#8b5cf6" opacity="0.8"/>
+  
+  <!-- Game elements -->
+  <!-- Sword -->
+  <rect x="200" y="120" width="8" height="120" fill="#fbbf24" rx="4"/>
+  <rect x="190" y="110" width="28" height="20" fill="#f59e0b" rx="4"/>
+  
+  <!-- Shield -->
+  <path d="M320 140 L320 200 L280 220 L240 200 L240 140 L280 120 Z" fill="#10b981" stroke="#059669" stroke-width="4"/>
+  
+  <!-- Magic orb -->
+  <circle cx="256" cy="320" r="40" fill="#ec4899" opacity="0.9"/>
+  <circle cx="256" cy="320" r="25" fill="#f472b6" opacity="0.7"/>
+  <circle cx="256" cy="320" r="10" fill="#ffffff" opacity="0.8"/>
+  
+  <!-- Stars -->
+  <path d="M150 180 L155 190 L165 190 L157 197 L160 207 L150 200 L140 207 L143 197 L135 190 L145 190 Z" fill="#fbbf24"/>
+  <path d="M350 200 L355 210 L365 210 L357 217 L360 227 L350 220 L340 227 L343 217 L335 210 L345 210 Z" fill="#fbbf24"/>
+  <path d="M180 350 L185 360 L195 360 L187 367 L190 377 L180 370 L170 377 L173 367 L165 360 L175 360 Z" fill="#fbbf24"/>
+  <path d="M320 380 L325 390 L335 390 L327 397 L330 407 L320 400 L310 407 L313 397 L305 390 L315 390 Z" fill="#fbbf24"/>
+</svg>

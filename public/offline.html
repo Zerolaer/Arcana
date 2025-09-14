@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arcana - Офлайн режим</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Poppins', system-ui, sans-serif;
+            background: linear-gradient(135deg, #0a0a0f 0%, #1a1a2e 50%, #16213e 100%);
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 500px;
+            width: 100%;
+        }
+        
+        .icon {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 30px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 60px;
+            box-shadow: 0 20px 40px rgba(99, 102, 241, 0.3);
+        }
+        
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            color: #a1a1aa;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        
+        .features {
+            background: rgba(39, 39, 42, 0.5);
+            border: 1px solid rgba(82, 82, 91, 0.3);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+        }
+        
+        .feature {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            font-size: 1rem;
+            color: #e4e4e7;
+        }
+        
+        .feature:last-child {
+            margin-bottom: 0;
+        }
+        
+        .feature-icon {
+            width: 24px;
+            height: 24px;
+            margin-right: 12px;
+            background: #10b981;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+        
+        .retry-btn {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+        }
+        
+        .retry-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 30px rgba(99, 102, 241, 0.4);
+        }
+        
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            border-radius: 8px;
+            color: #22c55e;
+            font-size: 0.9rem;
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="icon pulse">⚔️</div>
+        
+        <h1>Офлайн режим</h1>
+        
+        <p class="subtitle">
+            Похоже, вы потеряли соединение с интернетом.<br>
+            Не волнуйтесь, игра продолжает работать!
+        </p>
+        
+        <div class="features">
+            <div class="feature">
+                <div class="feature-icon">✓</div>
+                <span>Доступ к кешированным данным</span>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">✓</div>
+                <span>Просмотр характеристик персонажа</span>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">✓</div>
+                <span>Управление инвентарем</span>
+            </div>
+            <div class="feature">
+                <div class="feature-icon">✓</div>
+                <span>Планирование развития</span>
+            </div>
+        </div>
+        
+        <button class="retry-btn" onclick="window.location.reload()">
+            Попробовать снова
+        </button>
+        
+        <div class="status" id="status">
+            <div class="pulse">🔄</div>
+            Проверка соединения...
+        </div>
+    </div>
+
+    <script>
+        // Check connection status
+        function updateStatus() {
+            const statusEl = document.getElementById('status');
+            
+            if (navigator.onLine) {
+                statusEl.innerHTML = '✅ Соединение восстановлено! Перезагружаем...';
+                statusEl.style.background = 'rgba(34, 197, 94, 0.1)';
+                statusEl.style.borderColor = 'rgba(34, 197, 94, 0.3)';
+                statusEl.style.color = '#22c55e';
+                
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 2000);
+            } else {
+                statusEl.innerHTML = '❌ Нет соединения с интернетом';
+                statusEl.style.background = 'rgba(239, 68, 68, 0.1)';
+                statusEl.style.borderColor = 'rgba(239, 68, 68, 0.3)';
+                statusEl.style.color = '#ef4444';
+            }
+        }
+        
+        // Listen for online/offline events
+        window.addEventListener('online', updateStatus);
+        window.addEventListener('offline', updateStatus);
+        
+        // Check status on load
+        updateStatus();
+        
+        // Check every 5 seconds
+        setInterval(updateStatus, 5000);
+    </script>
+</body>
+</html>
