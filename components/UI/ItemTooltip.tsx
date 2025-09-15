@@ -70,6 +70,7 @@ interface ItemTooltipProps {
   onUse?: () => void
   onEquip?: () => void
   onUnequip?: () => void
+  onSell?: () => void
   onClose?: () => void
   showActions?: boolean
   isEquipped?: boolean
@@ -129,6 +130,7 @@ export default function ItemTooltip({
   onUse, 
   onEquip, 
   onUnequip, 
+  onSell,
   onClose,
   showActions = false,
   isEquipped = false,
@@ -376,6 +378,23 @@ export default function ItemTooltip({
               >
                 <span>{isActive ? '⏸️' : '▶️'}</span>
                 <span>{isActive ? 'Деактивировать' : 'Активировать'}</span>
+              </button>
+            )}
+            
+            {/* Кнопка продажи */}
+            {onSell && (
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  e.preventDefault()
+                  onSell()
+                  if (onClose) onClose()
+                }}
+                className="w-full px-3 py-2 text-white text-sm rounded-md transition-colors flex items-center justify-center space-x-2 bg-orange-600 hover:bg-orange-700"
+                style={{ pointerEvents: 'auto', zIndex: 10000 }}
+              >
+                <span>💰</span>
+                <span>Продать</span>
               </button>
             )}
             

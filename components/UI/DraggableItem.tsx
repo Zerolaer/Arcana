@@ -14,6 +14,7 @@ interface DraggableItemProps {
   onUse?: () => void
   onEquip?: () => void
   onUnequip?: () => void
+  onSell?: () => void
   onClose?: () => void
   showActions?: boolean
   isEquipped?: boolean
@@ -30,6 +31,7 @@ export default function DraggableItem({
   onUse,
   onEquip,
   onUnequip,
+  onSell,
   onClose,
   showActions = false,
   isEquipped = false
@@ -156,6 +158,7 @@ export default function DraggableItem({
       onUse={onUse}
       onEquip={onEquip}
       onUnequip={onUnequip}
+      onSell={onSell}
       onClose={onClose}
       showActions={showActions}
       isEquipped={isEquipped}

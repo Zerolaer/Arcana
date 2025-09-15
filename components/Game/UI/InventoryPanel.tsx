@@ -3,11 +3,11 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Character } from '@/types/game'
 import { supabase } from '@/lib/supabase'
-import { Package, Search, Shield, Sword, Crown, Zap, Eye, Star } from 'lucide-react'
+import { Package, Search, ArrowUpDown } from 'lucide-react'
 import DraggableItem from '../../UI/DraggableItem'
-import InventorySlot from '../../UI/InventorySlot'
 import ItemTooltip, { GameItem } from '../../UI/ItemTooltip'
 import { toast } from 'react-hot-toast'
+import EquipmentPanel from './EquipmentPanel'
 
 interface InventoryPanelProps {
   character: Character
@@ -17,24 +17,11 @@ interface InventoryPanelProps {
 
 type FilterType = 'all' | 'weapon' | 'armor' | 'accessory' | 'consumable' | 'material'
 
-const equipmentSlots = [
-  { key: 'weapon', name: 'Оружие', icon: <Sword className="w-5 h-5 text-red-400" /> },
-  { key: 'helmet', name: 'Шлем', icon: <Crown className="w-5 h-5 text-blue-400" /> },
-  { key: 'armor', name: 'Броня', icon: <Shield className="w-5 h-5 text-green-400" /> },
-  { key: 'gloves', name: 'Перчатки', icon: <Zap className="w-5 h-5 text-yellow-400" /> },
-  { key: 'boots', name: 'Ботинки', icon: <Eye className="w-5 h-5 text-purple-400" /> },
-  { key: 'shield', name: 'Щит', icon: <Shield className="w-5 h-5 text-cyan-400" /> },
-  { key: 'ring1', name: 'Кольцо 1', icon: <Star className="w-5 h-5 text-pink-400" /> },
-  { key: 'ring2', name: 'Кольцо 2', icon: <Star className="w-5 h-5 text-pink-400" /> },
-  { key: 'amulet', name: 'Амулет', icon: <Crown className="w-5 h-5 text-yellow-400" /> }
-]
-
 export default function InventoryPanel({ character, onUpdateCharacter, isLoading }: InventoryPanelProps) {
-  console.log('🎮🎮🎮 НОВЫЙ ИНВЕНТАРЬ ЗАГРУЖЕН!')
+  console.log('🎮🎮🎮 ИСПРАВЛЕННЫЙ ИНВЕНТАРЬ ЗАГРУЖЕН!')
   
   // Инвентарь состояние
   const [inventory, setInventory] = useState<(GameItem | null)[]>(new Array(48).fill(null))
-  const [equipment, setEquipment] = useState<(GameItem | null)[]>(new Array(9).fill(null))
   const [loading, setLoading] = useState(true)
   const [draggedItem, setDraggedItem] = useState<GameItem | null>(null)
   const [draggedFromIndex, setDraggedFromIndex] = useState<number | undefined>()
@@ -87,51 +74,9 @@ export default function InventoryPanel({ character, onUpdateCharacter, isLoading
     }
   }, [character.id])
 
-  // Загрузка экипировки
-  const loadEquipment = useCallback(async () => {
-    try {
-      const { data, error } = await (supabase as any).rpc('get_character_equipment', {
-        p_character_id: character.id
-      })
-
-      if (error) {
-        console.error('Error loading equipment:', error)
-        return
-      }
-
-      // Создаем массив экипировки
-      const equipmentArray = new Array(9).fill(null)
-      data?.forEach((item: any) => {
-        const slotIndex = equipmentSlots.findIndex(slot => slot.key === item.slot_type)
-        if (slotIndex !== -1) {
-          equipmentArray[slotIndex] = {
-            id: item.item_id,
-            name: item.item_name,
-            description: item.item_description,
-            rarity: item.rarity,
-            type: item.item_type,
-            icon: item.icon,
-            level_requirement: item.level_requirement,
-            stats: {},
-            value: 0,
-            quantity: 1,
-            quality: item.quality,
-            upgradeLevel: item.upgrade_level,
-            obtainedAt: item.equipped_at
-          }
-        }
-      })
-
-      setEquipment(equipmentArray)
-    } catch (error) {
-      console.error('Error loading equipment:', error)
-    }
-  }, [character.id])
-
   useEffect(() => {
     loadInventory()
-    loadEquipment()
-  }, [loadInventory, loadEquipment])
+  }, [loadInventory])
 
   // Фильтрация инвентаря
   const filteredInventory = inventory.filter((item, index) => {
@@ -163,6 +108,7 @@ export default function InventoryPanel({ character, onUpdateCharacter, isLoading
 
       await (supabase as any).rpc('move_inventory_item', {
         p_character_id: character.id,
+        p_item_id: draggedItem.id,
         p_from_slot: draggedFromIndex + 1,
         p_to_slot: toIndex + 1
       })
@@ -171,48 +117,99 @@ export default function InventoryPanel({ character, onUpdateCharacter, isLoading
     } catch (error) {
       console.error('Error moving item:', error)
       toast.error('Ошибка перемещения предмета')
-      setInventory(inventory)
+      loadInventory() // Откатываем изменения
+    } finally {
+      setDraggedItem(null)
+      setDraggedFromIndex(undefined)
     }
   }
 
-  // Обработка клика по предмету
-  const handleItemClick = (item: GameItem, slotIndex: number) => {
-    if (openTooltips.has(slotIndex)) {
-      setOpenTooltips(prev => {
-        const newSet = new Set(prev)
-        newSet.delete(slotIndex)
-        return newSet
-      })
-    } else {
-      setOpenTooltips(new Set([slotIndex]))
-    }
+  const handleItemClick = (item: GameItem, index: number) => {
+    setOpenTooltips(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(index)) {
+        newSet.delete(index)
+      } else {
+        newSet.add(index)
+      }
+      return newSet
+    })
   }
 
-  // Обработка экипировки предмета
   const handleEquipItem = async (item: GameItem, slotIndex: number) => {
     try {
-      const slotType = item.type === 'weapon' ? 'weapon' : 
-                     item.type === 'armor' ? 'armor' : 
-                     item.type === 'accessory' ? 'ring1' : 'weapon'
+      const slotType = item.type === 'weapon' ? 'weapon' :
+        item.type === 'armor' ? 'armor' :
+          item.type === 'accessory' ? 'ring' : 'weapon'
 
-      const { error } = await (supabase as any).rpc('equip_item', {
+      await (supabase as any).rpc('equip_item', {
         p_character_id: character.id,
         p_item_id: item.id,
         p_slot_type: slotType
       })
 
-      if (error) throw error
-
       const newInventory = [...inventory]
       newInventory[slotIndex] = null
       setInventory(newInventory)
 
-      await loadEquipment()
       toast.success('Предмет экипирован')
     } catch (error) {
       console.error('Error equipping item:', error)
       toast.error('Ошибка экипировки предмета')
     }
+  }
+
+  const handleSellItem = async (item: GameItem, index: number) => {
+    try {
+      await (supabase as any).rpc('sell_item', {
+        p_character_id: character.id,
+        p_item_id: item.id,
+        p_slot_position: index + 1,
+        p_quantity: item.quantity || 1
+      })
+
+      const newInventory = [...inventory]
+      newInventory[index] = null
+      setInventory(newInventory)
+
+      await onUpdateCharacter({ gold: character.gold + (item.value * (item.quantity || 1)) })
+      toast.success(`Продан ${item.name} за ${item.value * (item.quantity || 1)} золота`)
+    } catch (error) {
+      console.error('Error selling item:', error)
+      toast.error('Ошибка продажи предмета')
+    }
+  }
+
+  const handleSortInventory = () => {
+    const sortedItems = inventory.filter(item => item !== null).sort((a, b) => {
+      if (!a || !b) return 0
+      const rarityOrder = ['mythic', 'legendary', 'epic', 'rare', 'uncommon', 'common']
+      const rarityA = rarityOrder.indexOf(a.rarity)
+      const rarityB = rarityOrder.indexOf(b.rarity)
+
+      if (rarityA !== rarityB) return rarityA - rarityB
+      return a.name.localeCompare(b.name)
+    })
+
+    const newInventory = new Array(48).fill(null)
+    sortedItems.forEach((item, index) => {
+      newInventory[index] = item
+    })
+    setInventory(newInventory)
+    toast.success('Инвентарь отсортирован')
+  }
+
+  const itemCount = inventory.filter(item => item !== null).length
+
+  if (loading) {
+    return (
+      <div className="flex-1 game-content p-4 flex items-center justify-center">
+        <div className="flex items-center space-x-3">
+          <div className="loading-spinner" />
+          <span className="text-white">Загрузка инвентаря...</span>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -224,12 +221,12 @@ export default function InventoryPanel({ character, onUpdateCharacter, isLoading
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-2">
                 <Package className="w-5 h-5 text-blue-400" />
-                <h2 className="text-2xl font-bold text-red-400 animate-pulse">🎮 НОВЫЙ ИНВЕНТАРЬ 🎮</h2>
+                <h2 className="text-2xl font-bold text-red-400 animate-pulse">🎮 ИСПРАВЛЕННЫЙ ИНВЕНТАРЬ 🎮</h2>
                 <span className="text-sm text-gray-400">
-                  {inventory.filter(item => item !== null).length}/48
+                  {itemCount}/48 предметов
                 </span>
               </div>
-              
+
               {/* Фильтры и поиск */}
               <div className="flex items-center space-x-3">
                 <div className="relative">
@@ -239,37 +236,43 @@ export default function InventoryPanel({ character, onUpdateCharacter, isLoading
                     placeholder="Поиск предметов..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 pr-4 py-2 bg-dark-700 border border-dark-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:border-blue-500"
+                    className="pl-9 pr-3 py-1 rounded-md bg-dark-700 border border-dark-600 text-sm text-white focus:outline-none focus:border-blue-500"
                   />
                 </div>
-                
                 <select
                   value={activeFilter}
                   onChange={(e) => setActiveFilter(e.target.value as FilterType)}
-                  className="px-3 py-2 bg-dark-700 border border-dark-600 rounded-lg text-white focus:outline-none focus:border-blue-500"
+                  className="px-3 py-1 rounded-md bg-dark-700 border border-dark-600 text-sm text-white focus:outline-none focus:border-blue-500"
                 >
-                  <option value="all">Все предметы</option>
+                  <option value="all">Все</option>
                   <option value="weapon">Оружие</option>
                   <option value="armor">Броня</option>
                   <option value="accessory">Аксессуары</option>
                   <option value="consumable">Расходники</option>
                   <option value="material">Материалы</option>
                 </select>
+                <button
+                  onClick={handleSortInventory}
+                  className="p-2 rounded-md bg-dark-700 hover:bg-dark-600 border border-dark-600 text-white transition-colors duration-200"
+                  title="Сортировать инвентарь"
+                >
+                  <ArrowUpDown className="w-4 h-4" />
+                </button>
               </div>
             </div>
 
-            {/* Сетка инвентаря 8x6 */}
+            {/* Сетка инвентаря - БЕЗ ЛИШНИХ ОБЕРТОК */}
             <div className="grid grid-cols-8 gap-1 h-[calc(100%-80px)] overflow-y-auto">
               {Array.from({ length: 48 }, (_, index) => {
                 const item = inventory[index]
                 const isFiltered = item && !filteredInventory.includes(item)
-                
+
                 return (
                   <div
                     key={index}
                     className={`aspect-square border-2 rounded-lg transition-all duration-200 ${
-                      isFiltered 
-                        ? 'border-gray-600 opacity-30' 
+                      isFiltered
+                        ? 'border-gray-600 opacity-30'
                         : 'border-dark-600 hover:border-blue-500'
                     }`}
                     onDrop={(e) => {
@@ -278,36 +281,37 @@ export default function InventoryPanel({ character, onUpdateCharacter, isLoading
                     }}
                     onDragOver={(e) => e.preventDefault()}
                   >
-                    {item ? (
+                    {item && !isFiltered ? (
                       <DraggableItem
                         item={item}
                         slotIndex={index}
-                        onDragStart={() => handleDragStart(item, index)}
+                        onDragStart={(draggedItem, fromIndex) => handleDragStart(draggedItem, fromIndex)}
                         onDragEnd={handleDragEnd}
                         onClick={() => handleItemClick(item, index)}
+                        onEquip={() => handleEquipItem(item, index)}
+                        onUse={() => toast.success(`Использован ${item.name}`)}
+                        onSell={() => handleSellItem(item, index)}
                         className="w-full h-full"
+                        showActions={true}
                       />
                     ) : (
-                      <InventorySlot
-                        slotIndex={index}
-                        onDrop={() => handleDrop(index)}
-                        className="w-full h-full"
-                      />
+                      <div className="w-full h-full bg-dark-800/50 rounded-lg flex items-center justify-center text-gray-500">
+                        {/* Пустой слот */}
+                      </div>
                     )}
-                    
-                    {/* Тултип */}
                     {item && openTooltips.has(index) && (
                       <div className="absolute z-50 mt-2">
                         <ItemTooltip
                           item={item}
-                          onClose={() => {
-                            setOpenTooltips(prev => {
-                              const newSet = new Set(prev)
-                              newSet.delete(index)
-                              return newSet
-                            })
-                          }}
+                          onClose={() => setOpenTooltips(prev => {
+                            const newSet = new Set(prev)
+                            newSet.delete(index)
+                            return newSet
+                          })}
                           onEquip={() => handleEquipItem(item, index)}
+                          onUse={() => toast.success(`Использован ${item.name}`)}
+                          onSell={() => handleSellItem(item, index)}
+                          isEquipped={false}
                         />
                       </div>
                     )}
@@ -318,66 +322,13 @@ export default function InventoryPanel({ character, onUpdateCharacter, isLoading
           </div>
         </div>
 
-        {/* Правая секция - Экипировка (30%) */}
+        {/* Правая секция - Экипировка (30%) - ИСПОЛЬЗУЕМ СУЩЕСТВУЮЩИЙ КОМПОНЕНТ */}
         <div className="w-[30%]">
-          <div className="game-panel p-4 h-full">
-            <div className="flex items-center space-x-2 mb-4">
-              <Shield className="w-5 h-5 text-green-400" />
-              <h2 className="text-xl font-bold text-green-400">🛡️ ЭКИПИРОВКА</h2>
-            </div>
-
-            {/* Сетка экипировки 3x3 */}
-            <div className="grid grid-cols-3 gap-3 mb-6">
-              {equipmentSlots.map((slot, index) => {
-                const equippedItem = equipment[index]
-                
-                return (
-                  <div
-                    key={slot.key}
-                    className={`aspect-square border-2 rounded-lg p-2 flex flex-col items-center justify-center transition-all duration-200 ${
-                      equippedItem 
-                        ? 'border-green-500 bg-green-500/10' 
-                        : 'border-dark-600 hover:border-gray-500'
-                    }`}
-                  >
-                    {equippedItem ? (
-                      <div className="text-center">
-                        <div className="text-2xl mb-1">{equippedItem.icon}</div>
-                        <div className="text-xs text-gray-300 truncate">
-                          {equippedItem.name}
-                        </div>
-                        {equippedItem.quality && (
-                          <div className="text-xs text-yellow-400">
-                            +{equippedItem.quality}%
-                          </div>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="text-center text-gray-500">
-                        {slot.icon}
-                        <div className="text-xs mt-1">{slot.name}</div>
-                      </div>
-                    )}
-                  </div>
-                )
-              })}
-            </div>
-
-            {/* Статистика */}
-            <div className="space-y-2">
-              <h3 className="text-sm font-medium text-gray-300">Статистика:</h3>
-              <div className="space-y-1 text-xs">
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Предметов в инвентаре:</span>
-                  <span className="text-blue-400">{inventory.filter(item => item !== null).length}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Экипировано:</span>
-                  <span className="text-green-400">{equipment.filter(item => item !== null).length}</span>
-                </div>
-              </div>
-            </div>
-          </div>
+          <EquipmentPanel 
+            character={character}
+            onUpdateCharacter={onUpdateCharacter}
+            isLoading={isLoading}
+          />
         </div>
       </div>
     </div>
