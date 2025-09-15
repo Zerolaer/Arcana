@@ -12,6 +12,9 @@ const nextConfig = {
   },
   // Disable image optimization for static export
   assetPrefix: process.env.NODE_ENV === 'production' ? '' : '',
+  // Disable caching for development
+  generateEtags: false,
+  poweredByHeader: false,
 }
 
 module.exports = nextConfig

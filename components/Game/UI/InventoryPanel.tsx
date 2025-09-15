@@ -18,7 +18,7 @@ interface InventoryPanelProps {
 type FilterType = 'all' | 'weapon' | 'armor' | 'accessory' | 'consumable' | 'material'
 
 export default function InventoryPanel({ character, onUpdateCharacter, isLoading }: InventoryPanelProps) {
-  console.log('🎮🎮🎮 ИСПРАВЛЕННЫЙ ИНВЕНТАРЬ ЗАГРУЖЕН!')
+  console.log('🎮🎮🎮 ИСПРАВЛЕННЫЙ ИНВЕНТАРЬ ЗАГРУЖЕН!', Date.now())
   
   // Инвентарь состояние
   const [inventory, setInventory] = useState<(GameItem | null)[]>(new Array(48).fill(null))
@@ -202,7 +202,7 @@ export default function InventoryPanel({ character, onUpdateCharacter, isLoading
   const itemCount = inventory.filter(item => item !== null).length
 
   if (loading) {
-    return (
+  return (
       <div className="flex-1 game-content p-4 flex items-center justify-center">
         <div className="flex items-center space-x-3">
           <div className="loading-spinner" />
@@ -213,7 +213,7 @@ export default function InventoryPanel({ character, onUpdateCharacter, isLoading
   }
 
   return (
-    <div className="flex-1 game-content p-4">
+    <div className="flex-1 game-content p-4" key={`inventory-${Date.now()}`}>
       <div className="flex h-full gap-4">
         {/* Левая секция - Инвентарь (70%) */}
         <div className="flex-1 w-[70%]">
@@ -221,12 +221,12 @@ export default function InventoryPanel({ character, onUpdateCharacter, isLoading
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center space-x-2">
                 <Package className="w-5 h-5 text-blue-400" />
-                <h2 className="text-2xl font-bold text-red-400 animate-pulse">🎮 ИСПРАВЛЕННЫЙ ИНВЕНТАРЬ 🎮</h2>
+                <h2 className="text-2xl font-bold text-red-400 animate-pulse">🎮 ИСПРАВЛЕННЫЙ ИНВЕНТАРЬ v2.0 🎮</h2>
                 <span className="text-sm text-gray-400">
                   {itemCount}/48 предметов
                 </span>
               </div>
-
+              
               {/* Фильтры и поиск */}
               <div className="flex items-center space-x-3">
                 <div className="relative">
@@ -315,7 +315,7 @@ export default function InventoryPanel({ character, onUpdateCharacter, isLoading
                         />
                       </div>
                     )}
-                  </div>
+              </div>
                 )
               })}
             </div>

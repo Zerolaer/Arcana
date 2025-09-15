@@ -7,6 +7,12 @@ import ResourcePreloader from '@/components/UI/ResourcePreloader'
 export const metadata: Metadata = {
   title: 'MMORPG Web Game',
   description: 'Classic MMORPG experience with modern UI',
+  // Disable caching for development
+  other: {
+    'Cache-Control': 'no-cache, no-store, must-revalidate',
+    'Pragma': 'no-cache',
+    'Expires': '0'
+  }
 }
 
 // Separate viewport export (new Next.js 14 way)
