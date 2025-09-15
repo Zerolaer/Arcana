@@ -7,7 +7,7 @@ import { Package, Search, ArrowUpDown } from 'lucide-react'
 import DraggableItem from '../../UI/DraggableItem'
 import ItemTooltip, { GameItem } from '../../UI/ItemTooltip'
 import { toast } from 'react-hot-toast'
-import EquipmentPanel from './EquipmentPanel'
+import EquipmentComponent from './EquipmentComponent'
 
 interface InventoryPanelProps {
   character: Character
@@ -322,12 +322,12 @@ export default function InventoryPanel({ character, onUpdateCharacter, isLoading
           </div>
         </div>
 
-        {/* Правая секция - Экипировка (30%) - ИСПОЛЬЗУЕМ СУЩЕСТВУЮЩИЙ КОМПОНЕНТ */}
+        {/* Правая секция - Экипировка (30%) - ИСПОЛЬЗУЕМ КОМПОНЕНТ ИЗ СТРАНИЦЫ ПЕРСОНАЖА */}
         <div className="w-[30%]">
-          <EquipmentPanel 
+          <EquipmentComponent 
             character={character}
             onUpdateCharacter={onUpdateCharacter}
-            isLoading={isLoading}
+            layout="inventory"
           />
         </div>
       </div>
